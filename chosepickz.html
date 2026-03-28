@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ChosenPickz</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --gold: #C9A84C;
+      --gold-dim: #a8863a;
+      --bg: #0d0d0d;
+      --surface: #1a1a1a;
+      --surface2: #252525;
+      --text: #f0f0f0;
+      --muted: #888;
+      --win: #4caf7d;
+      --loss: #e05252;
+      --pending: #888;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      min-height: 100vh;
+    }
+
+    /* ── NAV ── */
+    nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1rem 2rem;
+      background: var(--surface);
+      border-bottom: 2px solid var(--gold);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .nav-logo {
+      font-family: 'Bebas Neue', cursive;
+      font-size: 1.8rem;
+      color: var(--gold);
+      letter-spacing: 2px;
+    }
+    .nav-links { display: flex; gap: 1.5rem; }
+    .nav-links button {
+      background: none;
+      border: none;
+      color: var(--muted);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.95rem;
+      cursor: pointer;
+      padding: 0.4rem 0.8rem;
+      border-radius: 6px;
+      transition: color 0.2s, background 0.2s;
+    }
+    .nav-links button:hover,
+    .nav-links button.active {
+      color: var(--gold);
+      background: rgba(201,168,76,0.1);
+    }
+
+    /* ── VIEWS ── */
+    .view { display: none; padding: 2rem; max-width: 1100px; margin: 0 auto; }
+    .view.active { display: block; }
+
+    /* ── LANDING ── */
+    .hero {
+      text-align: center;
+      padding: 4rem 1rem 3rem;
+    }
+    .hero h1 {
+      font-family: 'Bebas Neue', cursive;
+      font-size: clamp(3rem, 8vw, 6rem);
+      color: var(--gold);
+      letter-spacing: 4px;
+    }
+    .hero p { color: var(--muted); font-size: 1.1rem; margin-top: 0.5rem; }
+
+    .stats-row {
+      display: flex;
+      gap: 1.5rem;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin: 2.5rem 0;
+    }
+    .stat-card {
+      background: var(--surface);
+      border: 1px solid var(--surface2);
+      border-radius: 12px;
+      padding: 1.5rem 2rem;
+      text-align: center;
+      min-width: 140px;
+    }
+    .stat-card .value {
+      font-family: 'Bebas Neue', cursive;
+      font-size: 2.5rem;
+      color: var(--gold);
+    }
+    .stat-card .label { color: var(--muted); font-size: 0.85rem; margin-top: 0.25rem; }
+
+    .features {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 1.5rem;
+      margin: 3rem 0;
+    }
+    .feature-card {
+      background: var(--surface);
+      border-radius: 12px;
+      padding: 1.5rem;
+      border-left: 3px solid var(--gold);
+    }
+    .feature-card h3 { color: var(--gold); margin-bottom: 0.5rem; }
+    .feature-card p { color: var(--muted); font-size: 0.9rem; }
+
+    .section-title {
+      font-family: 'Bebas Neue', cursive;
+      font-size: 1.8rem;
+      color: var(--gold);
+      letter-spacing: 2px;
+      margin-bottom: 1.5rem;
+    }
+
+    /* ── PICK CARDS ── */
+    .picks-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 1.25rem;
+    }
+    .pick-card {
+      background: var(--surface);
+      border-radius: 12px;
+      padding: 1.25rem;
+      border: 1px solid var(--surface2);
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+    .pick-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+    }
+    .pick-sport {
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--gold);
+      background: rgba(201,168,76,0.12);
+      padding: 0.2rem 0.6rem;
+      border-radius: 4px;
+    }
+    .result-badge {
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      padding: 0.2rem 0.7rem;
+      border-radius: 4px;
+    }
+    .result-badge.win  { background: rgba(76,175,125,0.15); color: var(--win); }
+    .result-badge.loss { background: rgba(224,82,82,0.15);  color: var(--loss); }
+    .result-badge.pending { background: rgba(136,136,136,0.15); color: var(--pending); }
+
+    .pick-game { font-weight: 700; font-size: 1rem; }
+    .pick-selection { color: var(--gold); font-weight: 500; }
+    .pick-odds { color: var(--muted); font-size: 0.85rem; }
+    .pick-analysis { color: var(--muted); font-size: 0.88rem; line-height: 1.5; }
+    .pick-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: auto;
+    }
+    .pick-date { color: var(--muted); font-size: 0.8rem; }
+    .confidence { display: flex; gap: 3px; }
+    .dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: var(--surface2);
+    }
+    .dot.filled { background: var(--gold); }
+
+    /* ── FILTER BAR ── */
+    .filter-bar {
+      display: flex;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+      margin-bottom: 1.5rem;
+    }
+    .filter-btn {
+      background: var(--surface);
+      border: 1px solid var(--surface2);
+      color: var(--muted);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.85rem;
+      padding: 0.4rem 1rem;
+      border-radius: 20px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .filter-btn:hover,
+    .filter-btn.active {
+      border-color: var(--gold);
+      color: var(--gold);
+      background: rgba(201,168,76,0.1);
+    }
+
+    /* ── ADMIN ── */
+    .form-card {
+      background: var(--surface);
+      border-radius: 12px;
+      padding: 2rem;
+      margin-bottom: 2rem;
+    }
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+    }
+    .form-group { display: flex; flex-direction: column; gap: 0.4rem; }
+    .form-group label { font-size: 0.85rem; color: var(--muted); }
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+      background: var(--surface2);
+      border: 1px solid #333;
+      border-radius: 8px;
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.95rem;
+      padding: 0.6rem 0.8rem;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus { border-color: var(--gold); }
+    .form-group textarea { resize: vertical; min-height: 80px; }
+    .form-group.full { grid-column: 1 / -1; }
+
+    .btn-gold {
+      background: var(--gold);
+      color: #000;
+      border: none;
+      border-radius: 8px;
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 700;
+      font-size: 0.95rem;
+      padding: 0.7rem 1.8rem;
+      cursor: pointer;
+      margin-top: 1rem;
+      transition: background 0.2s;
+    }
+    .btn-gold:hover { background: var(--gold-dim); }
+
+    .admin-picks { display: flex; flex-direction: column; gap: 0.75rem; }
+    .admin-pick-row {
+      background: var(--surface);
+      border-radius: 10px;
+      padding: 1rem 1.25rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+    .admin-pick-info { flex: 1; min-width: 200px; }
+    .admin-pick-info .game { font-weight: 700; }
+    .admin-pick-info .meta { color: var(--muted); font-size: 0.85rem; margin-top: 0.2rem; }
+    .admin-actions { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+    .btn-win, .btn-loss, .btn-del {
+      border: none;
+      border-radius: 6px;
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 700;
+      font-size: 0.82rem;
+      padding: 0.4rem 0.9rem;
+      cursor: pointer;
+      transition: opacity 0.2s;
+    }
+    .btn-win  { background: rgba(76,175,125,0.2);  color: var(--win); }
+    .btn-loss { background: rgba(224,82,82,0.2);   color: var(--loss); }
+    .btn-del  { background: rgba(136,136,136,0.15); color: var(--muted); }
+    .btn-win:hover  { opacity: 0.75; }
+    .btn-loss:hover { opacity: 0.75; }
+    .btn-del:hover  { opacity: 0.75; }
+
+    .empty { color: var(--muted); text-align: center; padding: 3rem 1rem; }
+
+    @media (max-width: 600px) {
+      nav { padding: 0.75rem 1rem; }
+      .nav-logo { font-size: 1.4rem; }
+      .view { padding: 1rem; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">ChosenPickz</div>
+  <div class="nav-links">
+    <button onclick="showView('landing')" id="nav-landing" class="active">Home</button>
+    <button onclick="showView('dashboard')" id="nav-dashboard">Dashboard</button>
+    <button onclick="showView('admin')" id="nav-admin">Admin</button>
+  </div>
+</nav>
+
+<!-- LANDING -->
+<div id="view-landing" class="view active">
+  <div class="hero">
+    <h1>ChosenPickz</h1>
+    <p>Premium sports picks &amp; analysis</p>
+  </div>
+
+  <div class="stats-row" id="landing-stats"></div>
+
+  <div class="features">
+    <div class="feature-card">
+      <h3>Expert Analysis</h3>
+      <p>Every pick comes with detailed breakdown covering matchups, trends, and key factors.</p>
+    </div>
+    <div class="feature-card">
+      <h3>Multiple Sports</h3>
+      <p>Coverage across NFL, NBA, MLB, UFC, and Soccer for year-round action.</p>
+    </div>
+    <div class="feature-card">
+      <h3>Confidence Ratings</h3>
+      <p>Each pick is rated 1–4 so you always know how strong the play is.</p>
+    </div>
+    <div class="feature-card">
+      <h3>Transparent Record</h3>
+      <p>All results are tracked and publicly visible — no cherry-picking the wins.</p>
+    </div>
+  </div>
+
+  <h2 class="section-title">Recent Picks</h2>
+  <div class="picks-grid" id="landing-picks"></div>
+</div>
+
+<!-- DASHBOARD -->
+<div id="view-dashboard" class="view">
+  <h2 class="section-title">Member Dashboard</h2>
+
+  <div class="stats-row" id="dash-stats"></div>
+
+  <div class="filter-bar" id="filter-bar"></div>
+  <div class="picks-grid" id="dash-picks"></div>
+</div>
+
+<!-- ADMIN -->
+<div id="view-admin" class="view">
+  <h2 class="section-title">Admin Panel</h2>
+
+  <div class="form-card">
+    <div class="form-grid">
+      <div class="form-group">
+        <label>Sport</label>
+        <select id="f-sport">
+          <option value="NFL">NFL</option>
+          <option value="NBA">NBA</option>
+          <option value="MLB">MLB</option>
+          <option value="UFC">UFC</option>
+          <option value="Soccer">Soccer</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Game / Matchup</label>
+        <input id="f-game" type="text" placeholder="e.g. Chiefs vs Raiders" />
+      </div>
+      <div class="form-group">
+        <label>Pick / Selection</label>
+        <input id="f-pick" type="text" placeholder="e.g. Chiefs -6.5" />
+      </div>
+      <div class="form-group">
+        <label>Odds</label>
+        <input id="f-odds" type="text" placeholder="e.g. -110" />
+      </div>
+      <div class="form-group">
+        <label>Confidence (1–4)</label>
+        <select id="f-conf">
+          <option value="1">1 – Low</option>
+          <option value="2">2 – Medium</option>
+          <option value="3" selected>3 – High</option>
+          <option value="4">4 – Lock</option>
+        </select>
+      </div>
+      <div class="form-group full">
+        <label>Analysis</label>
+        <textarea id="f-analysis" placeholder="Explain your reasoning…"></textarea>
+      </div>
+    </div>
+    <button class="btn-gold" onclick="addPick()">Post Pick</button>
+  </div>
+
+  <h2 class="section-title">All Picks</h2>
+  <div class="admin-picks" id="admin-picks"></div>
+</div>
+
+<script>
+  /* ── DATA ── */
+  const STORAGE_KEY = 'chosenpickz_picks';
+
+  function loadPicks() {
+    try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; }
+    catch { return []; }
+  }
+  function savePicks(picks) {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(picks));
+  }
+
+  /* ── NAVIGATION ── */
+  function showView(name) {
+    document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+    document.querySelectorAll('.nav-links button').forEach(b => b.classList.remove('active'));
+    document.getElementById('view-' + name).classList.add('active');
+    document.getElementById('nav-' + name).classList.add('active');
+    render();
+  }
+
+  /* ── STATS ── */
+  function computeStats(picks) {
+    const wins    = picks.filter(p => p.result === 'win').length;
+    const losses  = picks.filter(p => p.result === 'loss').length;
+    const pending = picks.filter(p => p.result === 'pending').length;
+    const total   = picks.length;
+    const winPct  = (wins + losses) > 0
+      ? Math.round((wins / (wins + losses)) * 100) + '%'
+      : '--';
+    return { wins, losses, pending, total, winPct };
+  }
+
+  function renderStats(containerId, picks) {
+    const s = computeStats(picks);
+    const el = document.getElementById(containerId);
+    el.innerHTML = [
+      { value: s.wins + '-' + s.losses, label: 'Record' },
+      { value: s.winPct,                label: 'Win %' },
+      { value: s.pending,               label: 'Pending' },
+      { value: s.total,                 label: 'Total Picks' },
+    ].map(c => `
+      <div class="stat-card">
+        <div class="value">${c.value}</div>
+        <div class="label">${c.label}</div>
+      </div>`).join('');
+  }
+
+  /* ── PICK CARD ── */
+  function pickCard(p) {
+    const dots = Array.from({ length: 4 }, (_, i) =>
+      `<span class="dot${i < p.confidence ? ' filled' : ''}"></span>`
+    ).join('');
+    return `
+      <div class="pick-card">
+        <div class="pick-header">
+          <span class="pick-sport">${escHtml(p.sport)}</span>
+          <span class="result-badge ${p.result}">${p.result}</span>
+        </div>
+        <div class="pick-game">${escHtml(p.game)}</div>
+        <div class="pick-selection">▶ ${escHtml(p.pick)}</div>
+        <div class="pick-odds">Odds: ${escHtml(p.odds)}</div>
+        <div class="pick-analysis">${escHtml(p.analysis)}</div>
+        <div class="pick-footer">
+          <span class="pick-date">${escHtml(p.date)}</span>
+          <div class="confidence">${dots}</div>
+        </div>
+      </div>`;
+  }
+
+  function escHtml(str) {
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+
+  /* ── FILTERS ── */
+  let activeFilter = 'all';
+
+  function buildFilterBar(picks) {
+    const sports = [...new Set(picks.map(p => p.sport))];
+    const bar = document.getElementById('filter-bar');
+    const filters = [
+      { key: 'all',     label: 'All' },
+      { key: 'win',     label: 'Win' },
+      { key: 'loss',    label: 'Loss' },
+      { key: 'pending', label: 'Pending' },
+      ...sports.map(s => ({ key: 'sport:' + s, label: s })),
+    ];
+    bar.innerHTML = filters.map(f =>
+      `<button class="filter-btn${activeFilter === f.key ? ' active' : ''}"
+               onclick="setFilter('${f.key}')">${f.label}</button>`
+    ).join('');
+  }
+
+  function setFilter(key) {
+    activeFilter = key;
+    render();
+  }
+
+  function applyFilter(picks) {
+    if (activeFilter === 'all') return picks;
+    if (activeFilter.startsWith('sport:')) {
+      const sport = activeFilter.slice(6);
+      return picks.filter(p => p.sport === sport);
+    }
+    return picks.filter(p => p.result === activeFilter);
+  }
+
+  /* ── RENDER ── */
+  function render() {
+    const picks = loadPicks();
+
+    // Landing
+    renderStats('landing-stats', picks);
+    const recent = picks.slice(-3).reverse();
+    const lp = document.getElementById('landing-picks');
+    lp.innerHTML = recent.length
+      ? recent.map(pickCard).join('')
+      : '<p class="empty">No picks yet. Check back soon!</p>';
+
+    // Dashboard
+    renderStats('dash-stats', picks);
+    buildFilterBar(picks);
+    const filtered = applyFilter(picks);
+    const dp = document.getElementById('dash-picks');
+    dp.innerHTML = filtered.length
+      ? [...filtered].reverse().map(pickCard).join('')
+      : '<p class="empty">No picks match this filter.</p>';
+
+    // Admin
+    const ap = document.getElementById('admin-picks');
+    ap.innerHTML = picks.length
+      ? [...picks].reverse().map((p, i) => {
+          const idx = picks.length - 1 - i;
+          return `
+            <div class="admin-pick-row">
+              <div class="admin-pick-info">
+                <div class="game">${escHtml(p.game)} — ${escHtml(p.pick)}</div>
+                <div class="meta">${escHtml(p.sport)} · ${escHtml(p.odds)} · ${escHtml(p.date)} · ${p.result}</div>
+              </div>
+              <div class="admin-actions">
+                <button class="btn-win"  onclick="grade(${idx},'win')">Win</button>
+                <button class="btn-loss" onclick="grade(${idx},'loss')">Loss</button>
+                <button class="btn-del"  onclick="deletePick(${idx})">Delete</button>
+              </div>
+            </div>`;
+        }).join('')
+      : '<p class="empty">No picks posted yet.</p>';
+  }
+
+  /* ── ADD PICK ── */
+  function addPick() {
+    const game     = document.getElementById('f-game').value.trim();
+    const pick     = document.getElementById('f-pick').value.trim();
+    const odds     = document.getElementById('f-odds').value.trim();
+    const analysis = document.getElementById('f-analysis').value.trim();
+    if (!game || !pick) { alert('Game and Pick fields are required.'); return; }
+
+    const picks = loadPicks();
+    picks.push({
+      sport:      document.getElementById('f-sport').value,
+      game,
+      pick,
+      odds:       odds || 'N/A',
+      analysis:   analysis || '',
+      confidence: parseInt(document.getElementById('f-conf').value, 10),
+      result:     'pending',
+      date:       new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+    });
+    savePicks(picks);
+
+    document.getElementById('f-game').value = '';
+    document.getElementById('f-pick').value = '';
+    document.getElementById('f-odds').value = '';
+    document.getElementById('f-analysis').value = '';
+    render();
+  }
+
+  /* ── GRADE / DELETE ── */
+  function grade(idx, result) {
+    const picks = loadPicks();
+    if (picks[idx]) { picks[idx].result = result; savePicks(picks); render(); }
+  }
+  function deletePick(idx) {
+    const picks = loadPicks();
+    picks.splice(idx, 1);
+    savePicks(picks);
+    render();
+  }
+
+  /* ── INIT ── */
+  render();
+</script>
+</body>
+</html>
