@@ -1,0 +1,774 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ChosenPickz</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --gold: #C9A84C;
+      --gold-light: #e0bf6e;
+      --bg: #0f0f0f;
+      --bg2: #1a1a1a;
+      --bg3: #242424;
+      --text: #f0f0f0;
+      --muted: #888;
+      --win: #4caf50;
+      --loss: #f44336;
+      --pending: #ff9800;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      min-height: 100vh;
+    }
+
+    /* ── NAV ── */
+    nav {
+      background: var(--bg2);
+      border-bottom: 1px solid #2a2a2a;
+      padding: 0 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 60px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .nav-logo {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.8rem;
+      color: var(--gold);
+      letter-spacing: 1px;
+    }
+    .nav-links { display: flex; gap: 0.5rem; }
+    .nav-btn {
+      background: transparent;
+      border: 1px solid transparent;
+      color: var(--muted);
+      padding: 0.4rem 1rem;
+      border-radius: 6px;
+      cursor: pointer;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.85rem;
+      font-weight: 500;
+      transition: all 0.2s;
+    }
+    .nav-btn:hover { color: var(--text); border-color: #333; }
+    .nav-btn.active { color: var(--gold); border-color: var(--gold); }
+
+    /* ── VIEWS ── */
+    .view { display: none; }
+    .view.active { display: block; }
+
+    /* ── LANDING ── */
+    .hero {
+      background: linear-gradient(135deg, #0f0f0f 0%, #1a1400 100%);
+      padding: 5rem 1.5rem 4rem;
+      text-align: center;
+    }
+    .hero-label {
+      font-size: 0.75rem;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 1rem;
+    }
+    .hero h1 {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(3rem, 8vw, 6rem);
+      line-height: 1;
+      margin-bottom: 1.5rem;
+    }
+    .hero h1 span { color: var(--gold); }
+    .hero-sub {
+      color: var(--muted);
+      font-size: 1rem;
+      max-width: 480px;
+      margin: 0 auto 2.5rem;
+    }
+    .hero-stats {
+      display: flex;
+      justify-content: center;
+      gap: 2rem;
+      flex-wrap: wrap;
+      margin-bottom: 2.5rem;
+    }
+    .hero-stat { text-align: center; }
+    .hero-stat-val {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 2.8rem;
+      color: var(--gold);
+      line-height: 1;
+    }
+    .hero-stat-lbl {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--muted);
+      margin-top: 0.25rem;
+    }
+    .hero-cta {
+      display: inline-flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    .btn-gold {
+      background: var(--gold);
+      color: #000;
+      border: none;
+      padding: 0.75rem 2rem;
+      border-radius: 8px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .btn-gold:hover { background: var(--gold-light); }
+    .btn-outline {
+      background: transparent;
+      color: var(--gold);
+      border: 1.5px solid var(--gold);
+      padding: 0.75rem 2rem;
+      border-radius: 8px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-outline:hover { background: rgba(201,168,76,0.1); }
+
+    /* features */
+    .features {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 4rem 1.5rem;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1.5rem;
+    }
+    .feature-card {
+      background: var(--bg2);
+      border: 1px solid #2a2a2a;
+      border-radius: 12px;
+      padding: 1.75rem 1.5rem;
+      text-align: center;
+    }
+    .feature-icon { font-size: 2rem; margin-bottom: 0.75rem; }
+    .feature-card h3 {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.1rem;
+      letter-spacing: 1px;
+      color: var(--gold);
+      margin-bottom: 0.5rem;
+    }
+    .feature-card p { font-size: 0.85rem; color: var(--muted); line-height: 1.5; }
+
+    /* recent picks section */
+    .section {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 2rem 1.5rem 4rem;
+    }
+    .section-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.8rem;
+      letter-spacing: 1px;
+      margin-bottom: 1.5rem;
+    }
+    .section-title span { color: var(--gold); }
+
+    /* ── PICK CARDS ── */
+    .picks-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 1.25rem;
+    }
+    .pick-card {
+      background: var(--bg2);
+      border: 1px solid #2a2a2a;
+      border-radius: 12px;
+      padding: 1.25rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+    .pick-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+    }
+    .pick-sport {
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--gold);
+      background: rgba(201,168,76,0.1);
+      padding: 0.2rem 0.6rem;
+      border-radius: 4px;
+    }
+    .pick-badge {
+      font-size: 0.7rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      padding: 0.2rem 0.6rem;
+      border-radius: 4px;
+    }
+    .badge-win { background: rgba(76,175,80,0.15); color: var(--win); }
+    .badge-loss { background: rgba(244,67,54,0.15); color: var(--loss); }
+    .badge-pending { background: rgba(255,152,0,0.15); color: var(--pending); }
+
+    .pick-game { font-size: 0.95rem; font-weight: 600; }
+    .pick-selection {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.25rem;
+      color: var(--gold);
+      letter-spacing: 0.5px;
+    }
+    .pick-odds { font-size: 0.8rem; color: var(--muted); }
+    .pick-analysis {
+      font-size: 0.8rem;
+      color: var(--muted);
+      line-height: 1.5;
+      border-top: 1px solid #2a2a2a;
+      padding-top: 0.75rem;
+    }
+    .pick-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-top: 1px solid #2a2a2a;
+      padding-top: 0.75rem;
+    }
+    .pick-confidence { display: flex; gap: 3px; }
+    .conf-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #333;
+    }
+    .conf-dot.filled { background: var(--gold); }
+    .pick-date { font-size: 0.75rem; color: var(--muted); }
+
+    /* ── DASHBOARD ── */
+    .dash-wrap {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 2rem 1.5rem;
+    }
+    .dash-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 2rem;
+      letter-spacing: 1px;
+      margin-bottom: 1.5rem;
+    }
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+    .stat-card {
+      background: var(--bg2);
+      border: 1px solid #2a2a2a;
+      border-radius: 10px;
+      padding: 1.25rem 1rem;
+      text-align: center;
+    }
+    .stat-val {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 2rem;
+      line-height: 1;
+    }
+    .stat-val.gold { color: var(--gold); }
+    .stat-val.green { color: var(--win); }
+    .stat-val.red { color: var(--loss); }
+    .stat-val.orange { color: var(--pending); }
+    .stat-lbl {
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--muted);
+      margin-top: 0.25rem;
+    }
+
+    .filters {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+      margin-bottom: 1.5rem;
+    }
+    .filter-btn {
+      background: var(--bg2);
+      border: 1px solid #2a2a2a;
+      color: var(--muted);
+      padding: 0.4rem 0.9rem;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.8rem;
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 500;
+      transition: all 0.2s;
+    }
+    .filter-btn:hover { border-color: #444; color: var(--text); }
+    .filter-btn.active { border-color: var(--gold); color: var(--gold); background: rgba(201,168,76,0.08); }
+    .filter-divider {
+      width: 1px;
+      background: #2a2a2a;
+      align-self: stretch;
+    }
+
+    /* ── ADMIN ── */
+    .admin-wrap {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 2rem 1.5rem;
+      display: grid;
+      grid-template-columns: 1fr 1.5fr;
+      gap: 2rem;
+      align-items: start;
+    }
+    @media (max-width: 760px) { .admin-wrap { grid-template-columns: 1fr; } }
+    .admin-form-card {
+      background: var(--bg2);
+      border: 1px solid #2a2a2a;
+      border-radius: 12px;
+      padding: 1.75rem;
+    }
+    .admin-form-card h2 {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.5rem;
+      letter-spacing: 1px;
+      color: var(--gold);
+      margin-bottom: 1.25rem;
+    }
+    .form-group { margin-bottom: 1rem; }
+    .form-group label {
+      display: block;
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--muted);
+      margin-bottom: 0.35rem;
+    }
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+      width: 100%;
+      background: var(--bg3);
+      border: 1px solid #333;
+      color: var(--text);
+      padding: 0.6rem 0.75rem;
+      border-radius: 6px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.9rem;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus { border-color: var(--gold); }
+    .form-group textarea { resize: vertical; min-height: 80px; }
+    .form-group select option { background: var(--bg3); }
+
+    .conf-selector { display: flex; gap: 0.5rem; align-items: center; }
+    .conf-option {
+      display: flex;
+      gap: 3px;
+      padding: 0.4rem 0.75rem;
+      border-radius: 6px;
+      border: 1px solid #333;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .conf-option:hover { border-color: #555; }
+    .conf-option.selected { border-color: var(--gold); background: rgba(201,168,76,0.1); }
+    .conf-option .conf-dot { width: 7px; height: 7px; }
+
+    .admin-list-card {
+      background: var(--bg2);
+      border: 1px solid #2a2a2a;
+      border-radius: 12px;
+      padding: 1.75rem;
+    }
+    .admin-list-card h2 {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.5rem;
+      letter-spacing: 1px;
+      color: var(--gold);
+      margin-bottom: 1.25rem;
+    }
+    .admin-pick-row {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.75rem 0;
+      border-bottom: 1px solid #2a2a2a;
+      flex-wrap: wrap;
+    }
+    .admin-pick-row:last-child { border-bottom: none; }
+    .admin-pick-info { flex: 1; min-width: 0; }
+    .admin-pick-info .game { font-size: 0.9rem; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .admin-pick-info .meta { font-size: 0.75rem; color: var(--muted); margin-top: 2px; }
+    .admin-actions { display: flex; gap: 0.4rem; flex-shrink: 0; }
+    .btn-sm {
+      padding: 0.3rem 0.7rem;
+      border-radius: 5px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      font-family: 'DM Sans', sans-serif;
+      transition: opacity 0.2s;
+    }
+    .btn-sm:hover { opacity: 0.8; }
+    .btn-win { background: rgba(76,175,80,0.2); color: var(--win); }
+    .btn-loss { background: rgba(244,67,54,0.2); color: var(--loss); }
+    .btn-del { background: rgba(255,255,255,0.05); color: var(--muted); }
+    .btn-ungrade { background: rgba(255,152,0,0.15); color: var(--pending); }
+
+    /* empty state */
+    .empty {
+      text-align: center;
+      padding: 3rem 1rem;
+      color: var(--muted);
+    }
+    .empty-icon { font-size: 2.5rem; margin-bottom: 0.75rem; }
+    .empty p { font-size: 0.9rem; }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">ChosenPickz</div>
+  <div class="nav-links">
+    <button class="nav-btn active" onclick="showView('landing')">Home</button>
+    <button class="nav-btn" onclick="showView('dashboard')">Dashboard</button>
+    <button class="nav-btn" onclick="showView('admin')">Admin</button>
+  </div>
+</nav>
+
+<!-- ═══════════════ LANDING VIEW ═══════════════ -->
+<div id="view-landing" class="view active">
+  <div class="hero">
+    <p class="hero-label">Sports Picks &amp; Analysis</p>
+    <h1>Chosen<span>Pickz</span></h1>
+    <p class="hero-sub">Expert sports picks with in-depth analysis. Track our record and follow every winning call.</p>
+    <div class="hero-stats">
+      <div class="hero-stat">
+        <div class="hero-stat-val" id="hero-record">0-0</div>
+        <div class="hero-stat-lbl">Win Record</div>
+      </div>
+      <div class="hero-stat">
+        <div class="hero-stat-val" id="hero-pct">—</div>
+        <div class="hero-stat-lbl">Win %</div>
+      </div>
+      <div class="hero-stat">
+        <div class="hero-stat-val" id="hero-total">0</div>
+        <div class="hero-stat-lbl">Total Picks</div>
+      </div>
+    </div>
+    <div class="hero-cta">
+      <button class="btn-gold" onclick="showView('dashboard')">View All Picks</button>
+      <button class="btn-outline" onclick="showView('admin')">Admin Panel</button>
+    </div>
+  </div>
+
+  <div class="features">
+    <div class="feature-card">
+      <div class="feature-icon">🏆</div>
+      <h3>Proven Record</h3>
+      <p>Every pick is logged and tracked — wins, losses, and pending results all in one place.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">📊</div>
+      <h3>Deep Analysis</h3>
+      <p>Each pick comes with full matchup analysis, odds context, and confidence ratings.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">⚡</div>
+      <h3>Multi-Sport</h3>
+      <p>Covering NFL, NBA, MLB, UFC, Soccer and more across every major league.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🎯</div>
+      <h3>Confidence Rated</h3>
+      <p>Visual confidence ratings on every pick so you know how strong the edge is.</p>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Recent <span>Picks</span></div>
+    <div class="picks-grid" id="recent-picks"></div>
+  </div>
+</div>
+
+<!-- ═══════════════ DASHBOARD VIEW ═══════════════ -->
+<div id="view-dashboard" class="view">
+  <div class="dash-wrap">
+    <div class="dash-title">Member Dashboard</div>
+    <div class="stat-grid">
+      <div class="stat-card"><div class="stat-val green" id="d-wins">0</div><div class="stat-lbl">Wins</div></div>
+      <div class="stat-card"><div class="stat-val red" id="d-losses">0</div><div class="stat-lbl">Losses</div></div>
+      <div class="stat-card"><div class="stat-val gold" id="d-pct">—</div><div class="stat-lbl">Win %</div></div>
+      <div class="stat-card"><div class="stat-val orange" id="d-pending">0</div><div class="stat-lbl">Pending</div></div>
+      <div class="stat-card"><div class="stat-val" id="d-total">0</div><div class="stat-lbl">Total Picks</div></div>
+    </div>
+
+    <div class="filters" id="filters">
+      <button class="filter-btn active" data-filter="result" data-value="all" onclick="setFilter('result','all',this)">All</button>
+      <button class="filter-btn" data-filter="result" data-value="pending" onclick="setFilter('result','pending',this)">Pending</button>
+      <button class="filter-btn" data-filter="result" data-value="win" onclick="setFilter('result','win',this)">Wins</button>
+      <button class="filter-btn" data-filter="result" data-value="loss" onclick="setFilter('result','loss',this)">Losses</button>
+      <div class="filter-divider"></div>
+      <button class="filter-btn active" data-filter="sport" data-value="all" onclick="setFilter('sport','all',this)">All Sports</button>
+      <button class="filter-btn" data-filter="sport" data-value="NFL" onclick="setFilter('sport','NFL',this)">NFL</button>
+      <button class="filter-btn" data-filter="sport" data-value="NBA" onclick="setFilter('sport','NBA',this)">NBA</button>
+      <button class="filter-btn" data-filter="sport" data-value="MLB" onclick="setFilter('sport','MLB',this)">MLB</button>
+      <button class="filter-btn" data-filter="sport" data-value="UFC" onclick="setFilter('sport','UFC',this)">UFC</button>
+      <button class="filter-btn" data-filter="sport" data-value="Soccer" onclick="setFilter('sport','Soccer',this)">Soccer</button>
+    </div>
+
+    <div class="picks-grid" id="dash-picks"></div>
+  </div>
+</div>
+
+<!-- ═══════════════ ADMIN VIEW ═══════════════ -->
+<div id="view-admin" class="view">
+  <div class="admin-wrap">
+    <div class="admin-form-card">
+      <h2>Post New Pick</h2>
+      <div class="form-group">
+        <label>Sport</label>
+        <select id="f-sport">
+          <option value="NFL">NFL</option>
+          <option value="NBA">NBA</option>
+          <option value="MLB">MLB</option>
+          <option value="UFC">UFC</option>
+          <option value="Soccer">Soccer</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Game / Matchup</label>
+        <input type="text" id="f-game" placeholder="e.g. Chiefs vs Raiders" />
+      </div>
+      <div class="form-group">
+        <label>Pick / Selection</label>
+        <input type="text" id="f-pick" placeholder="e.g. Chiefs -6.5" />
+      </div>
+      <div class="form-group">
+        <label>Odds</label>
+        <input type="text" id="f-odds" placeholder="e.g. -110" />
+      </div>
+      <div class="form-group">
+        <label>Analysis</label>
+        <textarea id="f-analysis" placeholder="Explain your reasoning…"></textarea>
+      </div>
+      <div class="form-group">
+        <label>Confidence</label>
+        <div class="conf-selector" id="conf-selector">
+          <div class="conf-option" data-val="1" onclick="selectConf(1)">
+            <div class="conf-dot filled"></div>
+          </div>
+          <div class="conf-option" data-val="2" onclick="selectConf(2)">
+            <div class="conf-dot filled"></div><div class="conf-dot filled"></div>
+          </div>
+          <div class="conf-option selected" data-val="3" onclick="selectConf(3)">
+            <div class="conf-dot filled"></div><div class="conf-dot filled"></div><div class="conf-dot filled"></div>
+          </div>
+          <div class="conf-option" data-val="4" onclick="selectConf(4)">
+            <div class="conf-dot filled"></div><div class="conf-dot filled"></div><div class="conf-dot filled"></div><div class="conf-dot filled"></div>
+          </div>
+        </div>
+      </div>
+      <button class="btn-gold" style="width:100%;margin-top:0.5rem;" onclick="addPick()">Post Pick</button>
+    </div>
+
+    <div class="admin-list-card">
+      <h2>Manage Picks</h2>
+      <div id="admin-picks"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // ── STATE ──────────────────────────────────────────────────────
+  let picks = JSON.parse(localStorage.getItem('cp_picks') || '[]');
+  let selectedConf = 3;
+  let activeFilters = { result: 'all', sport: 'all' };
+
+  function save() {
+    localStorage.setItem('cp_picks', JSON.stringify(picks));
+  }
+
+  // ── VIEWS ──────────────────────────────────────────────────────
+  function showView(name) {
+    document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+    document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('view-' + name).classList.add('active');
+    const idx = ['landing','dashboard','admin'].indexOf(name);
+    document.querySelectorAll('.nav-btn')[idx].classList.add('active');
+    render();
+  }
+
+  // ── RENDER ─────────────────────────────────────────────────────
+  function render() {
+    renderStats();
+    renderLanding();
+    renderDashboard();
+    renderAdmin();
+  }
+
+  function renderStats() {
+    const wins = picks.filter(p => p.result === 'win').length;
+    const losses = picks.filter(p => p.result === 'loss').length;
+    const pending = picks.filter(p => p.result === 'pending').length;
+    const total = picks.length;
+    const graded = wins + losses;
+    const pct = graded > 0 ? Math.round((wins / graded) * 100) + '%' : '—';
+
+    // hero
+    document.getElementById('hero-record').textContent = wins + '-' + losses;
+    document.getElementById('hero-pct').textContent = pct;
+    document.getElementById('hero-total').textContent = total;
+    // dashboard
+    document.getElementById('d-wins').textContent = wins;
+    document.getElementById('d-losses').textContent = losses;
+    document.getElementById('d-pct').textContent = pct;
+    document.getElementById('d-pending').textContent = pending;
+    document.getElementById('d-total').textContent = total;
+  }
+
+  function pickCard(p, showActions) {
+    const dots = Array.from({length: 4}, (_, i) =>
+      `<div class="conf-dot${i < p.confidence ? ' filled' : ''}"></div>`
+    ).join('');
+    const badge = p.result === 'win' ? '<span class="pick-badge badge-win">Win</span>'
+      : p.result === 'loss' ? '<span class="pick-badge badge-loss">Loss</span>'
+      : '<span class="pick-badge badge-pending">Pending</span>';
+    return `
+      <div class="pick-card">
+        <div class="pick-card-header">
+          <span class="pick-sport">${p.sport}</span>
+          ${badge}
+        </div>
+        <div class="pick-game">${p.game}</div>
+        <div class="pick-selection">${p.pick}</div>
+        <div class="pick-odds">Odds: ${p.odds}</div>
+        <div class="pick-analysis">${p.analysis}</div>
+        <div class="pick-footer">
+          <div class="pick-confidence">${dots}</div>
+          <div class="pick-date">${new Date(p.date).toLocaleDateString()}</div>
+        </div>
+      </div>`;
+  }
+
+  function renderLanding() {
+    const recent = [...picks].reverse().slice(0, 3);
+    const el = document.getElementById('recent-picks');
+    el.innerHTML = recent.length
+      ? recent.map(p => pickCard(p)).join('')
+      : '<div class="empty"><div class="empty-icon">📋</div><p>No picks posted yet.</p></div>';
+  }
+
+  function renderDashboard() {
+    let filtered = picks.filter(p => {
+      const rOk = activeFilters.result === 'all' || p.result === activeFilters.result;
+      const sOk = activeFilters.sport === 'all' || p.sport === activeFilters.sport;
+      return rOk && sOk;
+    }).reverse();
+    const el = document.getElementById('dash-picks');
+    el.innerHTML = filtered.length
+      ? filtered.map(p => pickCard(p)).join('')
+      : '<div class="empty"><div class="empty-icon">📭</div><p>No picks match your filters.</p></div>';
+  }
+
+  function renderAdmin() {
+    const el = document.getElementById('admin-picks');
+    if (!picks.length) {
+      el.innerHTML = '<div class="empty"><div class="empty-icon">📋</div><p>No picks added yet.</p></div>';
+      return;
+    }
+    el.innerHTML = [...picks].reverse().map((p, i) => {
+      const realIdx = picks.length - 1 - i;
+      const gradeButtons = p.result === 'pending'
+        ? `<button class="btn-sm btn-win" onclick="grade(${realIdx},'win')">Win</button>
+           <button class="btn-sm btn-loss" onclick="grade(${realIdx},'loss')">Loss</button>`
+        : `<button class="btn-sm btn-ungrade" onclick="grade(${realIdx},'pending')">Ungrade</button>`;
+      return `
+        <div class="admin-pick-row">
+          <div class="admin-pick-info">
+            <div class="game">${p.game}</div>
+            <div class="meta">${p.sport} · ${p.pick} · ${p.odds}</div>
+          </div>
+          <div class="admin-actions">
+            ${gradeButtons}
+            <button class="btn-sm btn-del" onclick="deletePick(${realIdx})">Delete</button>
+          </div>
+        </div>`;
+    }).join('');
+  }
+
+  // ── FILTERS ────────────────────────────────────────────────────
+  function setFilter(type, value, btn) {
+    activeFilters[type] = value;
+    document.querySelectorAll(`[data-filter="${type}"]`).forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    renderDashboard();
+  }
+
+  // ── ADMIN ACTIONS ──────────────────────────────────────────────
+  function selectConf(val) {
+    selectedConf = val;
+    document.querySelectorAll('.conf-option').forEach(o => {
+      o.classList.toggle('selected', parseInt(o.dataset.val) === val);
+    });
+  }
+
+  function addPick() {
+    const game = document.getElementById('f-game').value.trim();
+    const pick = document.getElementById('f-pick').value.trim();
+    const odds = document.getElementById('f-odds').value.trim();
+    const analysis = document.getElementById('f-analysis').value.trim();
+    const sport = document.getElementById('f-sport').value;
+    if (!game || !pick || !odds || !analysis) {
+      alert('Please fill in all fields.');
+      return;
+    }
+    picks.push({ sport, game, pick, odds, analysis, confidence: selectedConf, result: 'pending', date: Date.now() });
+    save();
+    document.getElementById('f-game').value = '';
+    document.getElementById('f-pick').value = '';
+    document.getElementById('f-odds').value = '';
+    document.getElementById('f-analysis').value = '';
+    render();
+  }
+
+  function grade(idx, result) {
+    picks[idx].result = result;
+    save();
+    render();
+  }
+
+  function deletePick(idx) {
+    if (!confirm('Delete this pick?')) return;
+    picks.splice(idx, 1);
+    save();
+    render();
+  }
+
+  // ── INIT ───────────────────────────────────────────────────────
+  render();
+</script>
+</body>
+</html>
