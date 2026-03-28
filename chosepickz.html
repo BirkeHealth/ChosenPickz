@@ -295,6 +295,80 @@
 
     .empty { color: var(--muted); text-align: center; padding: 3rem 1rem; }
 
+    /* ── AUTH MODAL ── */
+    .auth-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.78);
+      z-index: 200;
+      display: none;
+      align-items: center;
+      justify-content: center;
+    }
+    .auth-overlay.open { display: flex; }
+    .auth-box {
+      background: var(--surface);
+      border-radius: 16px;
+      padding: 2.5rem;
+      width: 100%;
+      max-width: 400px;
+      margin: 1rem;
+      position: relative;
+      border: 1px solid var(--surface2);
+    }
+    .auth-close {
+      position: absolute;
+      top: 0.9rem;
+      right: 1rem;
+      background: none;
+      border: none;
+      color: var(--muted);
+      font-size: 1.3rem;
+      cursor: pointer;
+      padding: 0.2rem 0.5rem;
+      border-radius: 4px;
+      line-height: 1;
+    }
+    .auth-close:hover { color: var(--text); }
+    .auth-logo {
+      font-family: 'Bebas Neue', cursive;
+      font-size: 1.8rem;
+      color: var(--gold);
+      letter-spacing: 2px;
+      text-align: center;
+      margin-bottom: 1.25rem;
+    }
+    .auth-title {
+      text-align: center;
+      font-size: 1.25rem;
+      font-weight: 700;
+      margin-bottom: 1.5rem;
+      color: var(--text);
+    }
+    .auth-field { margin-bottom: 1rem; }
+    .auth-error {
+      color: var(--loss);
+      font-size: 0.85rem;
+      min-height: 1.2em;
+      margin-bottom: 0.75rem;
+    }
+    .auth-toggle {
+      background: none;
+      border: none;
+      color: var(--gold);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.9rem;
+      cursor: pointer;
+      text-decoration: underline;
+    }
+    .auth-toggle:hover { color: var(--gold-dim); }
+    .nav-user-label {
+      color: var(--gold);
+      font-size: 0.9rem;
+      padding: 0.4rem 0.8rem;
+      display: none;
+    }
+
     @media (max-width: 600px) {
       nav { padding: 0.75rem 1rem; }
       .nav-logo { font-size: 1.4rem; }
@@ -310,7 +384,10 @@
   <div class="nav-links">
     <button onclick="showView('landing')" id="nav-landing" class="active">Home</button>
     <button onclick="showView('dashboard')" id="nav-dashboard">Dashboard</button>
-    <button onclick="showView('admin')" id="nav-admin">Admin</button>
+    <button onclick="showView('admin')" id="nav-admin" style="display:none;">Admin</button>
+    <span id="nav-user" class="nav-user-label"></span>
+    <button onclick="showLoginModal()" id="nav-login">Log In</button>
+    <button onclick="logout()" id="nav-logout" style="display:none;">Log Out</button>
   </div>
 </nav>
 
@@ -405,6 +482,40 @@
   <div class="admin-picks" id="admin-picks"></div>
 </div>
 
+<!-- AUTH MODAL -->
+<div id="auth-modal" class="auth-overlay">
+  <div class="auth-box">
+    <button class="auth-close" onclick="hideLoginModal()" aria-label="Close">✕</button>
+    <div class="auth-logo">ChosenPickz</div>
+    <h2 id="auth-title" class="auth-title">Log In</h2>
+
+    <div class="form-group auth-field">
+      <label>Username</label>
+      <input id="auth-username" type="text" placeholder="Enter username" autocomplete="username"
+             onkeydown="if(event.key==='Enter') submitAuth()" />
+    </div>
+    <div class="form-group auth-field">
+      <label>Password</label>
+      <input id="auth-password" type="password" placeholder="Enter password" autocomplete="current-password"
+             onkeydown="if(event.key==='Enter') submitAuth()" />
+    </div>
+    <div id="auth-confirm-group" class="form-group auth-field" style="display:none;">
+      <label>Confirm Password</label>
+      <input id="auth-confirm" type="password" placeholder="Confirm password" autocomplete="new-password"
+             onkeydown="if(event.key==='Enter') submitAuth()" />
+    </div>
+
+    <p id="auth-error" class="auth-error"></p>
+    <button id="auth-submit" class="btn-gold" onclick="submitAuth()" style="width:100%; margin-top:0;">Log In</button>
+
+    <p style="text-align:center; margin-top:1.25rem;">
+      <button id="auth-toggle-link" class="auth-toggle" onclick="toggleAuthMode()">
+        Don't have an account? Create one
+      </button>
+    </p>
+  </div>
+</div>
+
 <script>
   /* ── DATA ── */
   const STORAGE_KEY = 'chosenpickz_picks';
@@ -419,10 +530,15 @@
 
   /* ── NAVIGATION ── */
   function showView(name) {
+    if (name === 'admin' && !isAdmin()) {
+      showLoginModal('login');
+      return;
+    }
     document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
     document.querySelectorAll('.nav-links button').forEach(b => b.classList.remove('active'));
     document.getElementById('view-' + name).classList.add('active');
-    document.getElementById('nav-' + name).classList.add('active');
+    const navBtn = document.getElementById('nav-' + name);
+    if (navBtn) navBtn.classList.add('active');
     render();
   }
 
@@ -598,7 +714,151 @@
     render();
   }
 
+  /* ── AUTH ── */
+  const USERS_KEY   = 'chosenpickz_users';
+  const SESSION_KEY = 'chosenpickz_session';
+
+  function loadUsers() {
+    try { return JSON.parse(localStorage.getItem(USERS_KEY)) || []; }
+    catch (e) { console.error('Failed to load users from storage:', e); return []; }
+  }
+  function saveUsers(users) { localStorage.setItem(USERS_KEY, JSON.stringify(users)); }
+
+  function initUsers() {
+    const users = loadUsers();
+    // NOTE: credentials stored in localStorage are visible to anyone with browser access.
+    // This is a client-side-only demo; a production app requires a secure backend.
+    if (!users.find(u => u.username === 'admin')) {
+      users.unshift({ username: 'admin', password: 'pickz123$', isAdmin: true });
+      saveUsers(users);
+    }
+  }
+
+  function loadSession() {
+    try { return JSON.parse(localStorage.getItem(SESSION_KEY)) || null; }
+    catch (e) { console.error('Failed to load session from storage:', e); return null; }
+  }
+  function saveSession(user) { localStorage.setItem(SESSION_KEY, JSON.stringify(user)); }
+  function clearSession()    { localStorage.removeItem(SESSION_KEY); }
+
+  function currentUser() { return loadSession(); }
+  function isAdmin()     { const u = currentUser(); return !!(u && u.isAdmin); }
+
+  function attemptLogin(username, password) {
+    const users = loadUsers();
+    const user  = users.find(u => u.username === username && u.password === password);
+    if (user) {
+      saveSession({ username: user.username, isAdmin: user.isAdmin || false });
+      return true;
+    }
+    return false;
+  }
+
+  function logout() {
+    clearSession();
+    updateNavAuth();
+    showView('landing');
+  }
+
+  function register(username, password) {
+    if (!username || !password) return { ok: false, msg: 'Username and password are required.' };
+    if (username.length < 3) return { ok: false, msg: 'Username must be at least 3 characters.' };
+    if (password.length < 6) return { ok: false, msg: 'Password must be at least 6 characters.' };
+    const users = loadUsers();
+    if (users.find(u => u.username === username)) return { ok: false, msg: 'Username already taken.' };
+    users.push({ username, password, isAdmin: false });
+    saveUsers(users);
+    return { ok: true };
+  }
+
+  function updateNavAuth() {
+    const user      = currentUser();
+    const adminBtn  = document.getElementById('nav-admin');
+    const loginBtn  = document.getElementById('nav-login');
+    const logoutBtn = document.getElementById('nav-logout');
+    const userLabel = document.getElementById('nav-user');
+    if (user) {
+      loginBtn.style.display  = 'none';
+      logoutBtn.style.display = 'block';
+      userLabel.style.display = 'inline';
+      userLabel.textContent   = user.username;
+      adminBtn.style.display  = user.isAdmin ? 'block' : 'none';
+    } else {
+      loginBtn.style.display  = 'block';
+      logoutBtn.style.display = 'none';
+      userLabel.style.display = 'none';
+      adminBtn.style.display  = 'none';
+    }
+  }
+
+  function showLoginModal(mode) {
+    mode = mode || 'login';
+    document.getElementById('auth-modal').classList.add('open');
+    setAuthMode(mode);
+    document.getElementById('auth-error').textContent = '';
+    // Small delay allows the modal to render before shifting focus
+    setTimeout(function() { document.getElementById('auth-username').focus(); }, 50);
+  }
+
+  function hideLoginModal() {
+    document.getElementById('auth-modal').classList.remove('open');
+    document.getElementById('auth-username').value = '';
+    document.getElementById('auth-password').value = '';
+    document.getElementById('auth-confirm').value  = '';
+    document.getElementById('auth-error').textContent = '';
+  }
+
+  function setAuthMode(mode) {
+    const isLogin = mode === 'login';
+    document.getElementById('auth-title').textContent         = isLogin ? 'Log In' : 'Create Account';
+    document.getElementById('auth-submit').textContent        = isLogin ? 'Log In' : 'Create Account';
+    document.getElementById('auth-confirm-group').style.display = isLogin ? 'none' : '';
+    document.getElementById('auth-toggle-link').textContent   = isLogin
+      ? "Don't have an account? Create one"
+      : 'Already have an account? Log in';
+    document.getElementById('auth-modal').dataset.mode = mode;
+  }
+
+  function toggleAuthMode() {
+    const current = document.getElementById('auth-modal').dataset.mode;
+    setAuthMode(current === 'login' ? 'register' : 'login');
+    document.getElementById('auth-error').textContent = '';
+  }
+
+  function submitAuth() {
+    const mode     = document.getElementById('auth-modal').dataset.mode;
+    const username = document.getElementById('auth-username').value.trim();
+    const password = document.getElementById('auth-password').value;
+    const errorEl  = document.getElementById('auth-error');
+    errorEl.textContent = '';
+
+    if (mode === 'login') {
+      if (attemptLogin(username, password)) {
+        hideLoginModal();
+        updateNavAuth();
+        render();
+        if (isAdmin()) showView('admin');
+      } else {
+        errorEl.textContent = 'Invalid username or password.';
+      }
+    } else {
+      const confirm = document.getElementById('auth-confirm').value;
+      if (password !== confirm) { errorEl.textContent = 'Passwords do not match.'; return; }
+      const result = register(username, password);
+      if (result.ok) {
+        attemptLogin(username, password);
+        hideLoginModal();
+        updateNavAuth();
+        render();
+      } else {
+        errorEl.textContent = result.msg;
+      }
+    }
+  }
+
   /* ── INIT ── */
+  initUsers();
+  updateNavAuth();
   render();
 </script>
 </body>
