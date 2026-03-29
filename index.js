@@ -4,6 +4,8 @@ const path = require('path');
 
 const PORT = process.env.PORT || 3000;
 
+const DIST_DIR = path.join(__dirname, 'sharpedge', 'dist');
+
 const MIME_TYPES = {
   '.html': 'text/html',
   '.css': 'text/css',
@@ -13,16 +15,25 @@ const MIME_TYPES = {
   '.jpg': 'image/jpeg',
   '.svg': 'image/svg+xml',
   '.ico': 'image/x-icon',
+  '.woff': 'font/woff',
+  '.woff2': 'font/woff2',
+  '.ttf': 'font/ttf',
 };
 
 const server = http.createServer((req, res) => {
-  let urlPath = req.url === '/' ? '/chosepickz.html' : req.url;
+  let urlPath = req.url;
   // Strip query strings
   urlPath = urlPath.split('?')[0];
 
-  // Prevent directory traversal: resolve and verify path stays within __dirname
-  const filePath = path.resolve(__dirname, urlPath.replace(/^\/+/, ''));
-  if (!filePath.startsWith(__dirname + path.sep) && filePath !== __dirname) {
+  // Default to index.html for root
+  if (urlPath === '/') {
+    urlPath = '/index.html';
+  }
+
+  // Prevent directory traversal: ensure resolved path stays within DIST_DIR
+  const filePath = path.resolve(DIST_DIR, urlPath.replace(/^\/+/, ''));
+  const rel = path.relative(DIST_DIR, filePath);
+  if (rel.startsWith('..') || path.isAbsolute(rel)) {
     res.writeHead(403, { 'Content-Type': 'text/plain' });
     res.end('Forbidden');
     return;
@@ -30,8 +41,17 @@ const server = http.createServer((req, res) => {
 
   fs.readFile(filePath, (err, data) => {
     if (err) {
-      res.writeHead(404, { 'Content-Type': 'text/plain' });
-      res.end('Not found');
+      // For SPA routing: serve index.html for any missing file
+      const indexPath = path.join(DIST_DIR, 'index.html');
+      fs.readFile(indexPath, (indexErr, indexData) => {
+        if (indexErr) {
+          res.writeHead(404, { 'Content-Type': 'text/plain' });
+          res.end('Not found');
+          return;
+        }
+        res.writeHead(200, { 'Content-Type': 'text/html' });
+        res.end(indexData);
+      });
       return;
     }
     const ext = path.extname(filePath);
@@ -42,5 +62,5 @@ const server = http.createServer((req, res) => {
 });
 
 server.listen(PORT, () => {
-  console.log(`CH0SEN1PICKZ server running on port ${PORT}`);
+  console.log(`SharpEdge server running on port ${PORT}`);
 });
