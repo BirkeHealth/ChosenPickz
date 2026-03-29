@@ -6,7 +6,7 @@
   "scripts": {
     "install:ui": "cd sharpedge && npm install",
     "build": "cd sharpedge && npm run build",
-    "start": "node index.js",
+    "start": "npm run build && node index.js",
     "setup": "npm run install:ui && npm run build"
   },
   "engines": {
