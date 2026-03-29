@@ -1,6 +1,7 @@
 const http = require('http');
 const fs = require('fs');
 const path = require('path');
+const oddsHandler = require('./routes/odds');
 
 const PORT = process.env.PORT || 3000;
 
@@ -96,6 +97,14 @@ const server = http.createServer((req, res) => {
   let urlPath = req.url;
   // Strip query strings
   urlPath = urlPath.split('?')[0];
+
+  // ── Odds API proxy ─────────────────────────────────────────────────────────
+  // Fetches ML (h2h), spread, and O/U (totals) odds server-side so the API
+  // key is never exposed to the frontend.
+  if (urlPath === '/api/odds') {
+    oddsHandler(req, res);
+    return;
+  }
 
   // ── Root landing page ──────────────────────────────────────────────────────
   // Serve the landing page (root index.html) for "/" and "/index.html"
