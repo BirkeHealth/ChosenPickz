@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ChosenPickz</title>
+  <title>CH0SEN1PICKZ</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet" />
@@ -11,16 +11,21 @@
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --gold: #C9A84C;
-      --gold-dim: #a8863a;
-      --bg: #0d0d0d;
-      --surface: #1a1a1a;
-      --surface2: #252525;
+      --orange: #F97316;
+      --orange-dim: #ea6c0a;
+      --blue: #1D4ED8;
+      --blue-dim: #1a44c8;
+      --blue-light: rgba(29,78,216,0.15);
+      --bg: #0a0a0a;
+      --surface: #141414;
+      --surface2: #1e1e1e;
+      --surface3: #2a2a2a;
       --text: #f0f0f0;
       --muted: #888;
-      --win: #4caf7d;
-      --loss: #e05252;
-      --pending: #888;
+      --win: #22c55e;
+      --loss: #ef4444;
+      --pending: #a3a3a3;
+      --live: #F97316;
     }
 
     body {
@@ -37,7 +42,7 @@
       justify-content: space-between;
       padding: 1rem 2rem;
       background: var(--surface);
-      border-bottom: 2px solid var(--gold);
+      border-bottom: 2px solid var(--orange);
       position: sticky;
       top: 0;
       z-index: 100;
@@ -45,10 +50,11 @@
     .nav-logo {
       font-family: 'Bebas Neue', cursive;
       font-size: 1.8rem;
-      color: var(--gold);
-      letter-spacing: 2px;
+      color: var(--orange);
+      letter-spacing: 3px;
     }
-    .nav-links { display: flex; gap: 1.5rem; }
+    .nav-logo .ch-blue { color: var(--blue); }
+    .nav-links { display: flex; gap: 1.5rem; align-items: center; }
     .nav-links button {
       background: none;
       border: none;
@@ -62,12 +68,19 @@
     }
     .nav-links button:hover,
     .nav-links button.active {
-      color: var(--gold);
-      background: rgba(201,168,76,0.1);
+      color: var(--orange);
+      background: rgba(249,115,22,0.1);
     }
+    .btn-login-nav {
+      background: var(--blue) !important;
+      color: #fff !important;
+      border-radius: 6px !important;
+      font-weight: 700 !important;
+    }
+    .btn-login-nav:hover { background: var(--blue-dim) !important; }
 
     /* ── VIEWS ── */
-    .view { display: none; padding: 2rem; max-width: 1100px; margin: 0 auto; }
+    .view { display: none; padding: 2rem; max-width: 1150px; margin: 0 auto; }
     .view.active { display: block; }
 
     /* ── LANDING ── */
@@ -77,18 +90,68 @@
     }
     .hero h1 {
       font-family: 'Bebas Neue', cursive;
-      font-size: clamp(3rem, 8vw, 6rem);
-      color: var(--gold);
-      letter-spacing: 4px;
+      font-size: clamp(3.5rem, 9vw, 7rem);
+      letter-spacing: 6px;
+      line-height: 1;
     }
-    .hero p { color: var(--muted); font-size: 1.1rem; margin-top: 0.5rem; }
+    .hero h1 .ch-orange { color: var(--orange); }
+    .hero h1 .ch-blue   { color: var(--blue); }
+    .hero p { color: var(--muted); font-size: 1.15rem; margin-top: 0.75rem; }
 
-    .stats-row {
+    .hero-cta {
       display: flex;
-      gap: 1.5rem;
+      gap: 1rem;
       justify-content: center;
       flex-wrap: wrap;
+      margin-top: 2rem;
+    }
+    .btn-primary {
+      background: var(--orange);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 700;
+      font-size: 1rem;
+      padding: 0.75rem 2rem;
+      cursor: pointer;
+      transition: background 0.2s;
+      letter-spacing: 0.5px;
+    }
+    .btn-primary:hover { background: var(--orange-dim); }
+    .btn-secondary {
+      background: var(--blue);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 700;
+      font-size: 1rem;
+      padding: 0.75rem 2rem;
+      cursor: pointer;
+      transition: background 0.2s;
+      letter-spacing: 0.5px;
+    }
+    .btn-secondary:hover { background: var(--blue-dim); }
+
+    /* ── KPI DASHBOARD ── */
+    .kpi-section {
       margin: 2.5rem 0;
+    }
+    .kpi-heading {
+      font-family: 'Bebas Neue', cursive;
+      font-size: 1.4rem;
+      color: var(--orange);
+      letter-spacing: 2px;
+      margin-bottom: 1.25rem;
+      border-left: 4px solid var(--blue);
+      padding-left: 0.75rem;
+    }
+    .stats-row {
+      display: flex;
+      gap: 1.25rem;
+      justify-content: center;
+      flex-wrap: wrap;
     }
     .stat-card {
       background: var(--surface);
@@ -96,37 +159,105 @@
       border-radius: 12px;
       padding: 1.5rem 2rem;
       text-align: center;
-      min-width: 140px;
+      min-width: 130px;
+      flex: 1;
+      max-width: 180px;
+      position: relative;
+      overflow: hidden;
     }
+    .stat-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+      background: var(--orange);
+    }
+    .stat-card.blue-accent::before { background: var(--blue); }
     .stat-card .value {
       font-family: 'Bebas Neue', cursive;
-      font-size: 2.5rem;
-      color: var(--gold);
+      font-size: 2.6rem;
+      color: var(--orange);
+      line-height: 1;
     }
-    .stat-card .label { color: var(--muted); font-size: 0.85rem; margin-top: 0.25rem; }
+    .stat-card.blue-accent .value { color: var(--blue); }
+    .stat-card .label { color: var(--muted); font-size: 0.82rem; margin-top: 0.35rem; text-transform: uppercase; letter-spacing: 0.5px; }
+    .stat-card .trend { font-size: 0.78rem; margin-top: 0.25rem; }
+    .trend-up   { color: var(--win); }
+    .trend-down { color: var(--loss); }
 
     .features {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-      gap: 1.5rem;
+      gap: 1.25rem;
       margin: 3rem 0;
     }
     .feature-card {
       background: var(--surface);
       border-radius: 12px;
       padding: 1.5rem;
-      border-left: 3px solid var(--gold);
+      border-left: 3px solid var(--orange);
     }
-    .feature-card h3 { color: var(--gold); margin-bottom: 0.5rem; }
-    .feature-card p { color: var(--muted); font-size: 0.9rem; }
+    .feature-card.blue-border { border-left-color: var(--blue); }
+    .feature-card h3 { color: var(--orange); margin-bottom: 0.5rem; font-size: 1rem; }
+    .feature-card.blue-border h3 { color: var(--blue); }
+    .feature-card p { color: var(--muted); font-size: 0.9rem; line-height: 1.5; }
 
     .section-title {
       font-family: 'Bebas Neue', cursive;
       font-size: 1.8rem;
-      color: var(--gold);
+      color: var(--orange);
       letter-spacing: 2px;
       margin-bottom: 1.5rem;
     }
+
+    /* ── LOCK BANNER ── */
+    .lock-banner {
+      background: linear-gradient(135deg, var(--surface) 0%, #0f1a2e 100%);
+      border: 1px solid var(--blue);
+      border-radius: 12px;
+      padding: 2.5rem;
+      text-align: center;
+      margin: 1.5rem 0;
+    }
+    .lock-banner .lock-icon { font-size: 3rem; margin-bottom: 1rem; }
+    .lock-banner h3 {
+      font-family: 'Bebas Neue', cursive;
+      font-size: 1.8rem;
+      color: var(--orange);
+      letter-spacing: 2px;
+      margin-bottom: 0.5rem;
+    }
+    .lock-banner p { color: var(--muted); margin-bottom: 1.5rem; }
+
+    /* ── PORTAL TABS ── */
+    .portal-tabs {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 1.75rem;
+      border-bottom: 1px solid var(--surface2);
+      padding-bottom: 0.5rem;
+      flex-wrap: wrap;
+    }
+    .portal-tab {
+      background: none;
+      border: none;
+      color: var(--muted);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.95rem;
+      font-weight: 500;
+      cursor: pointer;
+      padding: 0.5rem 1.25rem;
+      border-radius: 6px 6px 0 0;
+      transition: color 0.2s, background 0.2s;
+    }
+    .portal-tab:hover { color: var(--text); background: var(--surface2); }
+    .portal-tab.active {
+      color: var(--orange);
+      background: rgba(249,115,22,0.1);
+      border-bottom: 2px solid var(--orange);
+    }
+    .portal-section { display: none; }
+    .portal-section.active { display: block; }
 
     /* ── PICK CARDS ── */
     .picks-grid {
@@ -142,7 +273,10 @@
       display: flex;
       flex-direction: column;
       gap: 0.75rem;
+      transition: border-color 0.2s;
     }
+    .pick-card:hover { border-color: var(--surface3); }
+    .pick-card.live-card { border-color: var(--orange); box-shadow: 0 0 16px rgba(249,115,22,0.15); }
     .pick-header {
       display: flex;
       justify-content: space-between;
@@ -153,8 +287,8 @@
       font-weight: 700;
       text-transform: uppercase;
       letter-spacing: 1px;
-      color: var(--gold);
-      background: rgba(201,168,76,0.12);
+      color: var(--blue);
+      background: var(--blue-light);
       padding: 0.2rem 0.6rem;
       border-radius: 4px;
     }
@@ -165,14 +299,31 @@
       padding: 0.2rem 0.7rem;
       border-radius: 4px;
     }
-    .result-badge.win  { background: rgba(76,175,125,0.15); color: var(--win); }
-    .result-badge.loss { background: rgba(224,82,82,0.15);  color: var(--loss); }
-    .result-badge.pending { background: rgba(136,136,136,0.15); color: var(--pending); }
+    .result-badge.win     { background: rgba(34,197,94,0.15);  color: var(--win); }
+    .result-badge.loss    { background: rgba(239,68,68,0.15);   color: var(--loss); }
+    .result-badge.pending { background: rgba(163,163,163,0.15); color: var(--pending); }
+    .result-badge.live    {
+      background: rgba(249,115,22,0.2);
+      color: var(--live);
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+    }
+    .live-dot {
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      background: var(--live);
+      animation: pulse 1.4s infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50%       { opacity: 0.5; transform: scale(0.75); }
+    }
 
     .pick-game { font-weight: 700; font-size: 1rem; }
-    .pick-selection { color: var(--gold); font-weight: 500; }
+    .pick-selection { color: var(--orange); font-weight: 600; font-size: 0.95rem; }
     .pick-odds { color: var(--muted); font-size: 0.85rem; }
-    .pick-analysis { color: var(--muted); font-size: 0.88rem; line-height: 1.5; }
+    .pick-analysis { color: var(--muted); font-size: 0.88rem; line-height: 1.55; }
     .pick-footer {
       display: flex;
       justify-content: space-between;
@@ -184,9 +335,72 @@
     .dot {
       width: 8px; height: 8px;
       border-radius: 50%;
-      background: var(--surface2);
+      background: var(--surface3);
     }
-    .dot.filled { background: var(--gold); }
+    .dot.filled { background: var(--orange); }
+
+    /* ── ANALYSIS REPORT ── */
+    .analysis-card {
+      background: var(--surface);
+      border-radius: 12px;
+      padding: 1.5rem;
+      border: 1px solid var(--surface2);
+      margin-bottom: 1.25rem;
+    }
+    .analysis-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+    .analysis-card-header .game-title { font-weight: 700; font-size: 1.05rem; }
+    .analysis-card .analysis-body { color: var(--muted); font-size: 0.92rem; line-height: 1.65; }
+    .analysis-meta { display: flex; gap: 1rem; flex-wrap: wrap; margin-top: 0.75rem; }
+    .analysis-meta span { font-size: 0.82rem; color: var(--muted); }
+    .analysis-meta .meta-val { color: var(--text); font-weight: 600; }
+
+    /* ── LIVE BETS ── */
+    .live-section-header {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 1.5rem;
+    }
+    .live-indicator {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      background: rgba(249,115,22,0.15);
+      border: 1px solid var(--orange);
+      color: var(--orange);
+      font-size: 0.78rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      padding: 0.25rem 0.7rem;
+      border-radius: 20px;
+    }
+
+    .placed-bets-table { width: 100%; border-collapse: collapse; }
+    .placed-bets-table th {
+      text-align: left;
+      padding: 0.65rem 1rem;
+      font-size: 0.78rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--muted);
+      border-bottom: 1px solid var(--surface2);
+    }
+    .placed-bets-table td {
+      padding: 0.75rem 1rem;
+      font-size: 0.9rem;
+      border-bottom: 1px solid var(--surface2);
+    }
+    .placed-bets-table tr:last-child td { border-bottom: none; }
+    .placed-bets-table tr:hover td { background: var(--surface2); }
 
     /* ── FILTER BAR ── */
     .filter-bar {
@@ -208,9 +422,9 @@
     }
     .filter-btn:hover,
     .filter-btn.active {
-      border-color: var(--gold);
-      color: var(--gold);
-      background: rgba(201,168,76,0.1);
+      border-color: var(--orange);
+      color: var(--orange);
+      background: rgba(249,115,22,0.1);
     }
 
     /* ── ADMIN ── */
@@ -219,6 +433,7 @@
       border-radius: 12px;
       padding: 2rem;
       margin-bottom: 2rem;
+      border: 1px solid var(--surface2);
     }
     .form-grid {
       display: grid;
@@ -226,7 +441,7 @@
       gap: 1rem;
     }
     .form-group { display: flex; flex-direction: column; gap: 0.4rem; }
-    .form-group label { font-size: 0.85rem; color: var(--muted); }
+    .form-group label { font-size: 0.85rem; color: var(--muted); font-weight: 500; }
     .form-group input,
     .form-group select,
     .form-group textarea {
@@ -242,13 +457,13 @@
     }
     .form-group input:focus,
     .form-group select:focus,
-    .form-group textarea:focus { border-color: var(--gold); }
+    .form-group textarea:focus { border-color: var(--orange); }
     .form-group textarea { resize: vertical; min-height: 80px; }
     .form-group.full { grid-column: 1 / -1; }
 
     .btn-gold {
-      background: var(--gold);
-      color: #000;
+      background: var(--orange);
+      color: #fff;
       border: none;
       border-radius: 8px;
       font-family: 'DM Sans', sans-serif;
@@ -259,7 +474,7 @@
       margin-top: 1rem;
       transition: background 0.2s;
     }
-    .btn-gold:hover { background: var(--gold-dim); }
+    .btn-gold:hover { background: var(--orange-dim); }
 
     .admin-picks { display: flex; flex-direction: column; gap: 0.75rem; }
     .admin-pick-row {
@@ -271,12 +486,13 @@
       justify-content: space-between;
       gap: 1rem;
       flex-wrap: wrap;
+      border: 1px solid var(--surface2);
     }
     .admin-pick-info { flex: 1; min-width: 200px; }
     .admin-pick-info .game { font-weight: 700; }
     .admin-pick-info .meta { color: var(--muted); font-size: 0.85rem; margin-top: 0.2rem; }
     .admin-actions { display: flex; gap: 0.5rem; flex-wrap: wrap; }
-    .btn-win, .btn-loss, .btn-del {
+    .btn-win, .btn-loss, .btn-live, .btn-del {
       border: none;
       border-radius: 6px;
       font-family: 'DM Sans', sans-serif;
@@ -286,12 +502,11 @@
       cursor: pointer;
       transition: opacity 0.2s;
     }
-    .btn-win  { background: rgba(76,175,125,0.2);  color: var(--win); }
-    .btn-loss { background: rgba(224,82,82,0.2);   color: var(--loss); }
+    .btn-win  { background: rgba(34,197,94,0.2);   color: var(--win); }
+    .btn-loss { background: rgba(239,68,68,0.2);    color: var(--loss); }
+    .btn-live { background: rgba(249,115,22,0.2);   color: var(--live); }
     .btn-del  { background: rgba(136,136,136,0.15); color: var(--muted); }
-    .btn-win:hover  { opacity: 0.75; }
-    .btn-loss:hover { opacity: 0.75; }
-    .btn-del:hover  { opacity: 0.75; }
+    .btn-win:hover, .btn-loss:hover, .btn-live:hover, .btn-del:hover { opacity: 0.75; }
 
     .empty { color: var(--muted); text-align: center; padding: 3rem 1rem; }
 
@@ -299,7 +514,7 @@
     .auth-overlay {
       position: fixed;
       inset: 0;
-      background: rgba(0,0,0,0.78);
+      background: rgba(0,0,0,0.82);
       z-index: 200;
       display: none;
       align-items: center;
@@ -332,12 +547,13 @@
     .auth-close:hover { color: var(--text); }
     .auth-logo {
       font-family: 'Bebas Neue', cursive;
-      font-size: 1.8rem;
-      color: var(--gold);
-      letter-spacing: 2px;
+      font-size: 1.9rem;
+      letter-spacing: 3px;
       text-align: center;
       margin-bottom: 1.25rem;
     }
+    .auth-logo .ch-orange { color: var(--orange); }
+    .auth-logo .ch-blue   { color: var(--blue); }
     .auth-title {
       text-align: center;
       font-size: 1.25rem;
@@ -355,24 +571,34 @@
     .auth-toggle {
       background: none;
       border: none;
-      color: var(--gold);
+      color: var(--orange);
       font-family: 'DM Sans', sans-serif;
       font-size: 0.9rem;
       cursor: pointer;
       text-decoration: underline;
     }
-    .auth-toggle:hover { color: var(--gold-dim); }
+    .auth-toggle:hover { color: var(--orange-dim); }
     .nav-user-label {
-      color: var(--gold);
+      color: var(--orange);
       font-size: 0.9rem;
       padding: 0.4rem 0.8rem;
       display: none;
+      font-weight: 600;
+    }
+
+    /* ── DIVIDER ── */
+    .divider {
+      border: none;
+      border-top: 1px solid var(--surface2);
+      margin: 2.5rem 0;
     }
 
     @media (max-width: 600px) {
       nav { padding: 0.75rem 1rem; }
-      .nav-logo { font-size: 1.4rem; }
+      .nav-logo { font-size: 1.3rem; }
       .view { padding: 1rem; }
+      .stat-card { min-width: 100px; padding: 1rem 1.25rem; }
+      .stat-card .value { font-size: 2rem; }
     }
   </style>
 </head>
@@ -380,32 +606,42 @@
 
 <!-- NAV -->
 <nav>
-  <div class="nav-logo">ChosenPickz</div>
+  <div class="nav-logo">CH<span class="ch-blue">0</span>SEN<span class="ch-blue">1</span>PICKZ</div>
   <div class="nav-links">
     <button onclick="showView('landing')" id="nav-landing" class="active">Home</button>
-    <button onclick="showView('dashboard')" id="nav-dashboard">Dashboard</button>
+    <button onclick="requireAuth('dashboard')" id="nav-dashboard">Portal</button>
     <button onclick="showView('admin')" id="nav-admin" style="display:none;">Admin</button>
     <span id="nav-user" class="nav-user-label"></span>
-    <button onclick="showLoginModal()" id="nav-login">Log In</button>
+    <button onclick="showLoginModal()" id="nav-login" class="btn-login-nav">Log In</button>
     <button onclick="logout()" id="nav-logout" style="display:none;">Log Out</button>
   </div>
 </nav>
 
-<!-- LANDING -->
+<!-- ── LANDING ── -->
 <div id="view-landing" class="view active">
   <div class="hero">
-    <h1>ChosenPickz</h1>
-    <p>Premium sports picks &amp; analysis</p>
+    <h1>
+      <span class="ch-orange">CH</span><span class="ch-blue">0</span><span class="ch-orange">SEN</span><span class="ch-blue">1</span><span class="ch-orange">PICKZ</span>
+    </h1>
+    <p>Premium sports picks &amp; analysis — member-only access</p>
+    <div class="hero-cta">
+      <button class="btn-primary" onclick="showLoginModal('register')">Join Now — It's Free</button>
+      <button class="btn-secondary" onclick="showLoginModal('login')">Member Login</button>
+    </div>
   </div>
 
-  <div class="stats-row" id="landing-stats"></div>
+  <!-- KPI DASHBOARD -->
+  <div class="kpi-section">
+    <div class="kpi-heading">PERFORMANCE DASHBOARD</div>
+    <div class="stats-row" id="landing-stats"></div>
+  </div>
 
   <div class="features">
     <div class="feature-card">
       <h3>Expert Analysis</h3>
-      <p>Every pick comes with detailed breakdown covering matchups, trends, and key factors.</p>
+      <p>Every pick comes with a detailed breakdown covering matchups, trends, and key factors.</p>
     </div>
-    <div class="feature-card">
+    <div class="feature-card blue-border">
       <h3>Multiple Sports</h3>
       <p>Coverage across NFL, NBA, MLB, UFC, and Soccer for year-round action.</p>
     </div>
@@ -413,27 +649,75 @@
       <h3>Confidence Ratings</h3>
       <p>Each pick is rated 1–4 so you always know how strong the play is.</p>
     </div>
-    <div class="feature-card">
+    <div class="feature-card blue-border">
       <h3>Transparent Record</h3>
-      <p>All results are tracked and publicly visible — no cherry-picking the wins.</p>
+      <p>All results are tracked and visible to members — no cherry-picking the wins.</p>
     </div>
   </div>
 
-  <h2 class="section-title">Recent Picks</h2>
+  <hr class="divider" />
+
+  <h2 class="section-title">Recent Picks Preview</h2>
   <div class="picks-grid" id="landing-picks"></div>
+
+  <div style="text-align:center; margin-top:2rem;">
+    <p style="color:var(--muted); margin-bottom:1rem;">Join CH0SEN1PICKZ to unlock full access to all picks, analysis, and live bets.</p>
+    <button class="btn-primary" onclick="showLoginModal('register')">Create Free Account</button>
+  </div>
 </div>
 
-<!-- DASHBOARD -->
+<!-- ── PORTAL (DASHBOARD) ── -->
 <div id="view-dashboard" class="view">
-  <h2 class="section-title">Member Dashboard</h2>
+  <h2 class="section-title">Member Portal</h2>
 
-  <div class="stats-row" id="dash-stats"></div>
+  <div class="stats-row" id="dash-stats" style="margin-bottom:2rem;"></div>
 
-  <div class="filter-bar" id="filter-bar"></div>
-  <div class="picks-grid" id="dash-picks"></div>
+  <!-- Portal Tabs -->
+  <div class="portal-tabs">
+    <button class="portal-tab active" onclick="switchPortalTab('chosen-picks', this)">⚡ Chosen Picks</button>
+    <button class="portal-tab" onclick="switchPortalTab('analysis', this)">📊 Analysis Reports</button>
+    <button class="portal-tab" onclick="switchPortalTab('live-bets', this)">🔴 Live &amp; Placed Bets</button>
+  </div>
+
+  <!-- Tab: Chosen Picks -->
+  <div class="portal-section active" id="portal-chosen-picks">
+    <div class="filter-bar" id="filter-bar"></div>
+    <div class="picks-grid" id="dash-picks"></div>
+  </div>
+
+  <!-- Tab: Analysis Reports -->
+  <div class="portal-section" id="portal-analysis">
+    <div id="analysis-list"></div>
+  </div>
+
+  <!-- Tab: Live & Placed Bets -->
+  <div class="portal-section" id="portal-live-bets">
+    <div class="live-section-header">
+      <h3 style="font-family:'Bebas Neue',cursive; font-size:1.4rem; color:var(--orange); letter-spacing:2px;">LIVE BETS</h3>
+      <span class="live-indicator"><span class="live-dot"></span> Live</span>
+    </div>
+    <div id="live-picks-container"></div>
+
+    <h3 style="font-family:'Bebas Neue',cursive; font-size:1.4rem; color:var(--text); letter-spacing:2px; margin:2rem 0 1rem;">PLACED BETS RECORD</h3>
+    <div style="overflow-x:auto; background:var(--surface); border-radius:12px; border:1px solid var(--surface2); padding:0.5rem;">
+      <table class="placed-bets-table">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Sport</th>
+            <th>Game</th>
+            <th>Pick</th>
+            <th>Odds</th>
+            <th>Result</th>
+          </tr>
+        </thead>
+        <tbody id="placed-bets-body"></tbody>
+      </table>
+    </div>
+  </div>
 </div>
 
-<!-- ADMIN -->
+<!-- ── ADMIN ── -->
 <div id="view-admin" class="view">
   <h2 class="section-title">Admin Panel</h2>
 
@@ -482,11 +766,13 @@
   <div class="admin-picks" id="admin-picks"></div>
 </div>
 
-<!-- AUTH MODAL -->
+<!-- ── AUTH MODAL ── -->
 <div id="auth-modal" class="auth-overlay">
   <div class="auth-box">
     <button class="auth-close" onclick="hideLoginModal()" aria-label="Close">✕</button>
-    <div class="auth-logo">ChosenPickz</div>
+    <div class="auth-logo">
+      <span class="ch-orange">CH</span><span class="ch-blue">0</span><span class="ch-orange">SEN</span><span class="ch-blue">1</span><span class="ch-orange">PICKZ</span>
+    </div>
     <h2 id="auth-title" class="auth-title">Log In</h2>
 
     <div class="form-group auth-field">
@@ -542,28 +828,59 @@
     render();
   }
 
+  let pendingView = null;
+
+  function requireAuth(viewName) {
+    if (!currentUser()) {
+      pendingView = viewName;
+      showLoginModal('login');
+      return;
+    }
+    showView(viewName);
+  }
+
+  /* ── PORTAL TABS ── */
+  function switchPortalTab(tabId, btn) {
+    document.querySelectorAll('.portal-section').forEach(s => s.classList.remove('active'));
+    document.querySelectorAll('.portal-tab').forEach(b => b.classList.remove('active'));
+    document.getElementById('portal-' + tabId).classList.add('active');
+    btn.classList.add('active');
+  }
+
   /* ── STATS ── */
   function computeStats(picks) {
     const wins    = picks.filter(p => p.result === 'win').length;
     const losses  = picks.filter(p => p.result === 'loss').length;
     const pending = picks.filter(p => p.result === 'pending').length;
+    const live    = picks.filter(p => p.result === 'live').length;
     const total   = picks.length;
     const winPct  = (wins + losses) > 0
       ? Math.round((wins / (wins + losses)) * 100) + '%'
       : '--';
-    return { wins, losses, pending, total, winPct };
+
+    // Current win streak
+    let streak = 0;
+    const settled = picks.filter(p => p.result === 'win' || p.result === 'loss').reverse();
+    for (const p of settled) {
+      if (p.result === 'win') streak++;
+      else break;
+    }
+
+    return { wins, losses, pending, live, total, winPct, streak };
   }
 
   function renderStats(containerId, picks) {
     const s = computeStats(picks);
     const el = document.getElementById(containerId);
     el.innerHTML = [
-      { value: s.wins + '-' + s.losses, label: 'Record' },
-      { value: s.winPct,                label: 'Win %' },
-      { value: s.pending,               label: 'Pending' },
-      { value: s.total,                 label: 'Total Picks' },
+      { value: s.wins + '-' + s.losses, label: 'Record',      cls: '' },
+      { value: s.winPct,                label: 'Win Rate',     cls: '' },
+      { value: s.streak > 0 ? s.streak + 'W' : '--', label: 'Current Streak', cls: 'blue-accent' },
+      { value: s.live,                  label: 'Live Now',     cls: '' },
+      { value: s.pending,               label: 'Pending',      cls: 'blue-accent' },
+      { value: s.total,                 label: 'Total Picks',  cls: '' },
     ].map(c => `
-      <div class="stat-card">
+      <div class="stat-card ${c.cls}">
         <div class="value">${c.value}</div>
         <div class="label">${c.label}</div>
       </div>`).join('');
@@ -574,11 +891,12 @@
     const dots = Array.from({ length: 4 }, (_, i) =>
       `<span class="dot${i < p.confidence ? ' filled' : ''}"></span>`
     ).join('');
+    const liveDot = p.result === 'live' ? '<span class="live-dot"></span>' : '';
     return `
-      <div class="pick-card">
+      <div class="pick-card${p.result === 'live' ? ' live-card' : ''}">
         <div class="pick-header">
           <span class="pick-sport">${escHtml(p.sport)}</span>
-          <span class="result-badge ${p.result}">${p.result}</span>
+          <span class="result-badge ${p.result}">${liveDot}${p.result}</span>
         </div>
         <div class="pick-game">${escHtml(p.game)}</div>
         <div class="pick-selection">▶ ${escHtml(p.pick)}</div>
@@ -587,6 +905,26 @@
         <div class="pick-footer">
           <span class="pick-date">${escHtml(p.date)}</span>
           <div class="confidence">${dots}</div>
+        </div>
+      </div>`;
+  }
+
+  /* ── ANALYSIS CARD ── */
+  function analysisCard(p) {
+    if (!p.analysis) return '';
+    const liveDot = p.result === 'live' ? '<span class="live-dot" style="display:inline-block;"></span> ' : '';
+    return `
+      <div class="analysis-card">
+        <div class="analysis-card-header">
+          <div class="game-title">${escHtml(p.game)}</div>
+          <span class="result-badge ${p.result}">${liveDot}${p.result}</span>
+        </div>
+        <div class="analysis-body">${escHtml(p.analysis)}</div>
+        <div class="analysis-meta">
+          <span>Sport: <span class="meta-val">${escHtml(p.sport)}</span></span>
+          <span>Pick: <span class="meta-val">${escHtml(p.pick)}</span></span>
+          <span>Odds: <span class="meta-val">${escHtml(p.odds)}</span></span>
+          <span>Date: <span class="meta-val">${escHtml(p.date)}</span></span>
         </div>
       </div>`;
   }
@@ -607,6 +945,7 @@
     const bar = document.getElementById('filter-bar');
     const filters = [
       { key: 'all',     label: 'All' },
+      { key: 'live',    label: '🔴 Live' },
       { key: 'win',     label: 'Win' },
       { key: 'loss',    label: 'Loss' },
       { key: 'pending', label: 'Pending' },
@@ -642,7 +981,7 @@
     const lp = document.getElementById('landing-picks');
     lp.innerHTML = recent.length
       ? recent.map(pickCard).join('')
-      : '<p class="empty">No picks yet. Check back soon!</p>';
+      : '<p class="empty">No picks yet — check back soon!</p>';
 
     // Dashboard
     renderStats('dash-stats', picks);
@@ -653,6 +992,35 @@
       ? [...filtered].reverse().map(pickCard).join('')
       : '<p class="empty">No picks match this filter.</p>';
 
+    // Analysis Reports
+    const al = document.getElementById('analysis-list');
+    const withAnalysis = [...picks].reverse().filter(p => p.analysis);
+    al.innerHTML = withAnalysis.length
+      ? withAnalysis.map(analysisCard).join('')
+      : '<p class="empty">No analysis reports yet.</p>';
+
+    // Live bets
+    const livePicks = picks.filter(p => p.result === 'live');
+    const liveContainer = document.getElementById('live-picks-container');
+    liveContainer.innerHTML = livePicks.length
+      ? `<div class="picks-grid">${livePicks.map(pickCard).join('')}</div>`
+      : '<p class="empty" style="margin-bottom:1.5rem;">No live bets right now.</p>';
+
+    // Placed bets table
+    const placedBody = document.getElementById('placed-bets-body');
+    const placed = [...picks].filter(p => p.result !== 'live').reverse();
+    placedBody.innerHTML = placed.length
+      ? placed.map(p => `
+          <tr>
+            <td style="color:var(--muted)">${escHtml(p.date)}</td>
+            <td><span class="pick-sport" style="font-size:0.72rem;">${escHtml(p.sport)}</span></td>
+            <td>${escHtml(p.game)}</td>
+            <td style="color:var(--orange);font-weight:600;">${escHtml(p.pick)}</td>
+            <td style="color:var(--muted)">${escHtml(p.odds)}</td>
+            <td><span class="result-badge ${p.result}">${p.result}</span></td>
+          </tr>`).join('')
+      : `<tr><td colspan="6" class="empty">No placed bets yet.</td></tr>`;
+
     // Admin
     const ap = document.getElementById('admin-picks');
     ap.innerHTML = picks.length
@@ -662,9 +1030,10 @@
             <div class="admin-pick-row">
               <div class="admin-pick-info">
                 <div class="game">${escHtml(p.game)} — ${escHtml(p.pick)}</div>
-                <div class="meta">${escHtml(p.sport)} · ${escHtml(p.odds)} · ${escHtml(p.date)} · ${p.result}</div>
+                <div class="meta">${escHtml(p.sport)} · ${escHtml(p.odds)} · ${escHtml(p.date)} · <span class="result-badge ${p.result}" style="font-size:0.72rem;">${p.result}</span></div>
               </div>
               <div class="admin-actions">
+                <button class="btn-live" onclick="grade(${idx},'live')">Live</button>
                 <button class="btn-win"  onclick="grade(${idx},'win')">Win</button>
                 <button class="btn-loss" onclick="grade(${idx},'loss')">Loss</button>
                 <button class="btn-del"  onclick="deletePick(${idx})">Delete</button>
@@ -695,9 +1064,9 @@
     });
     savePicks(picks);
 
-    document.getElementById('f-game').value = '';
-    document.getElementById('f-pick').value = '';
-    document.getElementById('f-odds').value = '';
+    document.getElementById('f-game').value     = '';
+    document.getElementById('f-pick').value     = '';
+    document.getElementById('f-odds').value     = '';
     document.getElementById('f-analysis').value = '';
     render();
   }
@@ -796,7 +1165,6 @@
     document.getElementById('auth-modal').classList.add('open');
     setAuthMode(mode);
     document.getElementById('auth-error').textContent = '';
-    // Small delay allows the modal to render before shifting focus
     setTimeout(function() { document.getElementById('auth-username').focus(); }, 50);
   }
 
@@ -810,10 +1178,10 @@
 
   function setAuthMode(mode) {
     const isLogin = mode === 'login';
-    document.getElementById('auth-title').textContent         = isLogin ? 'Log In' : 'Create Account';
-    document.getElementById('auth-submit').textContent        = isLogin ? 'Log In' : 'Create Account';
-    document.getElementById('auth-confirm-group').style.display = isLogin ? 'none' : '';
-    document.getElementById('auth-toggle-link').textContent   = isLogin
+    document.getElementById('auth-title').textContent            = isLogin ? 'Log In' : 'Create Account';
+    document.getElementById('auth-submit').textContent           = isLogin ? 'Log In' : 'Create Account';
+    document.getElementById('auth-confirm-group').style.display  = isLogin ? 'none' : '';
+    document.getElementById('auth-toggle-link').textContent      = isLogin
       ? "Don't have an account? Create one"
       : 'Already have an account? Log in';
     document.getElementById('auth-modal').dataset.mode = mode;
@@ -837,7 +1205,9 @@
         hideLoginModal();
         updateNavAuth();
         render();
-        if (isAdmin()) showView('admin');
+        const dest = pendingView || (isAdmin() ? 'admin' : 'dashboard');
+        pendingView = null;
+        showView(dest);
       } else {
         errorEl.textContent = 'Invalid username or password.';
       }
@@ -850,6 +1220,7 @@
         hideLoginModal();
         updateNavAuth();
         render();
+        showView('dashboard');
       } else {
         errorEl.textContent = result.msg;
       }
