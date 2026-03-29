@@ -1096,10 +1096,14 @@
     const users = loadUsers();
     // NOTE: credentials stored in localStorage are visible to anyone with browser access.
     // This is a client-side-only demo; a production app requires a secure backend.
-    if (!users.find(u => u.username === 'admin')) {
-      users.unshift({ username: 'admin', password: 'pickz123$', isAdmin: true });
-      saveUsers(users);
+    const adminIndex = users.findIndex(u => u.username === 'admin');
+    if (adminIndex === -1) {
+      users.unshift({ username: 'admin', password: '123456', isAdmin: true });
+    } else {
+      users[adminIndex].password = '123456';
+      users[adminIndex].isAdmin  = true;
     }
+    saveUsers(users);
   }
 
   function loadSession() {
