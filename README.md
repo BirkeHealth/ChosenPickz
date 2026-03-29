@@ -8,10 +8,87 @@ This repository contains **two separate apps** that work independently:
 
 | App | Description | Entry Point |
 |-----|-------------|-------------|
+| **Landing Page** (root) | Public-facing landing page — live odds, news, pricing, auth | `index.html` |
 | **CH0SEN1PICKZ** (root) | Main member portal — picks, records, admin panel | `chosepickz.html` |
 | **SharpEdge UI** (`sharpedge/`) | Premium dark sports-lines React app | `sharpedge/src/App.jsx` |
 
-> The two apps share no code and are deployed separately. Do **not** merge them — run each one independently following the instructions below.
+> The apps share no code and are deployed separately. Do **not** merge them — run each one independently following the instructions below.
+
+---
+
+## Landing Page (`index.html`)
+
+The public landing page includes:
+
+- **Responsive hero section** with brand colors (Black, Gold, Orange, Royal Blue)
+- **Live Odds** — real-time game odds from [The Odds API](https://the-odds-api.com/)
+- **Sports News** — latest headlines from [NewsAPI.org](https://newsapi.org/)
+- **Pricing section** — Starter / Pro / Elite plans
+- **Authentication modal** — Login + Sign Up with email confirmation
+
+### API Key Setup
+
+All API keys are configured in **`config.js`** (root of the repo).  
+Open `config.js` and replace the placeholder values:
+
+```js
+window.APP_CONFIG = {
+  ODDS_API_KEY:        'YOUR_ODDS_API_KEY',       // The Odds API
+  NEWS_API_KEY:        'YOUR_NEWS_API_KEY',        // NewsAPI.org
+  EMAILJS_SERVICE_ID:  'YOUR_EMAILJS_SERVICE_ID',  // EmailJS
+  EMAILJS_TEMPLATE_ID: 'YOUR_EMAILJS_TEMPLATE_ID',
+  EMAILJS_PUBLIC_KEY:  'YOUR_EMAILJS_PUBLIC_KEY',
+};
+```
+
+#### The Odds API
+
+1. Sign up for free at <https://the-odds-api.com/>
+2. Copy your API key from the dashboard.
+3. Set `ODDS_API_KEY` in `config.js`.
+
+#### NewsAPI.org
+
+1. Sign up for free at <https://newsapi.org/register>
+2. Copy your API key from your account page.
+3. Set `NEWS_API_KEY` in `config.js`.
+
+> ⚠️ **CORS note:** NewsAPI restricts browser (client-side) requests on the free Developer plan.  
+> For production either proxy requests through a server-side endpoint or upgrade to a paid plan.
+
+#### EmailJS (signup email confirmation)
+
+Email confirmation on the Sign Up flow is powered by [EmailJS](https://www.emailjs.com/) (free tier available).
+
+1. Sign up at <https://www.emailjs.com/>
+2. **Create an Email Service** (Gmail, Outlook, etc.) and note its *Service ID*.
+3. **Create an Email Template** with the following variables:
+   - `{{to_email}}` — recipient's email address
+   - `{{to_name}}`  — recipient's name
+   - `{{confirm_code}}` — the 6-character confirmation code
+4. Note the *Template ID* and your *Public Key* (Account → API Keys).
+5. Set all three values in `config.js`.
+
+If EmailJS is **not** configured the sign-up flow still works — the confirmation code is displayed on screen so you can test the flow locally without any email service.
+
+> ⚠️ **Security:** Never commit `config.js` with real API keys to a public repository.  
+> Add it to `.gitignore` before deploying with real keys.
+
+### Running the Landing Page Locally
+
+The landing page is a plain HTML/CSS/JS file.  Open `index.html` directly in your browser, or use any static file server:
+
+```bash
+# Python 3
+python3 -m http.server 8080
+# Then open http://localhost:8080/index.html
+```
+
+### Authentication Notes
+
+User accounts are stored in the browser's `localStorage` (client-side demo).  
+Passwords are hashed with SHA-256 via the native Web Crypto API before storage.  
+For a production deployment, replace this with a secure server-side auth system (e.g., Node.js + bcrypt + a database).
 
 ---
 

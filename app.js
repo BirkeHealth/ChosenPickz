@@ -1,18 +1,22 @@
 /**
- * app.js — ChosenPickz Landing Page
+ * app.js — CH0SEN1 PICKZ Landing Page
  *
  * Handles:
- *  - Login modal open / close
+ *  - API-key configuration (loaded from config.js → window.APP_CONFIG)
  *  - Fetching upcoming game odds from The Odds API (up to 5 games)
  *  - Fetching top sports headlines from NewsAPI.org
+ *  - Auth: signup (create user), login (validate user), logout
+ *  - Email confirmation via EmailJS (or on-screen code fallback)
+ *
+ * User data is persisted in localStorage (client-side demo).
+ * For production use a secure server-side auth system with hashed passwords.
  */
 
 // ── CONFIG ─────────────────────────────────────────────────────────────────
 
-// NOTE: For production, proxy API calls through a server-side endpoint to avoid
-// exposing API keys in client-side code.
-const ODDS_API_KEY  = '378d22c76a76769fa0078d2d9e88fb60';
-const NEWS_API_KEY  = 'YOUR_NEWS_API_KEY'; // Replace with your NewsAPI.org key
+const CFG = (typeof window !== 'undefined' && window.APP_CONFIG) || {};
+const ODDS_API_KEY = CFG.ODDS_API_KEY  || '';
+const NEWS_API_KEY = CFG.NEWS_API_KEY  || '';
 
 // Popular US sports to check (in priority order)
 const SPORTS = [
@@ -25,7 +29,55 @@ const SPORTS = [
   'soccer_usa_mls',
 ];
 
-// ── HELPERS ────────────────────────────────────────────────────────────────
+// ── STORAGE HELPERS ────────────────────────────────────────────────────────
+
+const USERS_KEY   = 'cp_users';
+const SESSION_KEY = 'cp_session';
+
+function getUsers() {
+  try { return JSON.parse(localStorage.getItem(USERS_KEY) || '[]'); }
+  catch { return []; }
+}
+
+function saveUsers(users) {
+  localStorage.setItem(USERS_KEY, JSON.stringify(users));
+}
+
+function getSession() {
+  try { return JSON.parse(localStorage.getItem(SESSION_KEY) || 'null'); }
+  catch { return null; }
+}
+
+function saveSession(user) {
+  localStorage.setItem(SESSION_KEY, JSON.stringify(user));
+}
+
+function clearSession() {
+  localStorage.removeItem(SESSION_KEY);
+}
+
+// ── SIMPLE HASH (SHA-256 via SubtleCrypto) ─────────────────────────────────
+
+async function hashPassword(plain) {
+  const enc = new TextEncoder().encode(plain);
+  const buf = await crypto.subtle.digest('SHA-256', enc);
+  return Array.from(new Uint8Array(buf))
+    .map(b => b.toString(16).padStart(2, '0'))
+    .join('');
+}
+
+// ── RANDOM CODE GENERATOR ─────────────────────────────────────────────────
+
+function randomCode(length = 6) {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  let code = '';
+  for (let i = 0; i < length; i++) {
+    code += chars[Math.floor(Math.random() * chars.length)];
+  }
+  return code;
+}
+
+// ── UTILITIES ─────────────────────────────────────────────────────────────
 
 function escapeHtml(str) {
   return String(str)
@@ -39,30 +91,24 @@ function escapeHtml(str) {
 function formatGameTime(isoString) {
   const date = new Date(isoString);
   return date.toLocaleString([], {
-    month: 'short',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
+    month: 'short', day: 'numeric',
+    hour: '2-digit', minute: '2-digit',
   });
 }
 
 function sportLabel(sportKey) {
   const labels = {
-    americanfootball_nfl:  'NFL',
+    americanfootball_nfl:   'NFL',
     americanfootball_ncaaf: 'NCAAF',
-    basketball_nba:        'NBA',
-    basketball_ncaab:      'NCAAB',
-    baseball_mlb:          'MLB',
-    icehockey_nhl:         'NHL',
-    soccer_usa_mls:        'MLS',
+    basketball_nba:         'NBA',
+    basketball_ncaab:       'NCAAB',
+    baseball_mlb:           'MLB',
+    icehockey_nhl:          'NHL',
+    soccer_usa_mls:         'MLS',
   };
   return labels[sportKey] || sportKey.toUpperCase();
 }
 
-/**
- * Extract American-format odds value from an outcomes array by team name.
- * Returns the price as a string like "+150" or "-110", or "N/A".
- */
 function getOdds(outcomes, name) {
   if (!Array.isArray(outcomes)) return 'N/A';
   const o = outcomes.find(x => x.name === name);
@@ -72,27 +118,19 @@ function getOdds(outcomes, name) {
   return price >= 0 ? `+${price}` : String(price);
 }
 
-/**
- * Extract spread point and price for a team.
- * Returns a string like "-3.5 (-110)" or "N/A".
- */
 function getSpread(outcomes, name) {
   if (!Array.isArray(outcomes)) return 'N/A';
   const o = outcomes.find(x => x.name === name);
   if (!o) return 'N/A';
-  const pt = o.point !== undefined ? o.point : '';
+  const pt     = o.point !== undefined ? o.point : '';
   const ptSign = typeof pt === 'number' ? (pt > 0 ? '+' : '') : '';
-  const pr = typeof o.price === 'number'
+  const pr     = typeof o.price === 'number'
     ? (o.price >= 0 ? `+${o.price}` : String(o.price))
     : '';
   if (pt === '' && !pr) return 'N/A';
   return `${ptSign}${pt} (${pr})`;
 }
 
-/**
- * Extract Over/Under total and price.
- * Returns e.g. "O 224.5 (-110) / U 224.5 (-110)" or "N/A".
- */
 function getTotals(outcomes) {
   if (!Array.isArray(outcomes) || outcomes.length < 2) return 'N/A';
   const over  = outcomes.find(x => x.name === 'Over');
@@ -117,7 +155,6 @@ function renderBetCard(game) {
   const gameTime = formatGameTime(game.commence_time);
   const sport    = sportLabel(game.sport_key);
 
-  // Find bookmaker (prefer DraftKings, then FanDuel, then first available)
   const bookmakers = game.bookmakers || [];
   const bk =
     bookmakers.find(b => b.key === 'draftkings') ||
@@ -132,18 +169,9 @@ function renderBetCard(game) {
     const h2h    = bk.markets.find(m => m.key === 'h2h');
     const spreads = bk.markets.find(m => m.key === 'spreads');
     const totals  = bk.markets.find(m => m.key === 'totals');
-
-    if (h2h) {
-      mlHome = getOdds(h2h.outcomes, homeTeam);
-      mlAway = getOdds(h2h.outcomes, awayTeam);
-    }
-    if (spreads) {
-      spreadHome = getSpread(spreads.outcomes, homeTeam);
-      spreadAway = getSpread(spreads.outcomes, awayTeam);
-    }
-    if (totals) {
-      total = getTotals(totals.outcomes);
-    }
+    if (h2h)    { mlHome = getOdds(h2h.outcomes, homeTeam);     mlAway = getOdds(h2h.outcomes, awayTeam); }
+    if (spreads) { spreadHome = getSpread(spreads.outcomes, homeTeam); spreadAway = getSpread(spreads.outcomes, awayTeam); }
+    if (totals)  { total = getTotals(totals.outcomes); }
   }
 
   return `
@@ -186,16 +214,23 @@ async function loadOdds() {
   const container = document.getElementById('bets-container');
   if (!container) return;
 
+  if (!ODDS_API_KEY || ODDS_API_KEY === 'YOUR_ODDS_API_KEY') {
+    container.innerHTML =
+      '<p class="loading-msg">Add your Odds API key in <strong>config.js</strong> to load live odds. ' +
+      'Get a free key at <a href="https://the-odds-api.com/" target="_blank" rel="noopener" ' +
+      'style="color:var(--orange)">the-odds-api.com</a>.</p>';
+    return;
+  }
+
   try {
-    // Fetch from multiple sports in parallel, stop once we have 5 games
     const results = [];
 
     for (const sport of SPORTS) {
       if (results.length >= 5) break;
 
       const url =
-        `https://api.the-odds-api.com/v4/sports/${sport}/odds/` +
-        `?apiKey=${ODDS_API_KEY}&regions=us&markets=h2h,spreads,totals&oddsFormat=american`;
+        `https://api.the-odds-api.com/v4/sports/${encodeURIComponent(sport)}/odds/` +
+        `?apiKey=${encodeURIComponent(ODDS_API_KEY)}&regions=us&markets=h2h,spreads,totals&oddsFormat=american`;
 
       const res = await fetch(url);
       if (!res.ok) continue;
@@ -227,18 +262,21 @@ async function loadNews() {
   const list = document.getElementById('news-list');
   if (!list) return;
 
-  if (NEWS_API_KEY === 'YOUR_NEWS_API_KEY') {
-    list.innerHTML = '<li class="loading-msg">Add your NewsAPI.org key in app.js to load headlines.</li>';
+  if (!NEWS_API_KEY || NEWS_API_KEY === 'YOUR_NEWS_API_KEY') {
+    list.innerHTML =
+      '<li class="loading-msg">Add your NewsAPI key in <strong>config.js</strong> to load sports headlines. ' +
+      'Get a free key at <a href="https://newsapi.org/" target="_blank" rel="noopener" ' +
+      'style="color:var(--orange)">newsapi.org</a>.</li>';
     return;
   }
 
   try {
     const url =
       `https://newsapi.org/v2/top-headlines` +
-      `?category=sports&language=en&pageSize=5&apiKey=${NEWS_API_KEY}`;
+      `?category=sports&language=en&pageSize=5&apiKey=${encodeURIComponent(NEWS_API_KEY)}`;
 
     const res = await fetch(url);
-    if (!res.ok) throw new Error(`NewsAPI error ${res.status}`);
+    if (!res.ok) throw new Error(`NewsAPI ${res.status}`);
 
     const data = await res.json();
     const articles = (data.articles || []).slice(0, 5);
@@ -264,46 +302,272 @@ async function loadNews() {
   }
 }
 
-// ── MODAL ──────────────────────────────────────────────────────────────────
+// ── AUTH MODAL HELPERS ─────────────────────────────────────────────────────
 
-function initModal() {
-  const overlay  = document.getElementById('login-modal');
-  const openBtn  = document.getElementById('login-btn');
-  const closeBtn = document.getElementById('modal-close');
+function openModal(tab) {
+  const modal = document.getElementById('auth-modal');
+  if (!modal) return;
+  modal.classList.add('open');
+  modal.setAttribute('aria-hidden', 'false');
+  switchTab(tab || 'login');
+  setTimeout(() => {
+    const first = modal.querySelector('.form-panel.active input');
+    if (first) first.focus();
+  }, 50);
+}
 
-  if (!overlay || !openBtn) return;
+function closeModal() {
+  const modal = document.getElementById('auth-modal');
+  if (!modal) return;
+  modal.classList.remove('open');
+  modal.setAttribute('aria-hidden', 'true');
+  clearAlerts();
+  // Reset confirm code box
+  const box = document.getElementById('confirm-box');
+  if (box) box.style.display = 'none';
+  // Re-focus the trigger button
+  const btn = document.getElementById('login-btn');
+  if (btn) btn.focus();
+}
 
-  function openModal() {
-    overlay.classList.add('open');
-    overlay.setAttribute('aria-hidden', 'false');
-    const firstInput = overlay.querySelector('input');
-    if (firstInput) firstInput.focus();
+function switchTab(tab) {
+  document.querySelectorAll('.modal-tab').forEach(t => {
+    t.classList.toggle('active', t.id === `tab-${tab}`);
+    t.setAttribute('aria-selected', t.id === `tab-${tab}` ? 'true' : 'false');
+  });
+  document.querySelectorAll('.form-panel').forEach(p => {
+    p.classList.toggle('active', p.id === `panel-${tab}`);
+  });
+  clearAlerts();
+}
+
+function showAlert(panelId, type, msg) {
+  const el = document.getElementById(`${panelId}-alert`);
+  if (!el) return;
+  el.className = `form-alert ${type} show`;
+  el.innerHTML = msg;
+}
+
+function clearAlerts() {
+  document.querySelectorAll('.form-alert').forEach(el => {
+    el.className = 'form-alert';
+    el.textContent = '';
+  });
+}
+
+// ── EMAIL CONFIRMATION (EmailJS) ───────────────────────────────────────────
+
+async function sendConfirmationEmail(toEmail, toName, code) {
+  const { EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, EMAILJS_PUBLIC_KEY } = CFG;
+
+  if (!EMAILJS_SERVICE_ID || EMAILJS_SERVICE_ID === 'YOUR_EMAILJS_SERVICE_ID'
+    || !EMAILJS_TEMPLATE_ID || EMAILJS_TEMPLATE_ID === 'YOUR_EMAILJS_TEMPLATE_ID'
+    || !EMAILJS_PUBLIC_KEY  || EMAILJS_PUBLIC_KEY  === 'YOUR_EMAILJS_PUBLIC_KEY') {
+    return false; // EmailJS not configured — caller will show on-screen code
   }
 
-  function closeModal() {
-    overlay.classList.remove('open');
-    overlay.setAttribute('aria-hidden', 'true');
-    openBtn.focus();
+  // Dynamically load EmailJS SDK if not already present
+  if (typeof emailjs === 'undefined') {
+    await new Promise((resolve, reject) => {
+      const s = document.createElement('script');
+      s.src = 'https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js';
+      s.onload = resolve;
+      s.onerror = reject;
+      document.head.appendChild(s);
+    });
+    emailjs.init(EMAILJS_PUBLIC_KEY);
   }
 
-  openBtn.addEventListener('click', openModal);
-  if (closeBtn) closeBtn.addEventListener('click', closeModal);
+  try {
+    await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, {
+      to_email:     toEmail,
+      to_name:      toName,
+      confirm_code: code,
+    });
+    return true;
+  } catch (err) {
+    console.warn('EmailJS send failed:', err);
+    return false;
+  }
+}
 
-  // Close when clicking outside the modal box
-  overlay.addEventListener('click', function (e) {
-    if (e.target === overlay) closeModal();
-  });
+// ── HANDLE SIGNUP ──────────────────────────────────────────────────────────
 
-  // Close on Escape key
-  document.addEventListener('keydown', function (e) {
-    if (e.key === 'Escape' && overlay.classList.contains('open')) closeModal();
-  });
+async function handleSignup(e) {
+  e.preventDefault();
+  clearAlerts();
+
+  const name     = document.getElementById('signup-name').value.trim();
+  const email    = document.getElementById('signup-email').value.trim().toLowerCase();
+  const password = document.getElementById('signup-password').value;
+  const confirm  = document.getElementById('signup-confirm').value;
+
+  if (!name || !email || !password || !confirm) {
+    showAlert('signup', 'error', 'Please fill in all fields.');
+    return;
+  }
+
+  if (password !== confirm) {
+    showAlert('signup', 'error', 'Passwords do not match.');
+    return;
+  }
+
+  if (password.length < 8) {
+    showAlert('signup', 'error', 'Password must be at least 8 characters.');
+    return;
+  }
+
+  const users = getUsers();
+  if (users.find(u => u.email === email)) {
+    showAlert('signup', 'error', 'An account with that email already exists. <a href="#" onclick="switchTab(\'login\');return false;" style="color:var(--orange)">Log in instead.</a>');
+    return;
+  }
+
+  const btn = document.getElementById('signup-submit');
+  btn.disabled = true;
+  btn.textContent = 'Creating account…';
+
+  const hash = await hashPassword(password);
+  const code = randomCode(6);
+
+  const newUser = {
+    id:        Date.now(),
+    name,
+    email,
+    hash,
+    confirmCode:      code,
+    emailConfirmed:   false,
+    createdAt:        new Date().toISOString(),
+  };
+
+  users.push(newUser);
+  saveUsers(users);
+
+  // Attempt to send confirmation email via EmailJS
+  const emailSent = await sendConfirmationEmail(email, name, code);
+
+  // Reset button
+  btn.disabled = false;
+  btn.textContent = 'Create Account';
+
+  // Hide the form, show result
+  document.getElementById('signup-form').style.display = 'none';
+
+  if (emailSent) {
+    showAlert('signup', 'success',
+      `✓ Account created! A confirmation email has been sent to <strong>${escapeHtml(email)}</strong>. ` +
+      `Check your inbox and confirm your address to activate your account.`);
+  } else {
+    showAlert('signup', 'info',
+      `✓ Account created for <strong>${escapeHtml(name)}</strong>! ` +
+      `EmailJS is not configured, so your confirmation code is shown below. ` +
+      `<a href="https://www.emailjs.com/" target="_blank" rel="noopener" style="color:var(--gold)">Set up EmailJS</a> in config.js to receive real emails.`);
+    const box = document.getElementById('confirm-box');
+    const codeDisplay = document.getElementById('confirm-code-display');
+    if (box && codeDisplay) {
+      codeDisplay.textContent = code;
+      box.style.display = 'block';
+    }
+  }
+}
+
+// ── HANDLE LOGIN ───────────────────────────────────────────────────────────
+
+async function handleLogin(e) {
+  e.preventDefault();
+  clearAlerts();
+
+  const email    = document.getElementById('login-email').value.trim().toLowerCase();
+  const password = document.getElementById('login-password').value;
+
+  if (!email || !password) {
+    showAlert('login', 'error', 'Please enter your email and password.');
+    return;
+  }
+
+  const btn = document.getElementById('login-submit');
+  btn.disabled = true;
+  btn.textContent = 'Signing in…';
+
+  const hash  = await hashPassword(password);
+  const users = getUsers();
+  const user  = users.find(u => u.email === email);
+
+  btn.disabled = false;
+  btn.textContent = 'Log In';
+
+  if (!user || user.hash !== hash) {
+    showAlert('login', 'error', 'Incorrect email or password. Please try again.');
+    document.getElementById('login-password').value = '';
+    document.getElementById('login-password').focus();
+    return;
+  }
+
+  // Successful login
+  saveSession({ id: user.id, name: user.name, email: user.email });
+  updateNavForUser(user);
+  closeModal();
+}
+
+// ── LOGOUT ────────────────────────────────────────────────────────────────
+
+function handleLogout() {
+  clearSession();
+  updateNavForUser(null);
+}
+
+// ── UPDATE NAV ─────────────────────────────────────────────────────────────
+
+function updateNavForUser(user) {
+  const navUser     = document.getElementById('nav-user');
+  const navGreeting = document.getElementById('nav-greeting');
+  const loginBtn    = document.getElementById('login-btn');
+  const signupBtn   = document.getElementById('signup-btn');
+
+  if (user) {
+    if (navUser)     navUser.style.display     = 'flex';
+    if (navGreeting) navGreeting.textContent   = `Hi, ${user.name.split(' ')[0]}`;
+    if (loginBtn)    loginBtn.style.display    = 'none';
+    if (signupBtn)   signupBtn.style.display   = 'none';
+  } else {
+    if (navUser)   navUser.style.display   = 'none';
+    if (loginBtn)  loginBtn.style.display  = 'inline-block';
+    if (signupBtn) signupBtn.style.display = 'inline-block';
+  }
 }
 
 // ── INIT ───────────────────────────────────────────────────────────────────
 
 document.addEventListener('DOMContentLoaded', function () {
-  initModal();
+  // Wire up nav buttons
+  const loginBtn  = document.getElementById('login-btn');
+  const signupBtn = document.getElementById('signup-btn');
+  const logoutBtn = document.getElementById('logout-btn');
+  const closeBtn  = document.getElementById('modal-close');
+  const modal     = document.getElementById('auth-modal');
+
+  if (loginBtn)  loginBtn.addEventListener('click',  () => openModal('login'));
+  if (signupBtn) signupBtn.addEventListener('click', () => openModal('signup'));
+  if (logoutBtn) logoutBtn.addEventListener('click', handleLogout);
+  if (closeBtn)  closeBtn.addEventListener('click',  closeModal);
+
+  // Close when clicking outside the modal box
+  if (modal) {
+    modal.addEventListener('click', e => {
+      if (e.target === modal) closeModal();
+    });
+  }
+
+  // Close on Escape key
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape' && modal && modal.classList.contains('open')) closeModal();
+  });
+
+  // Restore session
+  const session = getSession();
+  updateNavForUser(session);
+
+  // Load live data
   loadOdds();
   loadNews();
 });

@@ -19,7 +19,14 @@
     <div class="nav-links">
       <a href="#live-bets">Live Bets</a>
       <a href="#pricing">Pricing</a>
-      <button class="btn-login" id="login-btn">Login</button>
+      <!-- shown when logged in -->
+      <span id="nav-user" class="nav-user" style="display:none;">
+        <span id="nav-greeting" class="nav-greeting"></span>
+        <button class="btn-logout" id="logout-btn">Log Out</button>
+      </span>
+      <!-- shown when logged out -->
+      <button class="btn-login" id="login-btn" style="display:none;">Login</button>
+      <button class="btn-login" id="signup-btn" style="display:none; background:var(--gold); margin-left:-0.5rem;">Sign Up</button>
     </div>
   </nav>
 
@@ -108,23 +115,73 @@
     <p>&copy; 2026 CH0SEN1 PICKZ &mdash; For entertainment purposes only.</p>
   </footer>
 
-  <!-- ── LOGIN MODAL ── -->
-  <div id="login-modal" class="modal-overlay" aria-hidden="true">
+  <!-- ── LOGIN / SIGNUP MODAL ── -->
+  <div id="auth-modal" class="modal-overlay" aria-hidden="true">
     <div class="modal-box" role="dialog" aria-modal="true" aria-labelledby="modal-title">
       <button class="modal-close" id="modal-close" aria-label="Close">&times;</button>
-      <h2 id="modal-title" class="modal-title">Welcome Back</h2>
-      <p class="modal-subtitle">Sign in to your CH0SEN1 PICKZ account</p>
-      <form class="modal-form" onsubmit="return false;">
-        <label for="email">Email</label>
-        <input type="email" id="email" placeholder="you@example.com" autocomplete="email" />
-        <label for="password">Password</label>
-        <input type="password" id="password" placeholder="••••••••" autocomplete="current-password" />
-        <button type="submit" class="btn-primary btn-full">Login</button>
-        <p class="modal-footer-text">Don't have an account? <a href="#pricing">Choose a plan</a></p>
-      </form>
+
+      <!-- Tabs -->
+      <div class="modal-tabs" role="tablist">
+        <button class="modal-tab active" id="tab-login" role="tab" aria-selected="true"
+                aria-controls="panel-login" onclick="switchTab('login')">Log In</button>
+        <button class="modal-tab" id="tab-signup" role="tab" aria-selected="false"
+                aria-controls="panel-signup" onclick="switchTab('signup')">Sign Up</button>
+      </div>
+
+      <!-- ── LOGIN PANEL ── -->
+      <div class="form-panel active" id="panel-login" role="tabpanel">
+        <div class="form-alert" id="login-alert"></div>
+        <form class="modal-form" id="login-form" onsubmit="handleLogin(event)">
+          <label for="login-email">Email</label>
+          <input type="email" id="login-email" placeholder="you@example.com"
+                 autocomplete="email" required />
+          <label for="login-password">Password</label>
+          <input type="password" id="login-password" placeholder="••••••••"
+                 autocomplete="current-password" required />
+          <button type="submit" class="btn-primary btn-full" id="login-submit">Log In</button>
+          <p class="modal-footer-text">
+            No account? <a href="#" onclick="switchTab('signup'); return false;">Sign up free</a>
+          </p>
+        </form>
+      </div>
+
+      <!-- ── SIGNUP PANEL ── -->
+      <div class="form-panel" id="panel-signup" role="tabpanel">
+        <div class="form-alert" id="signup-alert"></div>
+        <form class="modal-form" id="signup-form" onsubmit="handleSignup(event)">
+          <label for="signup-name">Full Name</label>
+          <input type="text" id="signup-name" placeholder="Jane Doe"
+                 autocomplete="name" required />
+          <label for="signup-email">Email</label>
+          <input type="email" id="signup-email" placeholder="you@example.com"
+                 autocomplete="email" required />
+          <label for="signup-password">Password</label>
+          <input type="password" id="signup-password" placeholder="Min 8 characters"
+                 autocomplete="new-password" required minlength="8" />
+          <label for="signup-confirm">Confirm Password</label>
+          <input type="password" id="signup-confirm" placeholder="Repeat password"
+                 autocomplete="new-password" required minlength="8" />
+          <button type="submit" class="btn-primary btn-full" id="signup-submit"
+                  style="background:var(--gold);">Create Account</button>
+          <p class="modal-footer-text">
+            Already a member? <a href="#" onclick="switchTab('login'); return false;">Log in</a>
+          </p>
+        </form>
+
+        <!-- Confirmation-code box — shown after successful signup when email unavailable -->
+        <div id="confirm-box" class="confirm-code-box" style="display:none;">
+          <div class="code-label">Your confirmation code</div>
+          <div class="code-value" id="confirm-code-display"></div>
+          <p style="font-size:0.8rem;color:var(--muted);margin-top:0.5rem;">
+            Copy this code — an email has been sent if EmailJS is configured.
+          </p>
+        </div>
+      </div>
+
     </div>
   </div>
 
+  <script src="config.js"></script>
   <script src="app.js"></script>
 </body>
 </html>
