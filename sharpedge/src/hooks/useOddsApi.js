@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 
 // TODO: Set VITE_ODDS_API_KEY in .env file
 // The Odds API: https://api.the-odds-api.com/v4/
@@ -7,25 +7,34 @@ const API_KEY = import.meta.env.VITE_ODDS_API_KEY;
 const BASE_URL = 'https://api.the-odds-api.com/v4';
 
 export function useOddsApi(sport = 'upcoming') {
-  const [data, setData] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
+  const [state, setState] = useState({ data: null, loading: false, error: null });
 
-  useEffect(() => {
+  const fetchOdds = useCallback((currentSport, signal) => {
     if (!API_KEY) {
-      setError('No API key configured. Set VITE_ODDS_API_KEY in .env');
+      setState({ data: null, loading: false, error: 'No API key configured. Set VITE_ODDS_API_KEY in .env' });
       return;
     }
-    setLoading(true);
-    const url = `${BASE_URL}/sports/${sport}/odds/?regions=us&markets=h2h&oddsFormat=american&apiKey=${API_KEY}`;
-    fetch(url)
+    const url = `${BASE_URL}/sports/${currentSport}/odds/?regions=us&markets=h2h&oddsFormat=american&apiKey=${API_KEY}`;
+    setState({ data: null, loading: true, error: null });
+    fetch(url, { signal })
       .then(res => {
         if (!res.ok) throw new Error(`API error: ${res.status}`);
         return res.json();
       })
-      .then(json => { setData(json); setLoading(false); })
-      .catch(err => { setError(err.message); setLoading(false); });
-  }, [sport]);
+      .then(json => setState({ data: json, loading: false, error: null }))
+      .catch(err => {
+        if (err.name !== 'AbortError') {
+          setState({ data: null, loading: false, error: err.message });
+        }
+      });
+  }, []);
 
-  return { data, loading, error };
+  useEffect(() => {
+    const controller = new AbortController();
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    fetchOdds(sport, controller.signal);
+    return () => controller.abort();
+  }, [sport, fetchOdds]);
+
+  return { data: state.data, loading: state.loading, error: state.error };
 }
