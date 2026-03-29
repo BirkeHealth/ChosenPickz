@@ -33,7 +33,7 @@
 
 window.APP_CONFIG = {
   // ── The Odds API ───────────────────────────────────────────────────────────
-  ODDS_API_KEY: 'YOUR_ODDS_API_KEY',
+  ODDS_API_KEY: '378d22c76a76769fa0078d2d9e88fb60',
 
   // ── NewsAPI.org ───────────────────────────────────────────────────────────
   NEWS_API_KEY: 'YOUR_NEWS_API_KEY',
