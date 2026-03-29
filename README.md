@@ -76,7 +76,15 @@ If EmailJS is **not** configured the sign-up flow still works — the confirmati
 
 ### Running the Landing Page Locally
 
-The landing page is a plain HTML/CSS/JS file.  Open `index.html` directly in your browser, or use any static file server:
+The landing page is served by the Node.js server at the root URL. Run:
+
+```bash
+npm start
+```
+
+Then open [http://localhost:3000](http://localhost:3000) in your browser to see the landing page.
+
+You can also open `index.html` directly in your browser, or use any static file server:
 
 ```bash
 # Python 3
@@ -112,7 +120,9 @@ npm start
 ```
 
 The server starts on port 3000 (or `$PORT` if set).  
-Open [http://localhost:3000](http://localhost:3000) in your browser.
+- **Landing page** → [http://localhost:3000](http://localhost:3000)  
+- **Member portal** → [http://localhost:3000/chosepickz.html](http://localhost:3000/chosepickz.html)  
+- **SharpEdge UI** → [http://localhost:3000/app](http://localhost:3000/app)
 
 ### Default Admin Credentials
 
