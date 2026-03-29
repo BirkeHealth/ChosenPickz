@@ -4,7 +4,19 @@ const path = require('path');
 
 const PORT = process.env.PORT || 3000;
 
+const ROOT_DIR = __dirname;
 const DIST_DIR = path.join(__dirname, 'sharpedge', 'dist');
+
+// Root-level static files served directly from the project root (the landing page app)
+const ROOT_STATIC_FILES = new Set([
+  'index.html',
+  'chosepickz.html',
+  'live-bets.html',
+  'styles.css',
+  'app.js',
+  'config.js',
+  'picks.js',
+]);
 
 const HTML_404 = `<!DOCTYPE html>
 <html lang="en">
@@ -85,13 +97,64 @@ const server = http.createServer((req, res) => {
   // Strip query strings
   urlPath = urlPath.split('?')[0];
 
-  // Default to index.html for root
-  if (urlPath === '/') {
-    urlPath = '/index.html';
+  // ── Root landing page ──────────────────────────────────────────────────────
+  // Serve the landing page (root index.html) for "/" and "/index.html"
+  if (urlPath === '/' || urlPath === '/index.html') {
+    const landingPath = path.join(ROOT_DIR, 'index.html');
+    fs.readFile(landingPath, (err, data) => {
+      if (err) {
+        res.writeHead(404, { 'Content-Type': 'text/html' });
+        res.end(HTML_404);
+        return;
+      }
+      res.writeHead(200, { 'Content-Type': 'text/html' });
+      res.end(data);
+    });
+    return;
   }
 
-  // Prevent directory traversal: ensure resolved path stays within DIST_DIR
-  const filePath = path.resolve(DIST_DIR, urlPath.replace(/^\/+/, ''));
+  // ── Root-level static assets ───────────────────────────────────────────────
+  // Serve landing page app files (CSS, JS, other HTML pages) from the project root.
+  // Uses an explicit allowlist — only files in ROOT_STATIC_FILES are served from root,
+  // which also prevents any path-traversal access to server-side files.
+  const rootFileName = urlPath.replace(/^\/+/, '');
+  if (ROOT_STATIC_FILES.has(rootFileName)) {
+    const rootFilePath = path.join(ROOT_DIR, rootFileName);
+    fs.readFile(rootFilePath, (err, data) => {
+      if (err) {
+        res.writeHead(404, { 'Content-Type': 'text/html' });
+        res.end(HTML_404);
+        return;
+      }
+      const ext = path.extname(rootFilePath);
+      const contentType = MIME_TYPES[ext] || 'application/octet-stream';
+      res.writeHead(200, { 'Content-Type': contentType });
+      res.end(data);
+    });
+    return;
+  }
+
+  // ── SharpEdge React app ────────────────────────────────────────────────────
+  // Serve the SharpEdge SPA at /app (and /app/*)
+  if (urlPath === '/app' || urlPath === '/app/') {
+    const indexPath = path.join(DIST_DIR, 'index.html');
+    fs.readFile(indexPath, (err, data) => {
+      if (err) {
+        res.writeHead(404, { 'Content-Type': 'text/html' });
+        res.end(HTML_404);
+        return;
+      }
+      res.writeHead(200, { 'Content-Type': 'text/html' });
+      res.end(data);
+    });
+    return;
+  }
+
+  // ── SharpEdge compiled assets ──────────────────────────────────────────────
+  // Serve JS/CSS bundles, favicon, icons, etc. from sharpedge/dist/.
+  // The path.relative check below guards against directory traversal.
+  const assetFileName = urlPath.replace(/^\/+/, '');
+  const filePath = path.resolve(DIST_DIR, assetFileName);
   const rel = path.relative(DIST_DIR, filePath);
   if (rel.startsWith('..') || path.isAbsolute(rel)) {
     res.writeHead(403, { 'Content-Type': 'text/plain' });
@@ -101,7 +164,7 @@ const server = http.createServer((req, res) => {
 
   fs.readFile(filePath, (err, data) => {
     if (err) {
-      // For SPA routing: serve index.html for any missing file
+      // For SPA deep-link routing under /app/*: serve SharpEdge index.html
       const indexPath = path.join(DIST_DIR, 'index.html');
       fs.readFile(indexPath, (indexErr, indexData) => {
         if (indexErr) {
