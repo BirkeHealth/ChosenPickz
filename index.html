@@ -123,15 +123,15 @@
       <!-- Tabs -->
       <div class="modal-tabs" role="tablist">
         <button class="modal-tab active" id="tab-login" role="tab" aria-selected="true"
-                aria-controls="panel-login" onclick="switchTab('login')">Log In</button>
+                aria-controls="panel-login">Log In</button>
         <button class="modal-tab" id="tab-signup" role="tab" aria-selected="false"
-                aria-controls="panel-signup" onclick="switchTab('signup')">Sign Up</button>
+                aria-controls="panel-signup">Sign Up</button>
       </div>
 
       <!-- ── LOGIN PANEL ── -->
       <div class="form-panel active" id="panel-login" role="tabpanel">
         <div class="form-alert" id="login-alert"></div>
-        <form class="modal-form" id="login-form" onsubmit="handleLogin(event)">
+        <form class="modal-form" id="login-form">
           <label for="login-email">Email</label>
           <input type="email" id="login-email" placeholder="you@example.com"
                  autocomplete="email" required />
@@ -140,7 +140,7 @@
                  autocomplete="current-password" required />
           <button type="submit" class="btn-primary btn-full" id="login-submit">Log In</button>
           <p class="modal-footer-text">
-            No account? <a href="#" onclick="switchTab('signup'); return false;">Sign up free</a>
+            No account? <a href="#" id="goto-signup">Sign up free</a>
           </p>
         </form>
       </div>
@@ -148,7 +148,7 @@
       <!-- ── SIGNUP PANEL ── -->
       <div class="form-panel" id="panel-signup" role="tabpanel">
         <div class="form-alert" id="signup-alert"></div>
-        <form class="modal-form" id="signup-form" onsubmit="handleSignup(event)">
+        <form class="modal-form" id="signup-form">
           <label for="signup-name">Full Name</label>
           <input type="text" id="signup-name" placeholder="Jane Doe"
                  autocomplete="name" required />
@@ -164,7 +164,7 @@
           <button type="submit" class="btn-primary btn-full" id="signup-submit"
                   style="background:var(--gold);">Create Account</button>
           <p class="modal-footer-text">
-            Already a member? <a href="#" onclick="switchTab('login'); return false;">Log in</a>
+            Already a member? <a href="#" id="goto-login">Log in</a>
           </p>
         </form>
 

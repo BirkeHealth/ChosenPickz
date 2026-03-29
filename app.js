@@ -14,7 +14,7 @@
 
 // ── CONFIG ─────────────────────────────────────────────────────────────────
 
-const CFG = (typeof window !== 'undefined' && window.APP_CONFIG) || {};
+const CFG = window.APP_CONFIG || {};
 const ODDS_API_KEY = CFG.ODDS_API_KEY  || '';
 const NEWS_API_KEY = CFG.NEWS_API_KEY  || '';
 
@@ -68,6 +68,7 @@ async function hashPassword(plain) {
 
 // ── RANDOM CODE GENERATOR ─────────────────────────────────────────────────
 
+// Omit visually ambiguous characters (I, O, 0, 1) to reduce misreading
 function randomCode(length = 6) {
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
   let code = '';
@@ -165,13 +166,21 @@ function renderBetCard(game) {
   let spreadHome = 'N/A', spreadAway = 'N/A';
   let total = 'N/A';
 
-  if (bk && Array.isArray(bk.markets)) {
-    const h2h    = bk.markets.find(m => m.key === 'h2h');
+    if (bk && Array.isArray(bk.markets)) {
+    const h2h     = bk.markets.find(m => m.key === 'h2h');
     const spreads = bk.markets.find(m => m.key === 'spreads');
     const totals  = bk.markets.find(m => m.key === 'totals');
-    if (h2h)    { mlHome = getOdds(h2h.outcomes, homeTeam);     mlAway = getOdds(h2h.outcomes, awayTeam); }
-    if (spreads) { spreadHome = getSpread(spreads.outcomes, homeTeam); spreadAway = getSpread(spreads.outcomes, awayTeam); }
-    if (totals)  { total = getTotals(totals.outcomes); }
+    if (h2h) {
+      mlHome = getOdds(h2h.outcomes, homeTeam);
+      mlAway = getOdds(h2h.outcomes, awayTeam);
+    }
+    if (spreads) {
+      spreadHome = getSpread(spreads.outcomes, homeTeam);
+      spreadAway = getSpread(spreads.outcomes, awayTeam);
+    }
+    if (totals) {
+      total = getTotals(totals.outcomes);
+    }
   }
 
   return `
@@ -419,7 +428,12 @@ async function handleSignup(e) {
 
   const users = getUsers();
   if (users.find(u => u.email === email)) {
-    showAlert('signup', 'error', 'An account with that email already exists. <a href="#" onclick="switchTab(\'login\');return false;" style="color:var(--orange)">Log in instead.</a>');
+    showAlert('signup', 'error', 'An account with that email already exists. <a href="#" id="alert-goto-login" style="color:var(--orange)">Log in instead.</a>');
+    // Wire the dynamic link after it's inserted into the DOM
+    setTimeout(() => {
+      const link = document.getElementById('alert-goto-login');
+      if (link) link.addEventListener('click', e => { e.preventDefault(); switchTab('login'); });
+    }, 0);
     return;
   }
 
@@ -550,6 +564,22 @@ document.addEventListener('DOMContentLoaded', function () {
   if (signupBtn) signupBtn.addEventListener('click', () => openModal('signup'));
   if (logoutBtn) logoutBtn.addEventListener('click', handleLogout);
   if (closeBtn)  closeBtn.addEventListener('click',  closeModal);
+
+  // Tab switch links
+  const tabLoginBtn  = document.getElementById('tab-login');
+  const tabSignupBtn = document.getElementById('tab-signup');
+  const gotoSignup   = document.getElementById('goto-signup');
+  const gotoLogin    = document.getElementById('goto-login');
+  if (tabLoginBtn)  tabLoginBtn.addEventListener('click',  () => switchTab('login'));
+  if (tabSignupBtn) tabSignupBtn.addEventListener('click', () => switchTab('signup'));
+  if (gotoSignup)   gotoSignup.addEventListener('click',   e => { e.preventDefault(); switchTab('signup'); });
+  if (gotoLogin)    gotoLogin.addEventListener('click',    e => { e.preventDefault(); switchTab('login'); });
+
+  // Form submissions
+  const loginForm  = document.getElementById('login-form');
+  const signupForm = document.getElementById('signup-form');
+  if (loginForm)  loginForm.addEventListener('submit',  handleLogin);
+  if (signupForm) signupForm.addEventListener('submit', handleSignup);
 
   // Close when clicking outside the modal box
   if (modal) {
