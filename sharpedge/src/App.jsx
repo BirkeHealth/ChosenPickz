@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { mockPicks, sportColors } from './data/mockPicks';
+import SportsLinesPreview from './components/SportsLinesPreview';
 
 // TODO: Uncomment to use live The Odds API data
 // import { useOddsApi } from './hooks/useOddsApi';
@@ -425,6 +426,23 @@ export default function App() {
             ))}
           </div>
         )}
+      </section>
+
+      {/* ─── LIVE ODDS ─── */}
+      <section
+        id="odds"
+        className="px-6 py-16 max-w-5xl mx-auto"
+      >
+        <h2
+          className="text-4xl md:text-5xl font-bebas tracking-wider text-center mb-4"
+          style={{ color: '#e8e8f0' }}
+        >
+          Live <span style={{ color: '#d4a843' }}>Lines</span>
+        </h2>
+        <p className="text-center font-dm mb-10" style={{ color: '#8888a0' }}>
+          Real-time head-to-head odds from top US sportsbooks.
+        </p>
+        <SportsLinesPreview />
       </section>
 
       {/* ─── PRICING ─── */}
