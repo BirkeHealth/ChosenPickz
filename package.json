@@ -4,7 +4,10 @@
   "description": "Sports picks dashboard",
   "main": "index.js",
   "scripts": {
-    "start": "node index.js"
+    "install:ui": "cd sharpedge && npm install",
+    "build": "cd sharpedge && npm run build",
+    "start": "node index.js",
+    "setup": "npm run install:ui && npm run build"
   },
   "engines": {
     "node": ">=14"
