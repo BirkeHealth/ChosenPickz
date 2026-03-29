@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useReducer, useEffect } from 'react';
 
 // TODO: Set VITE_ODDS_API_KEY in .env file
 // The Odds API: https://api.the-odds-api.com/v4/
@@ -6,35 +6,43 @@ import { useState, useEffect, useCallback } from 'react';
 const API_KEY = import.meta.env.VITE_ODDS_API_KEY;
 const BASE_URL = 'https://api.the-odds-api.com/v4';
 
-export function useOddsApi(sport = 'upcoming') {
-  const [state, setState] = useState({ data: null, loading: false, error: null });
+const initialState = { data: null, loading: false, error: null };
 
-  const fetchOdds = useCallback((currentSport, signal) => {
+function oddsReducer(state, action) {
+  switch (action.type) {
+    case 'FETCH_START': return { ...state, loading: true, error: null };
+    case 'FETCH_SUCCESS': return { data: action.payload, loading: false, error: null };
+    case 'FETCH_ERROR': return { ...state, loading: false, error: action.payload };
+    case 'NO_KEY': return { data: null, loading: false, error: action.payload };
+    default: return state;
+  }
+}
+
+export function useOddsApi(sport = 'upcoming') {
+  const [state, dispatch] = useReducer(oddsReducer, initialState);
+
+  useEffect(() => {
     if (!API_KEY) {
-      setState({ data: null, loading: false, error: 'No API key configured. Set VITE_ODDS_API_KEY in .env' });
+      dispatch({ type: 'NO_KEY', payload: 'No API key configured. Set VITE_ODDS_API_KEY in .env' });
       return;
     }
-    const url = `${BASE_URL}/sports/${currentSport}/odds/?regions=us&markets=h2h&oddsFormat=american&apiKey=${API_KEY}`;
-    setState({ data: null, loading: true, error: null });
-    fetch(url, { signal })
+    const controller = new AbortController();
+    const url = `${BASE_URL}/sports/${sport}/odds/?regions=us&markets=h2h&oddsFormat=american&apiKey=${API_KEY}`;
+    dispatch({ type: 'FETCH_START' });
+    fetch(url, { signal: controller.signal })
       .then(res => {
         if (!res.ok) throw new Error(`API error: ${res.status}`);
         return res.json();
       })
-      .then(json => setState({ data: json, loading: false, error: null }))
+      .then(json => dispatch({ type: 'FETCH_SUCCESS', payload: json }))
       .catch(err => {
         if (err.name !== 'AbortError') {
-          setState({ data: null, loading: false, error: err.message });
+          dispatch({ type: 'FETCH_ERROR', payload: err.message });
         }
       });
-  }, []);
-
-  useEffect(() => {
-    const controller = new AbortController();
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    fetchOdds(sport, controller.signal);
     return () => controller.abort();
-  }, [sport, fetchOdds]);
+  }, [sport]);
 
   return { data: state.data, loading: state.loading, error: state.error };
 }
+
