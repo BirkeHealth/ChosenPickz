@@ -6,6 +6,66 @@ const PORT = process.env.PORT || 3000;
 
 const DIST_DIR = path.join(__dirname, 'sharpedge', 'dist');
 
+const HTML_404 = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>404 – Not Found | SharpEdge</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: #0a0a0f;
+      color: #e8e8f0;
+      font-family: 'DM Sans', system-ui, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 2rem;
+    }
+    .code {
+      font-size: clamp(6rem, 20vw, 10rem);
+      font-weight: 700;
+      line-height: 1;
+      color: #d4a843;
+      letter-spacing: -4px;
+    }
+    h1 {
+      font-size: 1.5rem;
+      font-weight: 600;
+      margin-top: 1rem;
+      color: #e8e8f0;
+    }
+    p {
+      margin-top: 0.5rem;
+      color: #8888a0;
+      font-size: 1rem;
+    }
+    a {
+      display: inline-block;
+      margin-top: 2rem;
+      padding: 0.6rem 1.5rem;
+      background: #d4a843;
+      color: #0a0a0f;
+      border-radius: 0.5rem;
+      font-weight: 600;
+      text-decoration: none;
+      font-size: 0.95rem;
+    }
+    a:hover { background: #f0c060; }
+  </style>
+</head>
+<body>
+  <div class="code">404</div>
+  <h1>Page Not Found</h1>
+  <p>The page you're looking for doesn't exist or has been moved.</p>
+  <a href="/">Go Home</a>
+</body>
+</html>`;
+
 const MIME_TYPES = {
   '.html': 'text/html',
   '.css': 'text/css',
@@ -45,8 +105,8 @@ const server = http.createServer((req, res) => {
       const indexPath = path.join(DIST_DIR, 'index.html');
       fs.readFile(indexPath, (indexErr, indexData) => {
         if (indexErr) {
-          res.writeHead(404, { 'Content-Type': 'text/plain' });
-          res.end('Not found');
+          res.writeHead(404, { 'Content-Type': 'text/html' });
+          res.end(HTML_404);
           return;
         }
         res.writeHead(200, { 'Content-Type': 'text/html' });
