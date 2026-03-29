@@ -42,5 +42,5 @@ const server = http.createServer((req, res) => {
 });
 
 server.listen(PORT, () => {
-  console.log(`ChosenPickz server running on port ${PORT}`);
+  console.log(`CH0SEN1PICKZ server running on port ${PORT}`);
 });
