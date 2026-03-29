@@ -191,3 +191,377 @@ main {
   main { padding: 1.5rem 1rem; }
   .pick-card { flex-direction: column; align-items: flex-start; }
 }
+
+/* ── LANDING — NAV ADDITIONS ── */
+.btn-login {
+  background: var(--orange);
+  color: #fff;
+  border: none;
+  padding: 0.45rem 1.1rem;
+  border-radius: 6px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.9rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.btn-login:hover { background: var(--orange-dim); }
+
+/* ── LANDING — HERO ── */
+section.hero {
+  text-align: center;
+  padding: 5rem 1.5rem 3.5rem;
+  background: radial-gradient(ellipse at 50% 0%, rgba(29,78,216,0.15) 0%, transparent 70%);
+}
+section.hero h1 {
+  font-family: 'Bebas Neue', cursive;
+  font-size: clamp(3.5rem, 10vw, 7rem);
+  letter-spacing: 6px;
+  line-height: 1;
+}
+section.hero h1 .ch-orange { color: var(--orange); }
+section.hero h1 .ch-blue   { color: var(--blue); }
+section.hero p {
+  color: var(--muted);
+  font-size: 1.15rem;
+  margin-top: 0.75rem;
+}
+.hero-cta {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  margin-top: 2rem;
+  flex-wrap: wrap;
+}
+.btn-primary {
+  background: var(--orange);
+  color: #fff;
+  padding: 0.7rem 1.8rem;
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: 700;
+  font-size: 0.95rem;
+  transition: background 0.2s;
+  display: inline-block;
+}
+.btn-primary:hover { background: var(--orange-dim); }
+.btn-secondary {
+  background: transparent;
+  color: var(--text);
+  padding: 0.7rem 1.8rem;
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: 700;
+  font-size: 0.95rem;
+  border: 1px solid var(--surface2);
+  transition: border-color 0.2s, color 0.2s;
+  display: inline-block;
+}
+.btn-secondary:hover { border-color: var(--orange); color: var(--orange); }
+.btn-full { width: 100%; text-align: center; }
+
+/* ── LANDING — MAIN ── */
+main {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 2.5rem 2rem;
+}
+main section { margin-bottom: 3.5rem; }
+
+/* ── LOADING/ERROR ── */
+.loading-msg {
+  color: var(--muted);
+  font-size: 0.95rem;
+  padding: 1.5rem 0;
+  text-align: center;
+}
+.error-msg {
+  color: #f87171;
+  font-size: 0.9rem;
+  padding: 1rem 0;
+  text-align: center;
+}
+
+/* ── LIVE BETS GRID ── */
+.bets-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1.25rem;
+}
+.bet-card {
+  background: var(--surface);
+  border: 1px solid var(--surface2);
+  border-radius: 10px;
+  padding: 1.25rem 1.5rem;
+  transition: border-color 0.2s;
+}
+.bet-card:hover { border-color: var(--orange); }
+.bet-card .bet-matchup {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 0.3rem;
+}
+.bet-card .bet-sport {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+  color: var(--blue);
+  text-transform: uppercase;
+  margin-bottom: 0.5rem;
+}
+.bet-card .bet-time {
+  font-size: 0.82rem;
+  color: var(--muted);
+  margin-bottom: 0.9rem;
+}
+.bet-odds-row {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+.odds-pill {
+  background: var(--surface2);
+  border-radius: 6px;
+  padding: 0.35rem 0.75rem;
+  font-size: 0.8rem;
+  color: var(--text);
+  flex: 1;
+  min-width: 80px;
+  text-align: center;
+}
+.odds-pill .odds-label {
+  display: block;
+  font-size: 0.68rem;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 0.2rem;
+}
+.odds-pill .odds-value {
+  font-weight: 700;
+  color: var(--orange);
+}
+
+/* ── SPORTS NEWS ── */
+.news-list {
+  list-style: none;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+.news-item {
+  background: var(--surface);
+  border: 1px solid var(--surface2);
+  border-radius: 8px;
+  padding: 1rem 1.25rem;
+  transition: border-color 0.2s;
+}
+.news-item:hover { border-color: var(--blue); }
+.news-item a {
+  color: var(--text);
+  text-decoration: none;
+  font-size: 0.97rem;
+  font-weight: 500;
+  line-height: 1.5;
+}
+.news-item a:hover { color: var(--orange); }
+.news-meta {
+  font-size: 0.78rem;
+  color: var(--muted);
+  margin-top: 0.3rem;
+}
+
+/* ── PRICING ── */
+.pricing-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 1.5rem;
+  align-items: start;
+}
+.pricing-card {
+  background: var(--surface);
+  border: 1px solid var(--surface2);
+  border-radius: 12px;
+  padding: 2rem 1.75rem;
+  text-align: center;
+  position: relative;
+  transition: border-color 0.2s, transform 0.2s;
+}
+.pricing-card:hover { border-color: var(--orange); transform: translateY(-3px); }
+.pricing-card.featured {
+  border-color: var(--orange);
+  background: linear-gradient(160deg, rgba(249,115,22,0.08) 0%, var(--surface) 60%);
+}
+.pricing-badge {
+  font-family: 'Bebas Neue', cursive;
+  font-size: 1.4rem;
+  letter-spacing: 2px;
+  color: var(--orange);
+  margin-bottom: 0.5rem;
+}
+.pricing-label {
+  display: inline-block;
+  background: var(--orange);
+  color: #fff;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  padding: 0.2rem 0.7rem;
+  border-radius: 20px;
+  margin-bottom: 0.75rem;
+}
+.pricing-price {
+  font-family: 'Bebas Neue', cursive;
+  font-size: 3.5rem;
+  color: var(--text);
+  line-height: 1;
+  margin-bottom: 1.25rem;
+}
+.pricing-price span {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 1rem;
+  color: var(--muted);
+}
+.pricing-features {
+  list-style: none;
+  padding: 0;
+  margin-bottom: 1.75rem;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+.pricing-features li {
+  font-size: 0.9rem;
+  color: var(--text);
+}
+.pricing-features li.disabled { color: var(--muted); }
+.btn-plan {
+  display: block;
+  background: var(--surface2);
+  color: var(--text);
+  text-decoration: none;
+  padding: 0.65rem 1rem;
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: 0.9rem;
+  transition: background 0.2s, color 0.2s;
+}
+.btn-plan:hover { background: var(--orange); color: #fff; }
+.btn-plan-featured {
+  background: var(--orange);
+  color: #fff;
+}
+.btn-plan-featured:hover { background: var(--orange-dim); }
+
+/* ── FOOTER ── */
+footer {
+  background: var(--surface);
+  border-top: 1px solid var(--surface2);
+  padding: 1.5rem 2rem;
+  text-align: center;
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+/* ── LOGIN MODAL ── */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.75);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s;
+}
+.modal-overlay.open {
+  opacity: 1;
+  pointer-events: all;
+}
+.modal-box {
+  background: var(--surface);
+  border: 1px solid var(--surface2);
+  border-radius: 14px;
+  padding: 2.5rem 2rem;
+  width: 100%;
+  max-width: 420px;
+  position: relative;
+  transform: translateY(20px);
+  transition: transform 0.25s;
+}
+.modal-overlay.open .modal-box { transform: translateY(0); }
+.modal-close {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: none;
+  border: none;
+  color: var(--muted);
+  font-size: 1.5rem;
+  cursor: pointer;
+  line-height: 1;
+  padding: 0.2rem 0.5rem;
+  transition: color 0.2s;
+}
+.modal-close:hover { color: var(--text); }
+.modal-title {
+  font-family: 'Bebas Neue', cursive;
+  font-size: 2rem;
+  letter-spacing: 2px;
+  color: var(--orange);
+  margin-bottom: 0.25rem;
+}
+.modal-subtitle {
+  color: var(--muted);
+  font-size: 0.9rem;
+  margin-bottom: 1.5rem;
+}
+.modal-form label {
+  display: block;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--muted);
+  margin-bottom: 0.35rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.modal-form input {
+  display: block;
+  width: 100%;
+  background: var(--surface2);
+  border: 1px solid var(--surface2);
+  border-radius: 8px;
+  color: var(--text);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.95rem;
+  padding: 0.65rem 0.9rem;
+  margin-bottom: 1rem;
+  outline: none;
+  transition: border-color 0.2s;
+}
+.modal-form input:focus { border-color: var(--orange); }
+.modal-form .btn-primary { border: none; cursor: pointer; font-family: 'DM Sans', sans-serif; }
+.modal-footer-text {
+  text-align: center;
+  font-size: 0.85rem;
+  color: var(--muted);
+  margin-top: 1rem;
+}
+.modal-footer-text a { color: var(--orange); text-decoration: none; }
+.modal-footer-text a:hover { text-decoration: underline; }
+
+/* ── RESPONSIVE ── */
+@media (max-width: 768px) {
+  .bets-grid { grid-template-columns: 1fr; }
+  .pricing-grid { grid-template-columns: 1fr; }
+}
+@media (max-width: 500px) {
+  section.hero { padding: 3rem 1rem 2rem; }
+  .modal-box { margin: 1rem; padding: 2rem 1.25rem; }
+}

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Chosen1 Picks</title>
+  <title>CH0SEN1 PICKZ — Expert Sports Picks</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet" />
@@ -11,28 +11,120 @@
 </head>
 <body>
 
+  <!-- ── NAV ── -->
   <nav>
     <a class="nav-logo" href="index.html">
       CH<span class="ch-blue">0</span>SEN<span class="ch-blue">1</span> PICKZ
     </a>
     <div class="nav-links">
-      <a href="index.html" class="active">Home</a>
-      <a href="live-bets.html">Live Bets</a>
+      <a href="#live-bets">Live Bets</a>
+      <a href="#pricing">Pricing</a>
+      <button class="btn-login" id="login-btn">Login</button>
     </div>
   </nav>
 
-  <main>
-    <div class="hero">
-      <h1>
-        <span class="ch-orange">CHOSEN</span><span class="ch-blue">1</span> PICKS
-      </h1>
-      <p>Expert MoneyLine picks — updated in real time.</p>
+  <!-- ── HERO ── -->
+  <section class="hero">
+    <h1>
+      <span class="ch-orange">CHOSEN</span><span class="ch-blue">1</span> PICKZ
+    </h1>
+    <p>Expert MoneyLine, Spread &amp; O/U picks — powered by real-time odds.</p>
+    <div class="hero-cta">
+      <a href="#pricing" class="btn-primary">View Plans</a>
+      <a href="#live-bets" class="btn-secondary">Live Bets</a>
     </div>
+  </section>
 
-    <h2 class="section-heading">&#9660; Live ML Picks — Next 1 Hour</h2>
-    <ul id="ml-picks-list" class="picks-list"></ul>
+  <main>
+
+    <!-- ── LIVE BETS ── -->
+    <section id="live-bets">
+      <h2 class="section-heading">&#9679; Live Bet Previews</h2>
+      <div id="bets-container" class="bets-grid">
+        <p class="loading-msg">Loading upcoming games…</p>
+      </div>
+    </section>
+
+    <!-- ── SPORTS NEWS ── -->
+    <section id="sports-news">
+      <h2 class="section-heading">&#9660; Sports News</h2>
+      <ul id="news-list" class="news-list">
+        <li class="loading-msg">Loading headlines…</li>
+      </ul>
+    </section>
+
+    <!-- ── PRICING ── -->
+    <section id="pricing">
+      <h2 class="section-heading">&#9733; Pricing Plans</h2>
+      <div class="pricing-grid">
+
+        <div class="pricing-card">
+          <div class="pricing-badge">Starter</div>
+          <div class="pricing-price">$9<span>/mo</span></div>
+          <ul class="pricing-features">
+            <li>&#10003; 3 Picks per Week</li>
+            <li>&#10003; MoneyLine Only</li>
+            <li>&#10003; Email Alerts</li>
+            <li class="disabled">&#10007; Spread &amp; Totals</li>
+            <li class="disabled">&#10007; Live Bet Access</li>
+          </ul>
+          <a href="#" class="btn-plan">Get Started</a>
+        </div>
+
+        <div class="pricing-card featured">
+          <div class="pricing-badge">Pro</div>
+          <div class="pricing-label">Most Popular</div>
+          <div class="pricing-price">$29<span>/mo</span></div>
+          <ul class="pricing-features">
+            <li>&#10003; Unlimited Picks</li>
+            <li>&#10003; ML, Spread &amp; O/U</li>
+            <li>&#10003; Real-Time Alerts</li>
+            <li>&#10003; Live Bet Access</li>
+            <li class="disabled">&#10007; 1-on-1 Coaching</li>
+          </ul>
+          <a href="#" class="btn-plan btn-plan-featured">Get Started</a>
+        </div>
+
+        <div class="pricing-card">
+          <div class="pricing-badge">Elite</div>
+          <div class="pricing-price">$79<span>/mo</span></div>
+          <ul class="pricing-features">
+            <li>&#10003; Everything in Pro</li>
+            <li>&#10003; VIP Discord Access</li>
+            <li>&#10003; 1-on-1 Coaching</li>
+            <li>&#10003; Early Pick Access</li>
+            <li>&#10003; Priority Support</li>
+          </ul>
+          <a href="#" class="btn-plan">Get Started</a>
+        </div>
+
+      </div>
+    </section>
+
   </main>
 
-  <script src="picks.js"></script>
+  <!-- ── FOOTER ── -->
+  <footer>
+    <p>&copy; 2026 CH0SEN1 PICKZ &mdash; For entertainment purposes only.</p>
+  </footer>
+
+  <!-- ── LOGIN MODAL ── -->
+  <div id="login-modal" class="modal-overlay" aria-hidden="true">
+    <div class="modal-box" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+      <button class="modal-close" id="modal-close" aria-label="Close">&times;</button>
+      <h2 id="modal-title" class="modal-title">Welcome Back</h2>
+      <p class="modal-subtitle">Sign in to your CH0SEN1 PICKZ account</p>
+      <form class="modal-form" onsubmit="return false;">
+        <label for="email">Email</label>
+        <input type="email" id="email" placeholder="you@example.com" autocomplete="email" />
+        <label for="password">Password</label>
+        <input type="password" id="password" placeholder="••••••••" autocomplete="current-password" />
+        <button type="submit" class="btn-primary btn-full">Login</button>
+        <p class="modal-footer-text">Don't have an account? <a href="#pricing">Choose a plan</a></p>
+      </form>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
 </body>
 </html>
