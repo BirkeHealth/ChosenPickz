@@ -24,8 +24,10 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ## Default Admin Credentials
 
-| Username | Password   |
-|----------|------------|
-| admin    | pickz123$  |
+| Username | Password |
+|----------|----------|
+| admin    | 123456   |
 
 > **Note:** Credentials are stored in `localStorage` for this client-side demo. A production deployment should use a secure backend with hashed passwords.
+>
+> **To change the admin password in the future:** open `chosepickz.html`, find the `initUsers()` function, and update the `password` value. On the next page load every browser will pick up the new credentials from that seed. For a production app, never store plain-text passwords in client-side code; use a server-side auth system with hashed passwords instead.
