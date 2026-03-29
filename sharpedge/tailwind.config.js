@@ -28,7 +28,7 @@ export default {
       loss: '#ef4444',
     },
     fontFamily: {
-      bebas: ['"Bebas Neue"', 'cursive'],
+      bebas: ['"Bebas Neue"', 'sans-serif'],
       dm: ['"DM Sans"', 'sans-serif'],
     },
   },
