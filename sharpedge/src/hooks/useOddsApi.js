@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useReducer, useEffect } from 'react';
 
 // TODO: Set VITE_ODDS_API_KEY in .env file
 // The Odds API: https://api.the-odds-api.com/v4/
@@ -6,26 +6,43 @@ import { useState, useEffect } from 'react';
 const API_KEY = import.meta.env.VITE_ODDS_API_KEY;
 const BASE_URL = 'https://api.the-odds-api.com/v4';
 
+const initialState = { data: null, loading: false, error: null };
+
+function oddsReducer(state, action) {
+  switch (action.type) {
+    case 'FETCH_START': return { ...state, loading: true, error: null };
+    case 'FETCH_SUCCESS': return { data: action.payload, loading: false, error: null };
+    case 'FETCH_ERROR': return { ...state, loading: false, error: action.payload };
+    case 'NO_KEY': return { data: null, loading: false, error: action.payload };
+    default: return state;
+  }
+}
+
 export function useOddsApi(sport = 'upcoming') {
-  const [data, setData] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
+  const [state, dispatch] = useReducer(oddsReducer, initialState);
 
   useEffect(() => {
     if (!API_KEY) {
-      setError('No API key configured. Set VITE_ODDS_API_KEY in .env');
+      dispatch({ type: 'NO_KEY', payload: 'No API key configured. Set VITE_ODDS_API_KEY in .env' });
       return;
     }
-    setLoading(true);
+    const controller = new AbortController();
     const url = `${BASE_URL}/sports/${sport}/odds/?regions=us&markets=h2h&oddsFormat=american&apiKey=${API_KEY}`;
-    fetch(url)
+    dispatch({ type: 'FETCH_START' });
+    fetch(url, { signal: controller.signal })
       .then(res => {
         if (!res.ok) throw new Error(`API error: ${res.status}`);
         return res.json();
       })
-      .then(json => { setData(json); setLoading(false); })
-      .catch(err => { setError(err.message); setLoading(false); });
+      .then(json => dispatch({ type: 'FETCH_SUCCESS', payload: json }))
+      .catch(err => {
+        if (err.name !== 'AbortError') {
+          dispatch({ type: 'FETCH_ERROR', payload: err.message });
+        }
+      });
+    return () => controller.abort();
   }, [sport]);
 
-  return { data, loading, error };
+  return { data: state.data, loading: state.loading, error: state.error };
 }
+
