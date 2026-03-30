@@ -43,6 +43,7 @@ const SPORTS = [
 const USERS_KEY   = 'cp_users';
 const SESSION_KEY = 'cp_session';
 const PICKS_KEY   = 'cp_admin_picks';
+const BETSLIP_KEY = 'cp_betslip_legs';
 
 function getUsers() {
   try { return JSON.parse(localStorage.getItem(USERS_KEY) || '[]'); }
@@ -73,6 +74,10 @@ function getAdminPicks() {
 
 function saveAdminPicks(picks) {
   localStorage.setItem(PICKS_KEY, JSON.stringify(picks));
+}
+
+function saveBetSlip() {
+  localStorage.setItem(BETSLIP_KEY, JSON.stringify(betSlipLegs));
 }
 
 // ── SIMPLE HASH (SHA-256 via SubtleCrypto) ─────────────────────────────────
@@ -834,7 +839,9 @@ function calcSingleWin(odds, wager) {
   return (dec - 1) * wager;
 }
 
-let betSlipLegs = [];
+let betSlipLegs = (function () {
+  try { return JSON.parse(localStorage.getItem(BETSLIP_KEY) || '[]'); } catch { return []; }
+}());
 
 function updateBetSlipUI() {
   const legsEl        = document.getElementById('bs-legs');
@@ -846,8 +853,10 @@ function updateBetSlipUI() {
 
   if (!legsEl) return;
 
+  saveBetSlip();
+
   if (betSlipLegs.length === 0) {
-    legsEl.innerHTML = '<p class="loading-msg" style="font-size:0.8rem;padding:0.5rem 0;">No bets added yet. Use the form above to add legs.</p>';
+    legsEl.innerHTML = '<p class="loading-msg" style="font-size:0.8rem;padding:0.5rem 0;">No bets added yet. Tap any odds pill to add a leg, or use the form above.</p>';
     if (riskEl)   riskEl.textContent   = '$0.00';
     if (payoutEl) payoutEl.textContent = '$0.00';
     if (profitEl) profitEl.textContent = '$0.00';
@@ -986,6 +995,29 @@ document.addEventListener('DOMContentLoaded', function () {
   if (fab)        fab.addEventListener('click', openBetSlip);
   if (bsCloseBtn) bsCloseBtn.addEventListener('click', closeBetSlip);
   if (bsModal)    bsModal.addEventListener('click', e => { if (e.target === bsModal) closeBetSlip(); });
+
+  // Event delegation: clicking an odds pill on the live bets grid adds it to the slip
+  const betsContainer = document.getElementById('bets-container');
+  if (betsContainer) {
+    betsContainer.addEventListener('click', function (e) {
+      const pill = e.target.closest('.odds-pill');
+      if (!pill) return;
+      const oddsText = (pill.querySelector('.odds-value')?.textContent || '').trim();
+      if (!oddsText || oddsText === 'N/A') return;
+      const oddsNum = Number(oddsText.replace(/^\+/, ''));
+      if (isNaN(oddsNum) || !americanToDecimal(oddsNum)) return;
+      const card    = pill.closest('.bet-card');
+      const matchup = (card?.querySelector('.bet-matchup')?.textContent || '').trim();
+      const label   = (pill.querySelector('.odds-label')?.textContent || '').trim();
+      betSlipLegs.push({ matchup, pick: label, odds: oddsNum, wager: 0 });
+      openBetSlip();
+      const bsBox = document.querySelector('.betslip-box');
+      if (bsBox) bsBox.scrollTop = 0;
+      // Visual feedback: briefly highlight the pill
+      pill.classList.add('odds-pill--added');
+      setTimeout(function () { pill.classList.remove('odds-pill--added'); }, 1200);
+    });
+  }
 
   if (bsAddBtn) {
     bsAddBtn.addEventListener('click', function() {

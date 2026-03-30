@@ -297,6 +297,17 @@
       transition: border-color 0.15s, color 0.15s;
     }
     .bo-expand-btn:hover { border-color: var(--gold); color: var(--text); }
+
+    /* Tappable odds pills on best-odds page */
+    .bo-best-pill {
+      cursor: pointer;
+      transition: border-color 0.15s, background 0.15s;
+    }
+    .bo-best-pill:hover { border-color: var(--gold); }
+    .bo-best-pill--added {
+      border-color: var(--success) !important;
+      background: rgba(34,197,94,0.08);
+    }
   </style>
 </head>
 <body>
@@ -370,6 +381,45 @@
 
   <!-- config.js still loaded for NewsAPI / EmailJS keys used by other pages -->
   <script src="config.js"></script>
+
+  <!-- ── BET SLIP CALCULATOR MODAL ── -->
+  <div id="betslip-modal" class="modal-overlay" aria-hidden="true">
+    <div class="modal-box betslip-box" role="dialog" aria-modal="true" aria-label="Bet Slip Calculator">
+      <button class="modal-close" id="betslip-close" aria-label="Close">&times;</button>
+      <h2 class="modal-title">📋 Bet Slip Calculator</h2>
+      <p class="modal-subtitle">Plan your bets before placing them</p>
+      <div class="betslip-add-row">
+        <input type="text"   id="bs-matchup"  placeholder="Game / Matchup" class="bs-input" />
+        <input type="text"   id="bs-pick"     placeholder="Your pick (e.g. Lakers -5.5)" class="bs-input" />
+        <input type="number" id="bs-odds"     placeholder="Odds (e.g. -110 or +150)" class="bs-input bs-odds" />
+        <input type="number" id="bs-wager"    placeholder="Wager ($)" class="bs-input bs-wager" min="0" step="0.01" />
+        <button id="bs-add-btn" class="btn-primary bs-add-btn">+ Add</button>
+      </div>
+      <div id="bs-legs" class="bs-legs"></div>
+      <div class="bs-parlay-row">
+        <label class="bs-toggle-label">
+          <input type="checkbox" id="bs-parlay-toggle" />
+          <span>Calculate as Parlay</span>
+        </label>
+        <div id="bs-parlay-wager-row" style="display:none;">
+          <label style="font-size:0.82rem;color:var(--muted);">Parlay Wager ($)</label>
+          <input type="number" id="bs-parlay-wager" class="bs-input bs-wager" placeholder="$" min="0" step="0.01" style="margin-top:0.25rem;" />
+        </div>
+      </div>
+      <div class="bs-summary" id="bs-summary">
+        <div class="bs-summary-row"><span>Total Risk</span><span id="bs-total-risk">$0.00</span></div>
+        <div class="bs-summary-row highlight"><span>Potential Payout</span><span id="bs-total-payout">$0.00</span></div>
+        <div class="bs-summary-row"><span>Potential Profit</span><span id="bs-total-profit">$0.00</span></div>
+      </div>
+      <button id="bs-clear-btn" class="btn-secondary" style="width:100%;margin-top:0.75rem;">🗑 Clear Slip</button>
+    </div>
+  </div>
+
+  <!-- ── FLOATING BET SLIP BUTTON ── -->
+  <button id="betslip-fab" class="betslip-fab" title="Open Bet Slip Calculator" aria-label="Bet Slip Calculator">
+    📋<span class="betslip-fab-label"> Bet Slip</span>
+  </button>
+
   <script>
     /**
      * best-odds.js — Best Available Odds search page
@@ -791,6 +841,169 @@
         btn.textContent = '🔍 Search Odds';
       }
     }
+
+    // ── BET SLIP (shared via localStorage with index.html) ──────────────────
+
+    const BETSLIP_KEY = 'cp_betslip_legs';
+    let betSlipLegs = (function () {
+      try { return JSON.parse(localStorage.getItem(BETSLIP_KEY) || '[]'); } catch { return []; }
+    }());
+
+    function saveBetSlip() {
+      localStorage.setItem(BETSLIP_KEY, JSON.stringify(betSlipLegs));
+    }
+
+    function americanToDecimal(american) {
+      const n = Number(american);
+      if (isNaN(n)) return null;
+      if (n >= 100)  return 1 + n / 100;
+      if (n <= -100) return 1 + 100 / Math.abs(n);
+      return null;
+    }
+
+    function updateBetSlipUI() {
+      const legsEl        = document.getElementById('bs-legs');
+      const isParlay      = document.getElementById('bs-parlay-toggle')?.checked;
+      const parlayWagerEl = document.getElementById('bs-parlay-wager');
+      const riskEl        = document.getElementById('bs-total-risk');
+      const payoutEl      = document.getElementById('bs-total-payout');
+      const profitEl      = document.getElementById('bs-total-profit');
+      if (!legsEl) return;
+
+      saveBetSlip();
+
+      if (betSlipLegs.length === 0) {
+        legsEl.innerHTML = '<p class="loading-msg" style="font-size:0.8rem;padding:0.5rem 0;">No bets added yet. Tap any odds pill above or use the form to add legs.</p>';
+        if (riskEl)   riskEl.textContent   = '$0.00';
+        if (payoutEl) payoutEl.textContent = '$0.00';
+        if (profitEl) profitEl.textContent = '$0.00';
+        return;
+      }
+
+      legsEl.innerHTML = betSlipLegs.map(function (leg, idx) {
+        const dec    = americanToDecimal(leg.odds);
+        const winAmt = dec && leg.wager > 0 ? ((dec - 1) * leg.wager).toFixed(2) : '—';
+        const total  = dec && leg.wager > 0 ? (dec * leg.wager).toFixed(2) : '—';
+        return '<div class="bs-leg">' +
+          '<div class="bs-leg-info">' +
+            '<div class="bs-leg-matchup">' + escHtml(leg.matchup || 'Game') + '</div>' +
+            '<div class="bs-leg-pick">' + escHtml(leg.pick || '') + ' &nbsp;·&nbsp; Odds: <strong>' +
+              (leg.odds >= 0 ? '+' : '') + leg.odds + '</strong> · Wager: $' + Number(leg.wager).toFixed(2) + '</div>' +
+            (!isParlay ? '<div class="bs-leg-calc">Payout: $' + total + ' (Win: $' + winAmt + ')</div>' : '') +
+          '</div>' +
+          '<button class="bs-leg-remove" data-idx="' + idx + '" title="Remove">\u2715</button>' +
+          '</div>';
+      }).join('');
+
+      legsEl.querySelectorAll('.bs-leg-remove').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          betSlipLegs.splice(Number(this.dataset.idx), 1);
+          updateBetSlipUI();
+        });
+      });
+
+      if (isParlay) {
+        const parlayWager   = parseFloat(parlayWagerEl?.value || 0) || 0;
+        const parlayDecimal = betSlipLegs.reduce(function (acc, leg) {
+          const dec = americanToDecimal(leg.odds);
+          return dec ? acc * dec : acc;
+        }, 1);
+        const parlayPayout = parlayDecimal * parlayWager;
+        const parlayProfit = parlayPayout - parlayWager;
+        if (riskEl)   riskEl.textContent   = '$' + parlayWager.toFixed(2);
+        if (payoutEl) payoutEl.textContent = '$' + parlayPayout.toFixed(2);
+        if (profitEl) profitEl.textContent = '$' + parlayProfit.toFixed(2);
+      } else {
+        const totalRisk   = betSlipLegs.reduce(function (s, l) { return s + (parseFloat(l.wager) || 0); }, 0);
+        const totalPayout = betSlipLegs.reduce(function (s, l) {
+          const dec = americanToDecimal(l.odds);
+          return s + (dec && l.wager > 0 ? dec * l.wager : 0);
+        }, 0);
+        const totalProfit = totalPayout - totalRisk;
+        if (riskEl)   riskEl.textContent   = '$' + totalRisk.toFixed(2);
+        if (payoutEl) payoutEl.textContent = '$' + totalPayout.toFixed(2);
+        if (profitEl) profitEl.textContent = '$' + totalProfit.toFixed(2);
+      }
+    }
+
+    (function wireBetSlip() {
+      const bsModal      = document.getElementById('betslip-modal');
+      const fab          = document.getElementById('betslip-fab');
+      const bsCloseBtn   = document.getElementById('betslip-close');
+      const bsAddBtn     = document.getElementById('bs-add-btn');
+      const bsClearBtn   = document.getElementById('bs-clear-btn');
+      const bsParlayChk  = document.getElementById('bs-parlay-toggle');
+      const bsParlayWRow = document.getElementById('bs-parlay-wager-row');
+      const bsParlayWager= document.getElementById('bs-parlay-wager');
+
+      function openBetSlip() {
+        if (bsModal) { bsModal.classList.add('open'); bsModal.setAttribute('aria-hidden', 'false'); }
+        updateBetSlipUI();
+      }
+      function closeBetSlip() {
+        if (bsModal) { bsModal.classList.remove('open'); bsModal.setAttribute('aria-hidden', 'true'); }
+      }
+
+      if (fab)        fab.addEventListener('click', openBetSlip);
+      if (bsCloseBtn) bsCloseBtn.addEventListener('click', closeBetSlip);
+      if (bsModal)    bsModal.addEventListener('click', function (e) { if (e.target === bsModal) closeBetSlip(); });
+
+      document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape' && bsModal && bsModal.classList.contains('open')) closeBetSlip();
+      });
+
+      if (bsAddBtn) {
+        bsAddBtn.addEventListener('click', function () {
+          const matchup = (document.getElementById('bs-matchup')?.value || '').trim();
+          const pick    = (document.getElementById('bs-pick')?.value    || '').trim();
+          const odds    = Number(document.getElementById('bs-odds')?.value  || 0);
+          const wager   = parseFloat(document.getElementById('bs-wager')?.value || 0);
+          if (!odds || wager <= 0) { alert('Please enter valid odds and a wager amount.'); return; }
+          betSlipLegs.push({ matchup, pick, odds, wager });
+          ['bs-matchup','bs-pick','bs-odds','bs-wager'].forEach(function (id) {
+            const el = document.getElementById(id); if (el) el.value = '';
+          });
+          updateBetSlipUI();
+        });
+      }
+
+      if (bsClearBtn) {
+        bsClearBtn.addEventListener('click', function () { betSlipLegs = []; updateBetSlipUI(); });
+      }
+
+      if (bsParlayChk) {
+        bsParlayChk.addEventListener('change', function () {
+          if (bsParlayWRow) bsParlayWRow.style.display = this.checked ? 'block' : 'none';
+          updateBetSlipUI();
+        });
+      }
+      if (bsParlayWager) bsParlayWager.addEventListener('input', updateBetSlipUI);
+
+      // Click a best-odds pill → add to slip
+      document.getElementById('bo-results').addEventListener('click', function (e) {
+        const pill = e.target.closest('.bo-best-pill');
+        if (!pill) return;
+        const priceEl  = pill.querySelector('.best-price');
+        const oddsText = (priceEl?.textContent || '').trim();
+        if (!oddsText || oddsText === 'N/A') return;
+        const oddsNum = Number(oddsText.replace(/^\+/, ''));
+        if (isNaN(oddsNum) || !americanToDecimal(oddsNum)) return;
+
+        const card    = pill.closest('.bo-event-card');
+        const matchup = (card?.querySelector('.bo-matchup')?.textContent || '').trim();
+        const teamName = (pill.querySelector('.team-name')?.textContent || '').trim();
+
+        betSlipLegs.push({ matchup, pick: teamName, odds: oddsNum, wager: 0 });
+        openBetSlip();
+        const bsBox = document.querySelector('.betslip-box');
+        if (bsBox) bsBox.scrollTop = 0;
+        pill.classList.add('bo-best-pill--added');
+        setTimeout(function () { pill.classList.remove('bo-best-pill--added'); }, 1200);
+      });
+
+      // Show existing slip legs on page load (in case user navigated from index)
+      updateBetSlipUI();
+    })();
 
   </script>
 </body>
