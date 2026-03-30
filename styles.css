@@ -18,12 +18,18 @@
   --error: #ef4444;
 }
 
+/* Prevent horizontal overflow on iOS/Android */
+html, body { width: 100%; overflow-x: hidden; }
+
 body {
   background: var(--bg);
   color: var(--text);
   font-family: 'DM Sans', sans-serif;
   min-height: 100vh;
 }
+
+/* Scale media so nothing forces horizontal scroll */
+img, video, svg, canvas { max-width: 100%; height: auto; }
 
 /* ── NAV ── */
 nav {
@@ -356,6 +362,7 @@ main section { margin-bottom: 3.5rem; }
 }
 .odds-pill {
   background: var(--surface2);
+  border: 1px solid transparent;
   border-radius: 6px;
   padding: 0.35rem 0.75rem;
   font-size: 0.8rem;
@@ -363,6 +370,13 @@ main section { margin-bottom: 3.5rem; }
   flex: 1;
   min-width: 80px;
   text-align: center;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+}
+.odds-pill:hover { border-color: var(--orange); }
+.odds-pill--added {
+  border-color: var(--success) !important;
+  background: rgba(34,197,94,0.08);
 }
 .odds-pill .odds-label {
   display: block;
@@ -727,10 +741,23 @@ footer {
 @media (max-width: 768px) {
   .bets-grid { grid-template-columns: 1fr; }
   .pricing-grid { grid-template-columns: 1fr; }
+  .modal-box { width: calc(100% - 2rem); max-width: 520px; }
+  .betslip-box { width: calc(100% - 2rem); }
+}
+@media (max-width: 600px) {
+  nav { padding: 0.75rem 1rem; flex-wrap: wrap; gap: 0.5rem; }
+  .nav-links { flex-wrap: wrap; gap: 0.4rem; justify-content: flex-end; }
+  main { padding: 1.5rem 1rem; }
+  .pick-card { flex-direction: column; align-items: flex-start; }
+  /* Prevent iOS Safari from zooming on input focus */
+  input, select, textarea { font-size: 16px !important; }
+  .betslip-fab { right: 1rem; bottom: 1rem; }
+  .betslip-fab-label { display: none; }
 }
 @media (max-width: 500px) {
   section.hero { padding: 3rem 1rem 2rem; }
   .modal-box { margin: 1rem; padding: 2rem 1.25rem; }
+  .hero-cta a, .hero-cta button { width: 100%; justify-content: center; text-align: center; }
 }
 
 /* ── TELEGRAM BUTTON ── */
