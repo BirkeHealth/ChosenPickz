@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 
-const API_KEY = import.meta.env.VITE_ODDS_API_KEY || '378d22c76a76769fa0078d2d9e88fb60';
-const ODDS_API_URL = `https://api.the-odds-api.com/v4/sports/upcoming/odds/?regions=us&markets=h2h&oddsFormat=american&apiKey=${API_KEY}`;
+// Route through the server-side proxy — API key is never sent to the browser.
+// Set ODDS_API_KEY as a server environment variable (see .env.example).
+const ODDS_PROXY_URL = '/api/odds?sport=upcoming&mode=upcoming';
 
 // Sportsbooks available for toggling in the preview
 const BOOKMAKERS = [
@@ -40,7 +41,7 @@ export default function SportsLinesPreview() {
     setLoading(true);
     setError(null);
 
-    fetch(ODDS_API_URL)
+    fetch(ODDS_PROXY_URL)
       .then(res => {
         if (!res.ok) {
           throw new Error(`Failed to fetch odds (${res.status})`);

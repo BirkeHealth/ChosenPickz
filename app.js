@@ -15,7 +15,9 @@
 // ── CONFIG ─────────────────────────────────────────────────────────────────
 
 const CFG = window.APP_CONFIG || {};
-const ODDS_API_KEY = CFG.ODDS_API_KEY  || '';
+// NOTE: ODDS_API_KEY is no longer used in app.js — all Odds API calls now go
+// through the server-side proxy at /api/odds so the key is never sent to the
+// browser.  Set ODDS_API_KEY as a server environment variable (see .env.example).
 const NEWS_API_KEY = CFG.NEWS_API_KEY  || '';
 
 // ── SPORTSBOOK TOGGLE STATE ────────────────────────────────────────────────
@@ -270,18 +272,13 @@ function renderBets() {
 }
 
 // ── FETCH ODDS ─────────────────────────────────────────────────────────────
+// Odds are fetched through the server-side proxy at /api/odds so that the
+// API key is never exposed to the browser.  Each sport is queried in turn
+// until we have enough games for the preview cards.
 
 async function loadOdds() {
   const container = document.getElementById('bets-container');
   if (!container) return;
-
-  if (!ODDS_API_KEY || ODDS_API_KEY === 'YOUR_ODDS_API_KEY') {
-    container.innerHTML =
-      '<p class="loading-msg">Add your Odds API key in <strong>config.js</strong> to load live odds. ' +
-      'Get a free key at <a href="https://the-odds-api.com/" target="_blank" rel="noopener" ' +
-      'style="color:var(--orange)">the-odds-api.com</a>.</p>';
-    return;
-  }
 
   try {
     const results = [];
@@ -289,11 +286,9 @@ async function loadOdds() {
     for (const sport of SPORTS) {
       if (results.length >= 5) break;
 
-      const url =
-        `https://api.the-odds-api.com/v4/sports/${encodeURIComponent(sport)}/odds/` +
-        `?apiKey=${encodeURIComponent(ODDS_API_KEY)}&regions=us&markets=h2h,spreads,totals&oddsFormat=american`;
-
-      const res = await fetch(url);
+      // Use the backend proxy — API key is injected server-side
+      const params = new URLSearchParams({ sport: sport, mode: 'upcoming' });
+      const res    = await fetch('/api/odds?' + params.toString());
       if (!res.ok) continue;
 
       const games = await res.json();
