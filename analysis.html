@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sports Analysis — CH0SEN1 PICKZ</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="styles/main.css" />
+  <link rel="stylesheet" href="styles/theme.css" />
+  <style>
+    /* ── Analysis page specific styles ── */
+    .analysis-hero {
+      text-align: center;
+      padding: 3.5rem 1.5rem 2rem;
+      background: radial-gradient(ellipse at 50% 0%, rgba(212,160,23,0.1) 0%, transparent 70%);
+    }
+    .analysis-hero h1 {
+      font-family: 'Bebas Neue', cursive;
+      font-size: clamp(2.8rem, 8vw, 5.5rem);
+      letter-spacing: 4px;
+      line-height: 1;
+      color: var(--text);
+    }
+    .analysis-hero h1 span { color: var(--gold); }
+    .analysis-hero p { color: var(--muted); font-size: 1.05rem; margin-top: 0.75rem; }
+
+    /* Matchup analysis card */
+    .matchup-card {
+      background: var(--surface);
+      border: 1px solid var(--surface2);
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin-bottom: 1.25rem;
+      transition: border-color 0.2s;
+    }
+    .matchup-card:hover { border-color: var(--gold); }
+    .matchup-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      margin-bottom: 1.25rem;
+      padding-bottom: 1rem;
+      border-bottom: 1px solid var(--surface2);
+    }
+    .matchup-sport-badge {
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--blue);
+      margin-bottom: 0.3rem;
+    }
+    .matchup-teams {
+      font-family: 'Bebas Neue', cursive;
+      font-size: 1.6rem;
+      letter-spacing: 2px;
+      color: var(--text);
+    }
+    .matchup-time {
+      font-size: 0.8rem;
+      color: var(--muted);
+      margin-top: 0.2rem;
+    }
+    .matchup-pick-badge {
+      background: rgba(212,160,23,0.15);
+      color: var(--gold);
+      border: 1px solid rgba(212,160,23,0.35);
+      border-radius: 20px;
+      padding: 0.3rem 0.85rem;
+      font-size: 0.78rem;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    /* Stats comparison grid */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      gap: 0.5rem 1rem;
+      align-items: center;
+      margin-bottom: 1rem;
+    }
+    .stat-row-label {
+      text-align: center;
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.7px;
+      color: var(--muted);
+      grid-column: 1 / -1;
+      margin-top: 0.5rem;
+    }
+    .stat-home, .stat-away {
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: var(--text);
+      padding: 0.4rem 0;
+    }
+    .stat-home { text-align: right; }
+    .stat-away { text-align: left; }
+    .stat-label {
+      text-align: center;
+      font-size: 0.72rem;
+      color: var(--muted);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .stat-best { color: var(--success); }
+
+    /* Win probability bar */
+    .win-prob-section { margin-bottom: 1rem; }
+    .win-prob-label {
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.7px;
+      color: var(--muted);
+      margin-bottom: 0.5rem;
+    }
+    .win-prob-bar {
+      display: flex;
+      border-radius: 6px;
+      overflow: hidden;
+      height: 28px;
+    }
+    .win-prob-away {
+      background: var(--blue);
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+      padding: 0 0.6rem;
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: #fff;
+      transition: width 0.5s;
+    }
+    .win-prob-home {
+      background: var(--orange);
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      padding: 0 0.6rem;
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: #fff;
+      transition: width 0.5s;
+    }
+
+    /* Analysis insight box */
+    .analysis-insight {
+      background: var(--surface2);
+      border-left: 3px solid var(--gold);
+      border-radius: 0 8px 8px 0;
+      padding: 0.85rem 1rem;
+      margin-top: 1rem;
+      font-size: 0.88rem;
+      color: var(--text);
+      line-height: 1.55;
+    }
+    .analysis-insight strong { color: var(--gold); }
+
+    /* Sharp trends */
+    .trend-card {
+      background: var(--surface);
+      border: 1px solid var(--surface2);
+      border-radius: 10px;
+      padding: 1rem 1.25rem;
+      margin-bottom: 0.85rem;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      transition: border-color 0.2s;
+    }
+    .trend-card:hover { border-color: var(--orange); }
+    .trend-icon {
+      font-size: 1.5rem;
+      flex-shrink: 0;
+    }
+    .trend-info { flex: 1; }
+    .trend-title {
+      font-weight: 700;
+      font-size: 0.9rem;
+      color: var(--text);
+      margin-bottom: 0.2rem;
+    }
+    .trend-desc { font-size: 0.82rem; color: var(--muted); }
+    .trend-value {
+      font-family: 'Bebas Neue', cursive;
+      font-size: 1.4rem;
+      letter-spacing: 1px;
+      flex-shrink: 0;
+    }
+    .trend-value.up   { color: var(--success); }
+    .trend-value.down { color: #f87171; }
+  </style>
+</head>
+<body>
+
+  <!-- ── NAV ── -->
+  <nav>
+    <a class="nav-logo" href="index.html">
+      CH<span class="ch-blue">0</span>SEN<span class="ch-blue">1</span> PICKZ
+    </a>
+    <div class="nav-links">
+      <a href="index.html#live-bets">Live Bets</a>
+      <a href="best-odds.html">Best Odds</a>
+      <a href="news.html">News</a>
+      <a href="analysis.html" class="active">Analysis</a>
+      <a href="pick.html">Pick of the Week</a>
+      <a href="about.html">About</a>
+    </div>
+  </nav>
+
+  <!-- ── HERO ── -->
+  <div class="analysis-hero">
+    <h1>Sports <span>Analysis</span></h1>
+    <p>Matchup breakdowns, sharp trends &amp; win probability insights</p>
+  </div>
+
+  <main>
+
+    <!-- ── FEATURED MATCHUPS ── -->
+    <section id="featured-matchups">
+      <h2 class="section-heading">&#9733; Featured Matchup Analysis</h2>
+      <p class="loading-msg" style="text-align:left; padding:0 0 1rem; color:var(--muted); font-size:0.88rem;">
+        Connect <code>scripts/analysis.js</code> to a stats API (e.g. SportsDataIO, ESPN API) to populate live matchup data.
+      </p>
+
+      <!-- Placeholder matchup card -->
+      <div class="matchup-card" id="matchup-1">
+        <div class="matchup-header">
+          <div>
+            <div class="matchup-sport-badge">NFL · Week 18</div>
+            <div class="matchup-teams">Team A <span style="color:var(--muted)">@</span> Team B</div>
+            <div class="matchup-time">&#128336; Sun, Jan 5 · 4:25 PM ET</div>
+          </div>
+          <span class="matchup-pick-badge">&#127942; Our Pick: Team B -3.5</span>
+        </div>
+
+        <!-- Win probability bar -->
+        <div class="win-prob-section">
+          <div class="win-prob-label">&#127919; Win Probability</div>
+          <div class="win-prob-bar">
+            <div class="win-prob-away" style="width:42%">42% Team A</div>
+            <div class="win-prob-home" style="width:58%">Team B 58%</div>
+          </div>
+        </div>
+
+        <!-- Stats comparison -->
+        <div class="stats-grid">
+          <div class="stat-row-label">&#128200; Season Stats Comparison</div>
+
+          <div class="stat-home stat-best">28.4</div>
+          <div class="stat-label">PPG</div>
+          <div class="stat-away">24.1</div>
+
+          <div class="stat-home">22.1</div>
+          <div class="stat-label">OPP PPG</div>
+          <div class="stat-away stat-best">19.8</div>
+
+          <div class="stat-home stat-best">385</div>
+          <div class="stat-label">YPG</div>
+          <div class="stat-away">341</div>
+
+          <div class="stat-home stat-best">8-4</div>
+          <div class="stat-label">ATS Record</div>
+          <div class="stat-away">6-6</div>
+        </div>
+
+        <!-- Analysis insight -->
+        <div class="analysis-insight">
+          <strong>Sharp Insight:</strong> [Placeholder] This section will display AI-driven or analyst insights, line movement alerts, and key matchup factors once <code>scripts/analysis.js</code> is connected to a data source.
+        </div>
+      </div>
+
+      <!-- Second placeholder matchup card -->
+      <div class="matchup-card" id="matchup-2">
+        <div class="matchup-header">
+          <div>
+            <div class="matchup-sport-badge">NBA · Regular Season</div>
+            <div class="matchup-teams">Team C <span style="color:var(--muted)">@</span> Team D</div>
+            <div class="matchup-time">&#128336; Mon, Jan 6 · 7:30 PM ET</div>
+          </div>
+          <span class="matchup-pick-badge">&#127942; Our Pick: Over 224.5</span>
+        </div>
+
+        <div class="win-prob-section">
+          <div class="win-prob-label">&#127919; Win Probability</div>
+          <div class="win-prob-bar">
+            <div class="win-prob-away" style="width:55%">55% Team C</div>
+            <div class="win-prob-home" style="width:45%">Team D 45%</div>
+          </div>
+        </div>
+
+        <div class="analysis-insight">
+          <strong>Sharp Insight:</strong> [Placeholder] Connect API data to show pace metrics, three-point rate matchups, rest advantages, and over/under trends for this game.
+        </div>
+      </div>
+    </section>
+
+    <!-- ── SHARP TRENDS ── -->
+    <section id="sharp-trends">
+      <h2 class="section-heading">&#128200; Sharp Money Trends</h2>
+      <p class="loading-msg" style="text-align:left; padding:0 0 1rem; color:var(--muted); font-size:0.88rem;">
+        Line movement and betting percentage data will load here via API integration.
+      </p>
+      <div id="trends-container">
+        <div class="trend-card">
+          <div class="trend-icon">&#128200;</div>
+          <div class="trend-info">
+            <div class="trend-title">[Placeholder] Line Movement Alert</div>
+            <div class="trend-desc">Team B -3.5 → -5 · 73% of sharp money on Team B</div>
+          </div>
+          <div class="trend-value up">+1.5</div>
+        </div>
+        <div class="trend-card">
+          <div class="trend-icon">&#128181;</div>
+          <div class="trend-info">
+            <div class="trend-title">[Placeholder] Public vs. Sharp Split</div>
+            <div class="trend-desc">68% of tickets on Team A, but 74% of $ on Team B</div>
+          </div>
+          <div class="trend-value up">Sharp</div>
+        </div>
+        <div class="trend-card">
+          <div class="trend-icon">&#128293;</div>
+          <div class="trend-info">
+            <div class="trend-title">[Placeholder] Steam Move Detected</div>
+            <div class="trend-desc">Over 224.5 → 226 across multiple books simultaneously</div>
+          </div>
+          <div class="trend-value down">-1.5</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── MODEL PERFORMANCE ── -->
+    <section id="model-performance">
+      <h2 class="section-heading">&#127942; Model Performance</h2>
+      <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:1rem;" id="perf-stats">
+        <div style="background:var(--surface); border:1px solid var(--surface2); border-radius:10px; padding:1.25rem; text-align:center;">
+          <div style="font-family:'Bebas Neue',cursive; font-size:2.5rem; color:var(--success); letter-spacing:2px;">--</div>
+          <div style="font-size:0.78rem; color:var(--muted); text-transform:uppercase; letter-spacing:0.7px; margin-top:0.25rem;">Season Record</div>
+        </div>
+        <div style="background:var(--surface); border:1px solid var(--surface2); border-radius:10px; padding:1.25rem; text-align:center;">
+          <div style="font-family:'Bebas Neue',cursive; font-size:2.5rem; color:var(--gold); letter-spacing:2px;">--%</div>
+          <div style="font-size:0.78rem; color:var(--muted); text-transform:uppercase; letter-spacing:0.7px; margin-top:0.25rem;">Win Rate</div>
+        </div>
+        <div style="background:var(--surface); border:1px solid var(--surface2); border-radius:10px; padding:1.25rem; text-align:center;">
+          <div style="font-family:'Bebas Neue',cursive; font-size:2.5rem; color:var(--orange); letter-spacing:2px;">--u</div>
+          <div style="font-size:0.78rem; color:var(--muted); text-transform:uppercase; letter-spacing:0.7px; margin-top:0.25rem;">Units Profit</div>
+        </div>
+        <div style="background:var(--surface); border:1px solid var(--surface2); border-radius:10px; padding:1.25rem; text-align:center;">
+          <div style="font-family:'Bebas Neue',cursive; font-size:2.5rem; color:#60a5fa; letter-spacing:2px;">--</div>
+          <div style="font-size:0.78rem; color:var(--muted); text-transform:uppercase; letter-spacing:0.7px; margin-top:0.25rem;">Picks This Week</div>
+        </div>
+      </div>
+      <p class="loading-msg" style="margin-top:1rem;">Performance stats will update automatically via <code>scripts/analysis.js</code>.</p>
+    </section>
+
+  </main>
+
+  <!-- ── FOOTER ── -->
+  <footer>
+    <p>&copy; 2026 CH0SEN1 PICKZ &mdash; For entertainment purposes only. <a href="about.html" style="color:var(--gold); text-decoration:none;">About &amp; Legal</a></p>
+  </footer>
+
+  <script src="config.js"></script>
+  <script src="scripts/analysis.js"></script>
+</body>
+</html>

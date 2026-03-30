@@ -1,0 +1,106 @@
+/**
+ * styles/theme.css — ChosenPickz brand theme tokens
+ *
+ * Extends the :root CSS custom properties defined in /styles.css.
+ * Use this file to override or add brand colors, spacing, and typography
+ * scales for the sportsbook analysis pages.
+ *
+ * Future additions: light/dark mode toggle, sport-specific accent palettes,
+ * icon font references, and typography scale.
+ */
+
+:root {
+  /* ── Brand palette ── */
+  --brand-primary:   #F97316;   /* CH0SEN1 orange */
+  --brand-secondary: #1D4ED8;   /* CH0SEN1 blue */
+  --brand-gold:      #D4A017;   /* accent gold */
+  --brand-dark:      #0a0a0a;   /* near-black background */
+
+  /* ── Semantic surface tokens ── */
+  --card-bg:         #141414;
+  --card-border:     #1e1e1e;
+  --card-hover-border: var(--brand-primary);
+
+  /* ── Status colors ── */
+  --status-win:      #22c55e;
+  --status-loss:     #ef4444;
+  --status-push:     #D4A017;
+  --status-pending:  #888;
+
+  /* ── Sport accent colors ── */
+  --sport-nfl:  #013369;
+  --sport-nba:  #C9082A;
+  --sport-mlb:  #002D72;
+  --sport-nhl:  #000000;
+  --sport-mma:  #e01c1c;
+
+  /* ── Typography scale ── */
+  --font-display:  'Bebas Neue', cursive;
+  --font-body:     'DM Sans', system-ui, sans-serif;
+
+  --text-xs:   0.72rem;
+  --text-sm:   0.85rem;
+  --text-base: 0.95rem;
+  --text-lg:   1.1rem;
+  --text-xl:   1.35rem;
+  --text-2xl:  1.6rem;
+
+  /* ── Spacing scale ── */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.25rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  --space-10: 2.5rem;
+  --space-12: 3rem;
+
+  /* ── Border radius ── */
+  --radius-sm:  6px;
+  --radius-md:  10px;
+  --radius-lg:  14px;
+  --radius-xl:  20px;
+  --radius-pill: 999px;
+
+  /* ── Shadow ── */
+  --shadow-card: 0 2px 12px rgba(0,0,0,0.35);
+  --shadow-modal: 0 8px 40px rgba(0,0,0,0.6);
+}
+
+/* ── Dark mode is default (bg is already dark) ── */
+/* ── Light mode override — uncomment and adjust when adding a theme toggle ──
+@media (prefers-color-scheme: light) {
+  :root {
+    --bg:        #f3f7fa;
+    --surface:   #ffffff;
+    --surface2:  #f0f0f0;
+    --surface3:  #e0e0e0;
+    --text:      #111111;
+    --muted:     #666666;
+    --brand-dark: #f3f7fa;
+  }
+}
+── */
+
+/* ── Scrollbar styling (Chrome/Edge/Safari) ── */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: var(--brand-dark);
+}
+::-webkit-scrollbar-thumb {
+  background: #333;
+  border-radius: var(--radius-pill);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--brand-primary);
+}
+
+/* ── Selection highlight ── */
+::selection {
+  background: rgba(249, 115, 22, 0.25);
+  color: var(--text);
+}

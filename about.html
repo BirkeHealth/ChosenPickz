@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>About &amp; Legal — CH0SEN1 PICKZ</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="styles/main.css" />
+  <link rel="stylesheet" href="styles/theme.css" />
+  <style>
+    /* ── About page specific styles ── */
+    .about-hero {
+      text-align: center;
+      padding: 3.5rem 1.5rem 2rem;
+      background: radial-gradient(ellipse at 50% 0%, rgba(29,78,216,0.08) 0%, transparent 70%);
+    }
+    .about-hero h1 {
+      font-family: 'Bebas Neue', cursive;
+      font-size: clamp(2.8rem, 8vw, 5.5rem);
+      letter-spacing: 4px;
+      line-height: 1;
+      color: var(--text);
+    }
+    .about-hero h1 span { color: var(--blue); }
+    .about-hero p { color: var(--muted); font-size: 1.05rem; margin-top: 0.75rem; }
+
+    /* Content sections */
+    .about-card {
+      background: var(--surface);
+      border: 1px solid var(--surface2);
+      border-radius: 12px;
+      padding: 1.75rem;
+      margin-bottom: 1.25rem;
+    }
+    .about-card h3 {
+      font-family: 'Bebas Neue', cursive;
+      font-size: 1.4rem;
+      letter-spacing: 2px;
+      color: var(--orange);
+      margin-bottom: 0.85rem;
+    }
+    .about-card p, .about-card li {
+      font-size: 0.92rem;
+      color: var(--muted);
+      line-height: 1.65;
+      margin-bottom: 0.65rem;
+    }
+    .about-card ul {
+      padding-left: 1.25rem;
+    }
+    .about-card a {
+      color: var(--gold);
+      text-decoration: none;
+    }
+    .about-card a:hover { text-decoration: underline; }
+
+    /* Mission feature list */
+    .feature-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+    .feature-item {
+      background: var(--surface2);
+      border-radius: 10px;
+      padding: 1rem 1.25rem;
+      border: 1px solid var(--surface3);
+    }
+    .feature-item .feature-icon {
+      font-size: 1.5rem;
+      margin-bottom: 0.5rem;
+    }
+    .feature-item .feature-title {
+      font-weight: 700;
+      font-size: 0.9rem;
+      color: var(--text);
+      margin-bottom: 0.3rem;
+    }
+    .feature-item .feature-desc {
+      font-size: 0.82rem;
+      color: var(--muted);
+      line-height: 1.5;
+      margin: 0;
+    }
+
+    /* Legal disclaimer highlight */
+    .disclaimer-box {
+      background: rgba(239,68,68,0.06);
+      border: 1px solid rgba(239,68,68,0.25);
+      border-radius: 10px;
+      padding: 1.25rem 1.5rem;
+      margin-bottom: 1.25rem;
+    }
+    .disclaimer-box h3 {
+      font-family: 'Bebas Neue', cursive;
+      font-size: 1.2rem;
+      letter-spacing: 2px;
+      color: #f87171;
+      margin-bottom: 0.75rem;
+    }
+    .disclaimer-box p {
+      font-size: 0.88rem;
+      color: var(--muted);
+      line-height: 1.65;
+      margin-bottom: 0.5rem;
+    }
+
+    /* Contact / links */
+    .link-row {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+      margin-top: 0.75rem;
+    }
+    .link-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      background: var(--surface2);
+      color: var(--text);
+      text-decoration: none;
+      padding: 0.55rem 1.1rem;
+      border-radius: 8px;
+      font-size: 0.88rem;
+      font-weight: 600;
+      border: 1px solid var(--surface3);
+      transition: border-color 0.2s, color 0.2s;
+    }
+    .link-btn:hover { border-color: var(--orange); color: var(--orange); }
+  </style>
+</head>
+<body>
+
+  <!-- ── NAV ── -->
+  <nav>
+    <a class="nav-logo" href="index.html">
+      CH<span class="ch-blue">0</span>SEN<span class="ch-blue">1</span> PICKZ
+    </a>
+    <div class="nav-links">
+      <a href="index.html#live-bets">Live Bets</a>
+      <a href="best-odds.html">Best Odds</a>
+      <a href="news.html">News</a>
+      <a href="analysis.html">Analysis</a>
+      <a href="pick.html">Pick of the Week</a>
+      <a href="about.html" class="active">About</a>
+    </div>
+  </nav>
+
+  <!-- ── HERO ── -->
+  <div class="about-hero">
+    <h1>About &amp; <span>Legal</span></h1>
+    <p>Who we are, what we do, and our commitment to responsible gambling</p>
+  </div>
+
+  <main>
+
+    <!-- ── RESPONSIBLE GAMBLING DISCLAIMER ── -->
+    <div class="disclaimer-box">
+      <h3>&#9888; Responsible Gambling Notice</h3>
+      <p>
+        CH0SEN1 PICKZ is a sports information and entertainment platform. All picks, analysis, and content on this site are for <strong>entertainment purposes only</strong> and do not constitute financial advice.
+      </p>
+      <p>
+        Gambling involves real money and real risk. Never bet more than you can afford to lose. If you or someone you know has a gambling problem, please seek help immediately.
+      </p>
+      <div class="link-row">
+        <a href="https://www.ncpgambling.org/" target="_blank" rel="noopener noreferrer" class="link-btn">&#128222; National Problem Gambling Helpline</a>
+        <a href="https://www.responsiblegambling.org/" target="_blank" rel="noopener noreferrer" class="link-btn">&#127760; ResponsibleGambling.org</a>
+        <a href="tel:1-800-522-4700" class="link-btn">&#9742; 1-800-GAMBLER</a>
+      </div>
+    </div>
+
+    <!-- ── ABOUT THE PLATFORM ── -->
+    <section id="about-platform">
+      <h2 class="section-heading">&#127942; About CH0SEN1 PICKZ</h2>
+      <div class="about-card">
+        <h3>Our Mission</h3>
+        <p>
+          CH0SEN1 PICKZ is built for sports fans who want data-driven insights without the noise. We combine real-time odds, sharp money trends, injury reports, and deep statistical analysis to help you make better-informed decisions — whether you bet recreationally or follow sports professionally.
+        </p>
+        <div class="feature-list">
+          <div class="feature-item">
+            <div class="feature-icon">&#128202;</div>
+            <div class="feature-title">Live Odds</div>
+            <div class="feature-desc">Real-time moneyline, spread, and O/U data across top sportsbooks.</div>
+          </div>
+          <div class="feature-item">
+            <div class="feature-icon">&#128240;</div>
+            <div class="feature-title">Sports News</div>
+            <div class="feature-desc">Curated injury reports, lineup changes, and breaking headlines.</div>
+          </div>
+          <div class="feature-item">
+            <div class="feature-icon">&#128203;</div>
+            <div class="feature-title">Deep Analysis</div>
+            <div class="feature-desc">Matchup breakdowns, sharp trends, and win probability models.</div>
+          </div>
+          <div class="feature-item">
+            <div class="feature-icon">&#127942;</div>
+            <div class="feature-title">Pick of the Week</div>
+            <div class="feature-desc">Our highest-confidence pick each week, with full rationale.</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── LEGAL ── -->
+    <section id="legal">
+      <h2 class="section-heading">&#128220; Legal &amp; Disclaimers</h2>
+      <div class="about-card">
+        <h3>Disclaimer</h3>
+        <p>
+          This website and its contents are for informational and entertainment purposes only. CH0SEN1 PICKZ does not offer licensed gambling or sports betting services. We are not a sportsbook.
+        </p>
+        <p>
+          All odds data shown on this site is sourced from third-party APIs and may not reflect real-time changes. We make no guarantee of accuracy, completeness, or timeliness of any information displayed.
+        </p>
+        <p>
+          Sports betting is not legal in all jurisdictions. It is your responsibility to know and comply with the gambling laws in your location before placing any wager.
+        </p>
+      </div>
+      <div class="about-card">
+        <h3>No Affiliation</h3>
+        <p>
+          CH0SEN1 PICKZ is an independent platform and is <strong>not affiliated with, endorsed by, or sponsored by</strong> any sportsbook, sports league, team, or governing body (including but not limited to FanDuel, DraftKings, BetMGM, the NFL, NBA, MLB, NHL, or NCAA).
+        </p>
+        <p>
+          Any reference to third-party sportsbooks is for informational comparison purposes only.
+        </p>
+      </div>
+      <div class="about-card">
+        <h3>Privacy &amp; Data</h3>
+        <p>
+          We respect your privacy. This site does not sell or share personal data. We use standard web analytics to improve user experience. Odds data is fetched server-side via a proxy so your API keys are never exposed to the browser.
+        </p>
+        <ul>
+          <li>No personal betting data is stored on our servers.</li>
+          <li>Session authentication is handled securely with industry-standard practices.</li>
+          <li>Cookie usage is limited to session management.</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ── CONTACT ── -->
+    <section id="contact">
+      <h2 class="section-heading">&#128231; Contact</h2>
+      <div class="about-card">
+        <h3>Get in Touch</h3>
+        <p>
+          Have feedback, a bug report, or a partnership inquiry? We'd love to hear from you.
+        </p>
+        <div class="link-row">
+          <a href="mailto:contact@chosenpickz.com" class="link-btn">&#9993; contact@chosenpickz.com</a>
+          <a href="https://github.com/BirkeHealth/ChosenPickz" target="_blank" rel="noopener noreferrer" class="link-btn">&#128279; GitHub</a>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ── FOOTER ── -->
+  <footer>
+    <p>&copy; 2026 CH0SEN1 PICKZ &mdash; For entertainment purposes only. All rights reserved.</p>
+  </footer>
+
+</body>
+</html>

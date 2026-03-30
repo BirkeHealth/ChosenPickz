@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sports News — CH0SEN1 PICKZ</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="styles/main.css" />
+  <link rel="stylesheet" href="styles/theme.css" />
+  <style>
+    /* ── News page specific styles ── */
+    .news-hero {
+      text-align: center;
+      padding: 3.5rem 1.5rem 2rem;
+      background: radial-gradient(ellipse at 50% 0%, rgba(29,78,216,0.12) 0%, transparent 70%);
+    }
+    .news-hero h1 {
+      font-family: 'Bebas Neue', cursive;
+      font-size: clamp(2.8rem, 8vw, 5.5rem);
+      letter-spacing: 4px;
+      line-height: 1;
+      color: var(--text);
+    }
+    .news-hero h1 span { color: var(--orange); }
+    .news-hero p { color: var(--muted); font-size: 1.05rem; margin-top: 0.75rem; }
+
+    /* Sport filter tabs */
+    .news-filter {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+      margin-bottom: 1.5rem;
+    }
+    .news-filter-btn {
+      background: var(--surface2);
+      color: var(--muted);
+      border: 1px solid var(--surface2);
+      padding: 0.35rem 0.9rem;
+      border-radius: 6px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.82rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: color 0.2s, background 0.2s, border-color 0.2s;
+    }
+    .news-filter-btn:hover { color: var(--text); }
+    .news-filter-btn.active {
+      background: rgba(249,115,22,0.15);
+      color: var(--orange);
+      border-color: rgba(249,115,22,0.4);
+    }
+
+    /* Extended news card */
+    .news-card {
+      background: var(--surface);
+      border: 1px solid var(--surface2);
+      border-radius: 10px;
+      padding: 1.25rem 1.5rem;
+      margin-bottom: 1rem;
+      transition: border-color 0.2s;
+    }
+    .news-card:hover { border-color: var(--orange); }
+    .news-card-sport {
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--blue);
+      margin-bottom: 0.3rem;
+    }
+    .news-card-headline {
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--text);
+      line-height: 1.4;
+      text-decoration: none;
+      display: block;
+      margin-bottom: 0.4rem;
+      transition: color 0.2s;
+    }
+    .news-card-headline:hover { color: var(--orange); }
+    .news-card-summary {
+      font-size: 0.88rem;
+      color: var(--muted);
+      line-height: 1.55;
+      margin-bottom: 0.6rem;
+    }
+    .news-card-meta {
+      font-size: 0.78rem;
+      color: var(--muted);
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+    .news-card-meta .source { color: var(--gold); font-weight: 600; }
+
+    /* Injury report section */
+    .injury-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.88rem;
+    }
+    .injury-table th {
+      text-align: left;
+      padding: 0.5rem 0.75rem;
+      color: var(--muted);
+      font-weight: 700;
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.7px;
+      border-bottom: 1px solid var(--surface2);
+    }
+    .injury-table td {
+      padding: 0.6rem 0.75rem;
+      border-bottom: 1px solid var(--surface2);
+      color: var(--text);
+    }
+    .injury-table tr:last-child td { border-bottom: none; }
+    .injury-table tr:hover td { background: var(--surface2); }
+    .status-out    { color: #f87171; font-weight: 700; }
+    .status-quest  { color: var(--gold); font-weight: 700; }
+    .status-prob   { color: var(--success); font-weight: 700; }
+
+    /* Trending section */
+    .trending-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+    .trending-item {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      background: var(--surface);
+      border: 1px solid var(--surface2);
+      border-radius: 8px;
+      padding: 0.75rem 1rem;
+      transition: border-color 0.2s;
+    }
+    .trending-item:hover { border-color: var(--blue); }
+    .trending-rank {
+      font-family: 'Bebas Neue', cursive;
+      font-size: 1.4rem;
+      color: var(--surface3);
+      width: 2rem;
+      flex-shrink: 0;
+      text-align: center;
+    }
+    .trending-topic {
+      font-weight: 600;
+      font-size: 0.9rem;
+      color: var(--text);
+    }
+    .trending-count {
+      font-size: 0.78rem;
+      color: var(--muted);
+      margin-top: 0.15rem;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ── NAV ── -->
+  <nav>
+    <a class="nav-logo" href="index.html">
+      CH<span class="ch-blue">0</span>SEN<span class="ch-blue">1</span> PICKZ
+    </a>
+    <div class="nav-links">
+      <a href="index.html#live-bets">Live Bets</a>
+      <a href="best-odds.html">Best Odds</a>
+      <a href="news.html" class="active">News</a>
+      <a href="analysis.html">Analysis</a>
+      <a href="pick.html">Pick of the Week</a>
+      <a href="about.html">About</a>
+    </div>
+  </nav>
+
+  <!-- ── HERO ── -->
+  <div class="news-hero">
+    <h1>Sports <span>News</span></h1>
+    <p>Latest headlines, injury reports &amp; trends across all major sports</p>
+  </div>
+
+  <main>
+
+    <!-- ── SPORT FILTERS ── -->
+    <div class="news-filter" aria-label="Filter news by sport">
+      <button class="news-filter-btn active" data-sport="all">All Sports</button>
+      <button class="news-filter-btn" data-sport="nfl">🏈 NFL</button>
+      <button class="news-filter-btn" data-sport="nba">🏀 NBA</button>
+      <button class="news-filter-btn" data-sport="mlb">⚾ MLB</button>
+      <button class="news-filter-btn" data-sport="nhl">🏒 NHL</button>
+      <button class="news-filter-btn" data-sport="ncaaf">🏈 NCAAF</button>
+      <button class="news-filter-btn" data-sport="mma">🥊 MMA</button>
+    </div>
+
+    <!-- ── TOP HEADLINES ── -->
+    <section id="top-headlines">
+      <h2 class="section-heading">&#9660; Top Headlines</h2>
+      <div id="news-feed">
+        <!-- Placeholder cards — replaced by news.js when API is connected -->
+        <div class="news-card">
+          <div class="news-card-sport">NFL</div>
+          <a class="news-card-headline" href="#">[Headline] Team A Dominates in Week 15 Matchup</a>
+          <p class="news-card-summary">
+            [Placeholder] Connect a news API (e.g. NewsAPI, SportsDataIO) in <code>scripts/news.js</code> to populate live headlines, summaries, and links here.
+          </p>
+          <div class="news-card-meta">
+            <span class="source">ESPN</span>
+            <span>2 hours ago</span>
+          </div>
+        </div>
+        <div class="news-card">
+          <div class="news-card-sport">NBA</div>
+          <a class="news-card-headline" href="#">[Headline] Star Player Returns From Injury, Sets Career High</a>
+          <p class="news-card-summary">
+            [Placeholder] Real-time sports news will appear here once the API is integrated.
+          </p>
+          <div class="news-card-meta">
+            <span class="source">The Athletic</span>
+            <span>4 hours ago</span>
+          </div>
+        </div>
+        <div class="news-card">
+          <div class="news-card-sport">NHL</div>
+          <a class="news-card-headline" href="#">[Headline] Trade Deadline Moves Shake Up Playoff Picture</a>
+          <p class="news-card-summary">
+            [Placeholder] This section will auto-update with breaking news and game previews.
+          </p>
+          <div class="news-card-meta">
+            <span class="source">Sportsnet</span>
+            <span>6 hours ago</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── INJURY REPORT ── -->
+    <section id="injury-report">
+      <h2 class="section-heading">&#9888; Injury Report</h2>
+      <p class="loading-msg" style="text-align:left; padding:0 0 1rem;">
+        Live injury data will populate here via API. Connect <code>scripts/news.js</code> to a sports data provider (e.g. SportsDataIO, MySportsFeeds).
+      </p>
+      <div style="overflow-x:auto;">
+        <table class="injury-table">
+          <thead>
+            <tr>
+              <th>Player</th>
+              <th>Team</th>
+              <th>Sport</th>
+              <th>Injury</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody id="injury-table-body">
+            <tr>
+              <td>Player Name</td>
+              <td>Team ABC</td>
+              <td>NFL</td>
+              <td>Hamstring</td>
+              <td><span class="status-quest">Questionable</span></td>
+            </tr>
+            <tr>
+              <td>Player Name</td>
+              <td>Team XYZ</td>
+              <td>NBA</td>
+              <td>Knee</td>
+              <td><span class="status-out">Out</span></td>
+            </tr>
+            <tr>
+              <td>Player Name</td>
+              <td>Team DEF</td>
+              <td>NHL</td>
+              <td>Upper Body</td>
+              <td><span class="status-prob">Probable</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ── TRENDING TOPICS ── -->
+    <section id="trending-topics">
+      <h2 class="section-heading">&#128200; Trending</h2>
+      <div class="trending-list" id="trending-list">
+        <div class="trending-item">
+          <div class="trending-rank">1</div>
+          <div>
+            <div class="trending-topic">[Placeholder] Super Bowl Odds Movement</div>
+            <div class="trending-count">Trending in NFL · 12.4k mentions</div>
+          </div>
+        </div>
+        <div class="trending-item">
+          <div class="trending-rank">2</div>
+          <div>
+            <div class="trending-topic">[Placeholder] MVP Race Tightens</div>
+            <div class="trending-count">Trending in NBA · 8.7k mentions</div>
+          </div>
+        </div>
+        <div class="trending-item">
+          <div class="trending-rank">3</div>
+          <div>
+            <div class="trending-topic">[Placeholder] Playoff Seeding Scenarios</div>
+            <div class="trending-count">Trending in NHL · 5.2k mentions</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ── FOOTER ── -->
+  <footer>
+    <p>&copy; 2026 CH0SEN1 PICKZ &mdash; For entertainment purposes only. <a href="about.html" style="color:var(--gold); text-decoration:none;">About &amp; Legal</a></p>
+  </footer>
+
+  <script src="config.js"></script>
+  <script src="scripts/news.js"></script>
+</body>
+</html>
