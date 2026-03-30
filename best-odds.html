@@ -36,6 +36,65 @@
       padding: 1.25rem 1.5rem;
       margin-bottom: 2rem;
     }
+    /* Quick-filter tabs */
+    .bo-time-tabs {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+      margin-bottom: 1.25rem;
+    }
+    .bo-tab-btn {
+      background: var(--surface);
+      border: 1px solid var(--surface2);
+      color: var(--muted);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.82rem;
+      font-weight: 600;
+      padding: 0.4rem 1rem;
+      border-radius: 20px;
+      cursor: pointer;
+      transition: background 0.15s, border-color 0.15s, color 0.15s;
+      white-space: nowrap;
+    }
+    .bo-tab-btn:hover { border-color: var(--gold); color: var(--text); }
+    .bo-tab-btn.active {
+      background: var(--gold);
+      border-color: var(--gold);
+      color: #0a0a0a;
+    }
+    .bo-tab-btn.live-tab.active {
+      background: #ef4444;
+      border-color: #ef4444;
+      color: #fff;
+    }
+
+    /* Live indicator badge on cards */
+    .bo-live-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+      font-size: 0.68rem;
+      font-weight: 700;
+      letter-spacing: 1px;
+      padding: 0.18rem 0.55rem;
+      border-radius: 20px;
+      background: rgba(239,68,68,0.15);
+      color: #ef4444;
+      border: 1px solid rgba(239,68,68,0.4);
+      text-transform: uppercase;
+    }
+    .bo-live-badge::before {
+      content: '';
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: #ef4444;
+      animation: livePulse 1.2s ease-in-out infinite;
+    }
+    @keyframes livePulse {
+      0%, 100% { opacity: 1; }
+      50%       { opacity: 0.3; }
+    }
+
     .bo-controls .ctrl-group {
       display: flex;
       flex-direction: column;
@@ -223,12 +282,20 @@
   <!-- ── HERO ── -->
   <div class="bo-hero">
     <h1>Best Available <span>Odds</span></h1>
-    <p>Compare moneyline odds across all sportsbooks · Any upcoming date · Best payout highlighted</p>
+    <p>Compare moneyline odds across all sportsbooks · Live, today, upcoming &amp; past · Best payout highlighted</p>
   </div>
 
   <main>
-    <!-- ── SEARCH CONTROLS ── -->
-    <div class="bo-controls">
+    <!-- ── QUICK-FILTER TABS ── -->
+    <div class="bo-time-tabs" id="time-tabs">
+      <button class="bo-tab-btn live-tab" data-mode="live">🔴 Live Now</button>
+      <button class="bo-tab-btn active"   data-mode="today">📅 Today</button>
+      <button class="bo-tab-btn"          data-mode="upcoming">📆 Next 7 Days</button>
+      <button class="bo-tab-btn"          data-mode="date">📆 Pick a Date</button>
+    </div>
+
+    <!-- ── SPORT SELECTOR (always visible) ── -->
+    <div class="bo-controls" id="sport-controls">
       <div class="ctrl-group">
         <label for="sport-select">Sport</label>
         <select id="sport-select">
@@ -243,6 +310,10 @@
           <option value="mma_mixed_martial_arts">🥊 MMA</option>
         </select>
       </div>
+    </div>
+
+    <!-- ── DATE CONTROLS (only shown in 'Pick a Date' mode) ── -->
+    <div class="bo-controls" id="date-controls" style="display:none;">
       <div class="ctrl-group">
         <label for="date-input">Date</label>
         <input type="date" id="date-input" />
@@ -267,19 +338,55 @@
     /**
      * best-odds.js — Best Available Odds search page
      *
-     * Fetches moneyline odds from The Odds API for the selected sport and date,
-     * then highlights the best (highest payout) available odds per team/outcome
+     * Fetches moneyline odds from The Odds API for the selected sport and time
+     * window. Supports Live Now, Today, Next 7 Days, and a custom date picker.
+     * Highlights the best (highest payout) available odds per team/outcome
      * and shows which sportsbook offers them.
      */
 
-    // ── INIT DATE PICKER ────────────────────────────────────────────────────
-    (function initDatePicker() {
-      const today = new Date();
-      const fmt   = d => d.toISOString().slice(0, 10);
-      const input = document.getElementById('date-input');
-      input.value = fmt(today);
-      input.min   = fmt(today);
+    // ── STATE ───────────────────────────────────────────────────────────────
+    let currentMode = 'today'; // 'live' | 'today' | 'upcoming' | 'date'
+
+    // ── CONSTANTS ───────────────────────────────────────────────────────────
+    const MS_PER_HOUR = 60 * 60 * 1000;
+    const MS_PER_DAY  = 24 * MS_PER_HOUR;
+
+    // ── INIT ────────────────────────────────────────────────────────────────
+    (function init() {
+      // Seed date picker with today's date (no min restriction — past dates allowed)
+      const today = new Date().toISOString().slice(0, 10);
+      document.getElementById('date-input').value = today;
+
+      // Tab click handler
+      document.getElementById('time-tabs').addEventListener('click', function(e) {
+        const btn = e.target.closest('.bo-tab-btn');
+        if (!btn) return;
+        const mode = btn.dataset.mode;
+        setMode(mode);
+        if (mode !== 'date') searchOdds();
+      });
+
+      // Wire up the search button (used in 'date' mode)
+      document.getElementById('search-btn').addEventListener('click', searchOdds);
+
+      // Re-run search when sport changes (applies to all modes)
+      document.getElementById('sport-select').addEventListener('change', function() {
+        if (currentMode !== 'date') searchOdds();
+      });
+
+      // Auto-load today on page open
+      searchOdds();
     })();
+
+    function setMode(mode) {
+      currentMode = mode;
+      // Update active tab styling
+      document.querySelectorAll('.bo-tab-btn').forEach(b => b.classList.remove('active'));
+      const activeBtn = document.querySelector(`.bo-tab-btn[data-mode="${mode}"]`);
+      if (activeBtn) activeBtn.classList.add('active');
+      // Show/hide date picker
+      document.getElementById('date-controls').style.display = mode === 'date' ? 'flex' : 'none';
+    }
 
     // ── HELPERS ─────────────────────────────────────────────────────────────
 
@@ -350,11 +457,14 @@
 
     // ── RENDER ──────────────────────────────────────────────────────────────
 
-    function renderEvent(event) {
+    // renderEvent accepts an optional `renderTime` (Date) so that the live
+    // status is consistent across all cards rendered in the same batch.
+    function renderEvent(event, renderTime) {
       const bookmakers = event.bookmakers || [];
       const bestOdds   = getBestOdds(bookmakers);
       const sport      = sportLabel(event.sport_key);
       const matchup    = escHtml(event.away_team) + ' <span style="color:var(--muted)">@</span> ' + escHtml(event.home_team);
+      const isLive     = new Date(event.commence_time) <= (renderTime || new Date());
 
       // Best-odds pills
       const bestPillsHtml = bestOdds.map(o => {
@@ -391,7 +501,7 @@
             <div>
               <div class="bo-sport-label">${escHtml(sport)}</div>
               <div class="bo-matchup">${matchup}</div>
-              <div class="bo-time">&#128336; ${escHtml(fmtTime(event.commence_time))}</div>
+              <div class="bo-time">&#128336; ${escHtml(fmtTime(event.commence_time))}${isLive ? ' &nbsp;<span class="bo-live-badge">Live</span>' : ''}</div>
             </div>
             <span class="bo-books-badge">${bookmakers.length} book${bookmakers.length !== 1 ? 's' : ''}</span>
           </div>
@@ -415,7 +525,6 @@
     async function searchOdds() {
       const apiKey  = (window.APP_CONFIG || {}).ODDS_API_KEY || '';
       const sport   = document.getElementById('sport-select').value;
-      const date    = document.getElementById('date-input').value;
       const results = document.getElementById('bo-results');
       const btn     = document.getElementById('search-btn');
 
@@ -427,22 +536,41 @@
         return;
       }
 
-      // Validate date — must not be in the past
-      const today = new Date().toISOString().slice(0, 10);
-
-      if (date < today) {
-        results.innerHTML = '<p class="error-msg">Please select today or a future date.</p>';
-        return;
-      }
-
       btn.disabled    = true;
       btn.textContent = 'Searching…';
       results.innerHTML = '<p class="loading-msg">Fetching best odds…</p>';
 
-      // Build API URL filtering by the chosen date window
-      const from = date + 'T00:00:00Z';
-      const to   = date + 'T23:59:59Z';
-      const url  =
+      // Build date window based on current mode
+      const now = new Date();
+      let from, to;
+
+      if (currentMode === 'live') {
+        // Games that have already started (up to 24 h ago) but aren't yet completed
+        const cutoff = new Date(now.getTime() - MS_PER_DAY);
+        from = cutoff.toISOString();
+        to   = now.toISOString();
+      } else if (currentMode === 'today') {
+        const todayStr = now.toISOString().slice(0, 10);
+        from = todayStr + 'T00:00:00Z';
+        to   = todayStr + 'T23:59:59Z';
+      } else if (currentMode === 'upcoming') {
+        const sevenDays = new Date(now.getTime() + 7 * MS_PER_DAY);
+        from = now.toISOString();
+        to   = sevenDays.toISOString();
+      } else {
+        // 'date' mode — use the date picker value
+        const date = document.getElementById('date-input').value;
+        if (!date) {
+          results.innerHTML = '<p class="error-msg">Please select a date.</p>';
+          btn.disabled    = false;
+          btn.textContent = '🔍 Search Odds';
+          return;
+        }
+        from = date + 'T00:00:00Z';
+        to   = date + 'T23:59:59Z';
+      }
+
+      const url =
         'https://api.the-odds-api.com/v4/sports/' + encodeURIComponent(sport) + '/odds/' +
         '?apiKey=' + encodeURIComponent(apiKey) +
         '&regions=us&markets=h2h&oddsFormat=american' +
@@ -455,11 +583,14 @@
         const data = await res.json();
 
         if (!Array.isArray(data) || data.length === 0) {
-          results.innerHTML = '<p class="loading-msg">No events found for the selected sport and date. Try a different date.</p>';
+          const modeLabels = { live: 'live right now', today: 'today', upcoming: 'the next 7 days', date: 'the selected date' };
+          results.innerHTML =
+            '<p class="loading-msg">No events found for ' + (modeLabels[currentMode] || 'the selected window') +
+            '. Try a different sport or time window.</p>';
           return;
         }
 
-        results.innerHTML = data.map(renderEvent).join('');
+        results.innerHTML = data.map(e => renderEvent(e, now)).join('');
       } catch (err) {
         results.innerHTML = '<p class="error-msg">Failed to load odds: ' + escHtml(err.message) + '</p>';
         console.error('Best Odds search error:', err);
@@ -469,7 +600,6 @@
       }
     }
 
-    document.getElementById('search-btn').addEventListener('click', searchOdds);
   </script>
 </body>
 </html>
