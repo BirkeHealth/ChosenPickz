@@ -236,7 +236,7 @@
     .bo-all-books summary {
       font-size: 0.75rem;
       font-weight: 600;
-      color: var(--muted);
+      color: var(--orange);
       cursor: pointer;
       user-select: none;
       margin-top: 0.5rem;
@@ -590,7 +590,9 @@
     function renderBestPills(bookmakers) {
       const bestH2H = getBestOddsByMarket(bookmakers, 'h2h');
       if (bestH2H.length === 0) return '';
-      const pillsHtml = bestH2H.map(function(o) {
+
+      // ── Moneyline (h2h) ──
+      const h2hPillsHtml = bestH2H.map(function(o) {
         const cls   = o.price >= 0 ? 'positive' : 'negative';
         const fmted = fmtOdds(o.price);
         return '<div class="bo-best-pill">' +
@@ -599,8 +601,46 @@
           '<div class="via-book">via ' + escHtml(o.bookmakerTitle) + '</div>' +
           '</div>';
       }).join('');
-      return '<div class="bo-best-label">&#127942; Best Moneyline (h2h)</div>' +
-             '<div class="bo-best-row">' + pillsHtml + '</div>';
+      let html = '<div class="bo-best-label">&#127942; Best Moneyline (h2h)</div>' +
+                 '<div class="bo-best-row">' + h2hPillsHtml + '</div>';
+
+      // ── Spread ──
+      const bestSpread = getBestOddsByMarket(bookmakers, 'spreads');
+      if (bestSpread.length > 0) {
+        const spreadPillsHtml = bestSpread.map(function(o) {
+          const cls   = o.price >= 0 ? 'positive' : 'negative';
+          const fmted = fmtOdds(o.price);
+          const pt    = (o.point !== undefined && o.point !== null)
+            ? ' (' + (o.point > 0 ? '+' : '') + o.point + ')' : '';
+          return '<div class="bo-best-pill">' +
+            '<div class="team-name">'   + escHtml(o.name) + escHtml(pt) + '</div>' +
+            '<div class="best-price ' + cls + '">' + escHtml(fmted) + '</div>' +
+            '<div class="via-book">via ' + escHtml(o.bookmakerTitle) + '</div>' +
+            '</div>';
+        }).join('');
+        html += '<div class="bo-best-label" style="margin-top:0.75rem;">&#128200; Best Spread</div>' +
+                '<div class="bo-best-row">' + spreadPillsHtml + '</div>';
+      }
+
+      // ── Over/Under (totals) ──
+      const bestTotals = getBestOddsByMarket(bookmakers, 'totals');
+      if (bestTotals.length > 0) {
+        const totalsPillsHtml = bestTotals.map(function(o) {
+          const cls   = o.price >= 0 ? 'positive' : 'negative';
+          const fmted = fmtOdds(o.price);
+          const pt    = (o.point !== undefined && o.point !== null)
+            ? ' ' + o.point : '';
+          return '<div class="bo-best-pill">' +
+            '<div class="team-name">'   + escHtml(o.name) + escHtml(pt) + '</div>' +
+            '<div class="best-price ' + cls + '">' + escHtml(fmted) + '</div>' +
+            '<div class="via-book">via ' + escHtml(o.bookmakerTitle) + '</div>' +
+            '</div>';
+        }).join('');
+        html += '<div class="bo-best-label" style="margin-top:0.75rem;">&#9868; Best O/U (Totals)</div>' +
+                '<div class="bo-best-row">' + totalsPillsHtml + '</div>';
+      }
+
+      return html;
     }
 
     /**
@@ -661,7 +701,7 @@
           : '<p class="loading-msg" style="margin:0">No odds available for this event yet.</p>') +
 
         (bookRowsHtml
-          ? '<details class="bo-all-books" open>' +
+          ? '<details class="bo-all-books">' +
               '<summary>All ' + bookmakers.length + ' bookmaker line(s) &#9662;</summary>' +
               bookRowsHtml +
             '</details>'
@@ -731,7 +771,7 @@
         const cardsHtml = data.map(function(e) { return renderEvent(e, now); }).join('');
         results.innerHTML =
           '<div class="bo-toolbar">' +
-            '<button class="bo-expand-btn" id="expand-toggle">▼ Collapse All Lines</button>' +
+            '<button class="bo-expand-btn" id="expand-toggle">&#9654; Expand All Lines</button>' +
           '</div>' +
           cardsHtml;
 

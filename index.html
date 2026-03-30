@@ -39,11 +39,92 @@
     <p>Expert MoneyLine, Spread &amp; O/U picks — powered by real-time odds.</p>
     <div class="hero-cta">
       <a href="#pricing" class="btn-primary">View Plans</a>
-      <a href="#live-bets" class="btn-secondary">Live Bets</a>
+      <a href="#pricing" class="btn-secondary">Join Now</a>
+    </div>
+    <div class="hero-cta" style="margin-top:0.75rem;">
+      <a href="https://t.me/chosen1pickz" target="_blank" rel="noopener noreferrer" class="btn-telegram">
+        ✈️ Join Our Free Telegram
+      </a>
     </div>
   </section>
 
   <main>
+
+    <!-- ── ADMIN PANEL (visible only when admin is logged in) ── -->
+    <section id="admin-panel" style="display:none;">
+      <h2 class="section-heading">⚙️ Admin Panel — Post Picks</h2>
+      <form id="admin-pick-form" class="admin-form">
+        <div class="admin-form-row">
+          <div class="admin-field">
+            <label for="pick-matchup">Matchup</label>
+            <input type="text" id="pick-matchup" placeholder="e.g. Lakers vs Celtics" required />
+          </div>
+          <div class="admin-field">
+            <label for="pick-sport">Sport</label>
+            <select id="pick-sport">
+              <option value="NFL">🏈 NFL</option>
+              <option value="NBA">🏀 NBA</option>
+              <option value="MLB">⚾ MLB</option>
+              <option value="NHL">🏒 NHL</option>
+              <option value="NCAAF">🏈 NCAAF</option>
+              <option value="NCAAB">🏀 NCAAB</option>
+              <option value="MLS">⚽ MLS</option>
+              <option value="MMA">🥊 MMA</option>
+            </select>
+          </div>
+        </div>
+        <div class="admin-form-row">
+          <div class="admin-field">
+            <label for="pick-type">Pick Type</label>
+            <select id="pick-type">
+              <option value="MoneyLine">MoneyLine</option>
+              <option value="Spread">Spread</option>
+              <option value="Over/Under">Over/Under</option>
+              <option value="Parlay">Parlay</option>
+            </select>
+          </div>
+          <div class="admin-field">
+            <label for="pick-value">Pick Value</label>
+            <input type="text" id="pick-value" placeholder="e.g. Lakers -5.5 (-110)" required />
+          </div>
+        </div>
+        <div class="admin-form-row">
+          <div class="admin-field">
+            <label for="pick-confidence">Confidence (1-5)</label>
+            <select id="pick-confidence">
+              <option value="3">⭐⭐⭐ Medium</option>
+              <option value="4">⭐⭐⭐⭐ High</option>
+              <option value="5">⭐⭐⭐⭐⭐ Very High</option>
+              <option value="2">⭐⭐ Low</option>
+              <option value="1">⭐ Very Low</option>
+            </select>
+          </div>
+          <div class="admin-field">
+            <label for="pick-lock">Visibility</label>
+            <select id="pick-lock">
+              <option value="free">🆓 Free (Everyone)</option>
+              <option value="locked">🔒 Subscribers Only</option>
+            </select>
+          </div>
+        </div>
+        <div class="admin-form-row">
+          <div class="admin-field" style="flex:1;">
+            <label for="pick-note">Note (optional)</label>
+            <input type="text" id="pick-note" placeholder="Any extra context or analysis…" />
+          </div>
+        </div>
+        <button type="submit" class="btn-primary" style="margin-top:0.5rem;">➕ Post Pick</button>
+      </form>
+      <div id="admin-picks-list" class="admin-picks-list"></div>
+    </section>
+
+    <!-- ── PICKS SECTION (visible to all, populated by admin) ── -->
+    <section id="picks-section">
+      <h2 class="section-heading">&#127942; Today's Picks</h2>
+      <div id="picks-display" class="picks-list">
+        <p class="loading-msg">No picks posted yet — check back soon!</p>
+      </div>
+    </section>
 
     <!-- ── LIVE BETS ── -->
     <section id="live-bets">
@@ -141,8 +222,8 @@
       <div class="form-panel active" id="panel-login" role="tabpanel">
         <div class="form-alert" id="login-alert"></div>
         <form class="modal-form" id="login-form">
-          <label for="login-email">Email</label>
-          <input type="email" id="login-email" placeholder="you@example.com"
+          <label for="login-email">Email or Username</label>
+          <input type="text" id="login-email" placeholder="you@example.com or admin"
                  autocomplete="email" required />
           <label for="login-password">Password</label>
           <input type="password" id="login-password" placeholder="••••••••"
@@ -177,18 +258,81 @@
           </p>
         </form>
 
-        <!-- Confirmation-code box — shown after successful signup when email unavailable -->
+        <!-- Confirmation-code box — shown after successful signup -->
         <div id="confirm-box" class="confirm-code-box" style="display:none;">
-          <div class="code-label">Your confirmation code</div>
+          <div class="code-label">Your Verification Code</div>
           <div class="code-value" id="confirm-code-display"></div>
           <p style="font-size:0.8rem;color:var(--muted);margin-top:0.5rem;">
-            Copy this code — an email has been sent if EmailJS is configured.
+            Enter this code below to verify your email address.
           </p>
+          <form class="modal-form" id="verify-form" style="margin-top:0.75rem;">
+            <input type="text" id="verify-code-input" placeholder="Enter 6-digit code"
+                   maxlength="6" style="text-align:center;letter-spacing:4px;font-size:1.1rem;" />
+            <button type="submit" class="btn-primary btn-full"
+                    style="background:var(--gold);">Verify Email ✓</button>
+          </form>
+          <div class="form-alert" id="verify-alert" style="margin-top:0.5rem;"></div>
         </div>
       </div>
 
     </div>
   </div>
+
+  <!-- ── BET SLIP CALCULATOR MODAL ── -->
+  <div id="betslip-modal" class="modal-overlay" aria-hidden="true">
+    <div class="modal-box betslip-box" role="dialog" aria-modal="true" aria-label="Bet Slip Calculator">
+      <button class="modal-close" id="betslip-close" aria-label="Close">&times;</button>
+      <h2 class="modal-title">📋 Bet Slip Calculator</h2>
+      <p class="modal-subtitle">Plan your bets before placing them</p>
+
+      <!-- Add a bet line -->
+      <div class="betslip-add-row">
+        <input type="text"   id="bs-matchup"  placeholder="Game / Matchup" class="bs-input" />
+        <input type="text"   id="bs-pick"     placeholder="Your pick (e.g. Lakers -5.5)" class="bs-input" />
+        <input type="number" id="bs-odds"     placeholder="Odds (e.g. -110 or +150)" class="bs-input bs-odds" />
+        <input type="number" id="bs-wager"    placeholder="Wager ($)" class="bs-input bs-wager" min="0" step="0.01" />
+        <button id="bs-add-btn" class="btn-primary bs-add-btn">+ Add</button>
+      </div>
+
+      <!-- Bet lines list -->
+      <div id="bs-legs" class="bs-legs"></div>
+
+      <!-- Parlay toggle -->
+      <div class="bs-parlay-row">
+        <label class="bs-toggle-label">
+          <input type="checkbox" id="bs-parlay-toggle" />
+          <span>Calculate as Parlay</span>
+        </label>
+        <div id="bs-parlay-wager-row" style="display:none;">
+          <label style="font-size:0.82rem;color:var(--muted);">Parlay Wager ($)</label>
+          <input type="number" id="bs-parlay-wager" class="bs-input bs-wager" placeholder="$" min="0" step="0.01" style="margin-top:0.25rem;" />
+        </div>
+      </div>
+
+      <!-- Summary -->
+      <div class="bs-summary" id="bs-summary">
+        <div class="bs-summary-row">
+          <span>Total Risk</span>
+          <span id="bs-total-risk">$0.00</span>
+        </div>
+        <div class="bs-summary-row highlight">
+          <span>Potential Payout</span>
+          <span id="bs-total-payout">$0.00</span>
+        </div>
+        <div class="bs-summary-row">
+          <span>Potential Profit</span>
+          <span id="bs-total-profit">$0.00</span>
+        </div>
+      </div>
+
+      <button id="bs-clear-btn" class="btn-secondary" style="width:100%;margin-top:0.75rem;">🗑 Clear Slip</button>
+    </div>
+  </div>
+
+  <!-- ── FLOATING BET SLIP BUTTON ── -->
+  <button id="betslip-fab" class="betslip-fab" title="Open Bet Slip Calculator" aria-label="Bet Slip Calculator">
+    📋<span class="betslip-fab-label"> Bet Slip</span>
+  </button>
 
   <script src="config.js"></script>
   <script src="app.js"></script>

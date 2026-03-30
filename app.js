@@ -42,6 +42,7 @@ const SPORTS = [
 
 const USERS_KEY   = 'cp_users';
 const SESSION_KEY = 'cp_session';
+const PICKS_KEY   = 'cp_admin_picks';
 
 function getUsers() {
   try { return JSON.parse(localStorage.getItem(USERS_KEY) || '[]'); }
@@ -63,6 +64,15 @@ function saveSession(user) {
 
 function clearSession() {
   localStorage.removeItem(SESSION_KEY);
+}
+
+function getAdminPicks() {
+  try { return JSON.parse(localStorage.getItem(PICKS_KEY) || '[]'); }
+  catch { return []; }
+}
+
+function saveAdminPicks(picks) {
+  localStorage.setItem(PICKS_KEY, JSON.stringify(picks));
 }
 
 // ── SIMPLE HASH (SHA-256 via SubtleCrypto) ─────────────────────────────────
@@ -515,21 +525,24 @@ async function handleSignup(e) {
   // Hide the form, show result
   document.getElementById('signup-form').style.display = 'none';
 
+  const box = document.getElementById('confirm-box');
+  const codeDisplay = document.getElementById('confirm-code-display');
+
   if (emailSent) {
     showAlert('signup', 'success',
       `✓ Account created! A confirmation email has been sent to <strong>${escapeHtml(email)}</strong>. ` +
-      `Check your inbox and confirm your address to activate your account.`);
+      `Check your inbox and enter the code below to activate your account.`);
   } else {
     showAlert('signup', 'info',
       `✓ Account created for <strong>${escapeHtml(name)}</strong>! ` +
-      `EmailJS is not configured, so your confirmation code is shown below. ` +
-      `<a href="https://www.emailjs.com/" target="_blank" rel="noopener" style="color:var(--gold)">Set up EmailJS</a> in config.js to receive real emails.`);
-    const box = document.getElementById('confirm-box');
-    const codeDisplay = document.getElementById('confirm-code-display');
-    if (box && codeDisplay) {
-      codeDisplay.textContent = code;
-      box.style.display = 'block';
-    }
+      `Enter the verification code below to activate your account. ` +
+      `<a href="https://www.emailjs.com/" target="_blank" rel="noopener" style="color:var(--gold)">Set up EmailJS</a> to receive codes by email.`);
+  }
+
+  if (box && codeDisplay) {
+    codeDisplay.textContent = code;
+    box.style.display = 'block';
+    box.dataset.pendingEmail = email;
   }
 }
 
@@ -539,11 +552,11 @@ async function handleLogin(e) {
   e.preventDefault();
   clearAlerts();
 
-  const email    = document.getElementById('login-email').value.trim().toLowerCase();
-  const password = document.getElementById('login-password').value;
+  const emailOrUser = document.getElementById('login-email').value.trim().toLowerCase();
+  const password    = document.getElementById('login-password').value;
 
-  if (!email || !password) {
-    showAlert('login', 'error', 'Please enter your email and password.');
+  if (!emailOrUser || !password) {
+    showAlert('login', 'error', 'Please enter your email/username and password.');
     return;
   }
 
@@ -551,9 +564,20 @@ async function handleLogin(e) {
   btn.disabled = true;
   btn.textContent = 'Signing in…';
 
+  // ── Admin shortcut (username: admin, password: 123456) ──
+  if (emailOrUser === 'admin' && password === '123456') {
+    const adminUser = { id: 0, name: 'Admin', email: 'admin', isAdmin: true };
+    saveSession(adminUser);
+    updateNavForUser(adminUser);
+    closeModal();
+    btn.disabled = false;
+    btn.textContent = 'Log In';
+    return;
+  }
+
   const hash  = await hashPassword(password);
   const users = getUsers();
-  const user  = users.find(u => u.email === email);
+  const user  = users.find(u => u.email === emailOrUser);
 
   btn.disabled = false;
   btn.textContent = 'Log In';
@@ -565,8 +589,32 @@ async function handleLogin(e) {
     return;
   }
 
+  // Warn if email not yet verified (but still allow login)
+  if (!user.emailConfirmed) {
+    showAlert('login', 'info',
+      '⚠️ Your email is not yet verified. Please check your confirmation code. ' +
+      '<a href="#" id="alert-goto-verify" style="color:var(--orange)">Verify now</a>.');
+    setTimeout(() => {
+      const link = document.getElementById('alert-goto-verify');
+      if (link) link.addEventListener('click', e => {
+        e.preventDefault();
+        switchTab('signup');
+        // Restore confirmation box for this user
+        const box = document.getElementById('confirm-box');
+        const codeDisplay = document.getElementById('confirm-code-display');
+        if (box && codeDisplay) {
+          codeDisplay.textContent = user.confirmCode || 'N/A';
+          box.style.display = 'block';
+          // Store pending verification user email
+          box.dataset.pendingEmail = user.email;
+        }
+      });
+    }, 0);
+    return;
+  }
+
   // Successful login
-  saveSession({ id: user.id, name: user.name, email: user.email });
+  saveSession({ id: user.id, name: user.name, email: user.email, isAdmin: false });
   updateNavForUser(user);
   closeModal();
 }
@@ -585,16 +633,271 @@ function updateNavForUser(user) {
   const navGreeting = document.getElementById('nav-greeting');
   const loginBtn    = document.getElementById('login-btn');
   const signupBtn   = document.getElementById('signup-btn');
+  const adminPanel  = document.getElementById('admin-panel');
 
   if (user) {
     if (navUser)     navUser.style.display     = 'flex';
-    if (navGreeting) navGreeting.textContent   = `Hi, ${user.name.split(' ')[0]}`;
+    if (navGreeting) navGreeting.textContent   = user.isAdmin ? '⚙️ Admin' : `Hi, ${user.name.split(' ')[0]}`;
     if (loginBtn)    loginBtn.style.display    = 'none';
     if (signupBtn)   signupBtn.style.display   = 'none';
+    // Show admin panel only for admin user
+    if (adminPanel)  adminPanel.style.display  = user.isAdmin ? 'block' : 'none';
+    if (user.isAdmin) renderAdminPicksList();
   } else {
-    if (navUser)   navUser.style.display   = 'none';
-    if (loginBtn)  loginBtn.style.display  = 'inline-block';
-    if (signupBtn) signupBtn.style.display = 'inline-block';
+    if (navUser)    navUser.style.display    = 'none';
+    if (loginBtn)   loginBtn.style.display   = 'inline-block';
+    if (signupBtn)  signupBtn.style.display  = 'inline-block';
+    if (adminPanel) adminPanel.style.display = 'none';
+  }
+}
+
+// ── ADMIN PICKS MANAGEMENT ────────────────────────────────────────────────
+
+function renderAdminPicksList() {
+  const container = document.getElementById('admin-picks-list');
+  if (!container) return;
+  const picks = getAdminPicks();
+  if (picks.length === 0) {
+    container.innerHTML = '<p class="loading-msg">No picks posted yet.</p>';
+    return;
+  }
+  container.innerHTML = picks.map(function(pick) {
+    const starsHtml = '⭐'.repeat(pick.confidence || 3);
+    return `
+      <div class="admin-pick-item">
+        <div class="admin-pick-info">
+          <div class="admin-pick-matchup">${escapeHtml(pick.matchup)}</div>
+          <div class="admin-pick-meta">${escapeHtml(pick.sport)} · ${escapeHtml(pick.type)} · ${pick.lock === 'locked' ? '🔒 Subscribers' : '🆓 Free'} · ${starsHtml}</div>
+          <div class="admin-pick-value">${escapeHtml(pick.value)}</div>
+          ${pick.note ? `<div class="admin-pick-meta" style="font-style:italic;">${escapeHtml(pick.note)}</div>` : ''}
+        </div>
+        <button class="btn-delete-pick" data-pick-id="${pick.id}">🗑 Delete</button>
+      </div>`;
+  }).join('');
+
+  // Wire delete buttons
+  container.querySelectorAll('.btn-delete-pick').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      const id = Number(this.dataset.pickId);
+      const picks = getAdminPicks().filter(p => p.id !== id);
+      saveAdminPicks(picks);
+      renderAdminPicksList();
+      renderPicksSection();
+    });
+  });
+}
+
+function handleAdminPickSubmit(e) {
+  e.preventDefault();
+  const matchup    = document.getElementById('pick-matchup').value.trim();
+  const sport      = document.getElementById('pick-sport').value;
+  const type       = document.getElementById('pick-type').value;
+  const value      = document.getElementById('pick-value').value.trim();
+  const confidence = Number(document.getElementById('pick-confidence').value);
+  const lock       = document.getElementById('pick-lock').value;
+  const note       = document.getElementById('pick-note').value.trim();
+
+  if (!matchup || !value) return;
+
+  const picks = getAdminPicks();
+  picks.unshift({
+    id:         Date.now(),
+    matchup,
+    sport,
+    type,
+    value,
+    confidence,
+    lock,
+    note,
+    postedAt: new Date().toISOString(),
+  });
+  saveAdminPicks(picks);
+
+  // Reset form
+  document.getElementById('admin-pick-form').reset();
+  renderAdminPicksList();
+  renderPicksSection();
+}
+
+// ── RENDER PICKS SECTION (visible to all users) ──────────────────────────
+
+function renderPicksSection() {
+  const container = document.getElementById('picks-display');
+  if (!container) return;
+
+  const picks = getAdminPicks();
+  if (picks.length === 0) {
+    container.innerHTML = '<p class="loading-msg">No picks posted yet — check back soon!</p>';
+    return;
+  }
+
+  const session = getSession();
+  const isSubscriber = session && !session.isAdmin; // in a real app, check subscription tier
+
+  container.innerHTML = picks.map(function(pick) {
+    const starsHtml = '⭐'.repeat(pick.confidence || 3);
+    const isLocked  = pick.lock === 'locked' && !session;
+    const postedDate = pick.postedAt ? new Date(pick.postedAt).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : '';
+
+    if (isLocked) {
+      return `
+        <div class="pick-card-new">
+          <div class="pick-left">
+            <span class="pick-sport-badge">${escapeHtml(pick.sport)}</span>
+            <div class="pick-matchup-new">${escapeHtml(pick.matchup)}</div>
+            <div class="pick-meta-new">${escapeHtml(pick.type)} · ${postedDate}</div>
+            <div class="pick-value-new" style="filter:blur(5px);user-select:none;">🔒🔒🔒🔒🔒🔒</div>
+          </div>
+          <span class="pick-lock-badge locked">🔒 Members Only</span>
+        </div>`;
+    }
+
+    return `
+      <div class="pick-card-new">
+        <div class="pick-left">
+          <span class="pick-sport-badge">${escapeHtml(pick.sport)}</span>
+          <div class="pick-matchup-new">${escapeHtml(pick.matchup)}</div>
+          <div class="pick-meta-new">${escapeHtml(pick.type)} · ${starsHtml} · ${postedDate}</div>
+          <div class="pick-value-new">🏆 ${escapeHtml(pick.value)}</div>
+          ${pick.note ? `<div class="pick-note-new">${escapeHtml(pick.note)}</div>` : ''}
+        </div>
+        <span class="pick-lock-badge ${pick.lock === 'locked' ? 'locked' : 'free'}">${pick.lock === 'locked' ? '🔒 Members' : '🆓 Free'}</span>
+      </div>`;
+  }).join('');
+}
+
+// ── EMAIL VERIFICATION ────────────────────────────────────────────────────
+
+function handleVerifyCode(e) {
+  e.preventDefault();
+  const input    = document.getElementById('verify-code-input');
+  const alertEl  = document.getElementById('verify-alert');
+  const box      = document.getElementById('confirm-box');
+  const entered  = (input ? input.value.trim().toUpperCase() : '');
+  const email    = box ? box.dataset.pendingEmail : '';
+
+  if (!entered || !email) return;
+
+  const users = getUsers();
+  const idx   = users.findIndex(u => u.email === email);
+  if (idx === -1) {
+    if (alertEl) {
+      alertEl.className = 'form-alert error show';
+      alertEl.textContent = 'Account not found. Please sign up again.';
+    }
+    return;
+  }
+
+  if (users[idx].confirmCode !== entered) {
+    if (alertEl) {
+      alertEl.className = 'form-alert error show';
+      alertEl.textContent = 'Incorrect code. Please try again.';
+    }
+    if (input) { input.value = ''; input.focus(); }
+    return;
+  }
+
+  // Mark as confirmed
+  users[idx].emailConfirmed = true;
+  saveUsers(users);
+
+  if (alertEl) {
+    alertEl.className = 'form-alert success show';
+    alertEl.textContent = '✓ Email verified! You can now log in.';
+  }
+  if (input) input.disabled = true;
+
+  // Auto-login after verification
+  setTimeout(function() {
+    const user = users[idx];
+    saveSession({ id: user.id, name: user.name, email: user.email, isAdmin: false });
+    updateNavForUser(user);
+    closeModal();
+  }, 1200);
+}
+
+// ── BET SLIP CALCULATOR ───────────────────────────────────────────────────
+
+// American-odds → decimal multiplier
+function americanToDecimal(american) {
+  const n = Number(american);
+  if (isNaN(n)) return null;
+  if (n >= 100)  return 1 + n / 100;
+  if (n <= -100) return 1 + 100 / Math.abs(n);
+  return null; // invalid
+}
+
+// Potential payout for a single bet (returns winnings, not total)
+function calcSingleWin(odds, wager) {
+  const dec = americanToDecimal(odds);
+  if (!dec || !wager || wager <= 0) return 0;
+  return (dec - 1) * wager;
+}
+
+let betSlipLegs = [];
+
+function updateBetSlipUI() {
+  const legsEl        = document.getElementById('bs-legs');
+  const isParlay      = document.getElementById('bs-parlay-toggle')?.checked;
+  const parlayWagerEl = document.getElementById('bs-parlay-wager');
+  const riskEl        = document.getElementById('bs-total-risk');
+  const payoutEl      = document.getElementById('bs-total-payout');
+  const profitEl      = document.getElementById('bs-total-profit');
+
+  if (!legsEl) return;
+
+  if (betSlipLegs.length === 0) {
+    legsEl.innerHTML = '<p class="loading-msg" style="font-size:0.8rem;padding:0.5rem 0;">No bets added yet. Use the form above to add legs.</p>';
+    if (riskEl)   riskEl.textContent   = '$0.00';
+    if (payoutEl) payoutEl.textContent = '$0.00';
+    if (profitEl) profitEl.textContent = '$0.00';
+    return;
+  }
+
+  legsEl.innerHTML = betSlipLegs.map(function(leg, idx) {
+    const dec    = americanToDecimal(leg.odds);
+    const winAmt = dec && leg.wager > 0 ? ((dec - 1) * leg.wager).toFixed(2) : '—';
+    const total  = dec && leg.wager > 0 ? (dec * leg.wager).toFixed(2) : '—';
+    return `
+      <div class="bs-leg">
+        <div class="bs-leg-info">
+          <div class="bs-leg-matchup">${escapeHtml(leg.matchup || 'Game')}</div>
+          <div class="bs-leg-pick">${escapeHtml(leg.pick || '')} &nbsp;·&nbsp; Odds: <strong>${leg.odds >= 0 ? '+' : ''}${leg.odds}</strong> · Wager: $${Number(leg.wager).toFixed(2)}</div>
+          ${!isParlay ? `<div class="bs-leg-calc">Payout: $${total} (Win: $${winAmt})</div>` : ''}
+        </div>
+        <button class="bs-leg-remove" data-idx="${idx}" title="Remove">✕</button>
+      </div>`;
+  }).join('');
+
+  legsEl.querySelectorAll('.bs-leg-remove').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      betSlipLegs.splice(Number(this.dataset.idx), 1);
+      updateBetSlipUI();
+    });
+  });
+
+  if (isParlay) {
+    const parlayWager = parseFloat(parlayWagerEl?.value || 0) || 0;
+    // Parlay decimal = product of all leg decimals
+    const parlayDecimal = betSlipLegs.reduce(function(acc, leg) {
+      const dec = americanToDecimal(leg.odds);
+      return dec ? acc * dec : acc;
+    }, 1);
+    const parlayPayout = parlayDecimal * parlayWager;
+    const parlayProfit = parlayPayout - parlayWager;
+    if (riskEl)   riskEl.textContent   = `$${parlayWager.toFixed(2)}`;
+    if (payoutEl) payoutEl.textContent = `$${parlayPayout.toFixed(2)}`;
+    if (profitEl) profitEl.textContent = `$${parlayProfit.toFixed(2)}`;
+  } else {
+    const totalRisk   = betSlipLegs.reduce((s, l) => s + (parseFloat(l.wager) || 0), 0);
+    const totalPayout = betSlipLegs.reduce(function(s, l) {
+      const dec = americanToDecimal(l.odds);
+      return s + (dec && l.wager > 0 ? dec * l.wager : 0);
+    }, 0);
+    const totalProfit = totalPayout - totalRisk;
+    if (riskEl)   riskEl.textContent   = `$${totalRisk.toFixed(2)}`;
+    if (payoutEl) payoutEl.textContent = `$${totalPayout.toFixed(2)}`;
+    if (profitEl) profitEl.textContent = `$${totalProfit.toFixed(2)}`;
   }
 }
 
@@ -626,8 +929,10 @@ document.addEventListener('DOMContentLoaded', function () {
   // Form submissions
   const loginForm  = document.getElementById('login-form');
   const signupForm = document.getElementById('signup-form');
+  const verifyForm = document.getElementById('verify-form');
   if (loginForm)  loginForm.addEventListener('submit',  handleLogin);
   if (signupForm) signupForm.addEventListener('submit', handleSignup);
+  if (verifyForm) verifyForm.addEventListener('submit', handleVerifyCode);
 
   // Close when clicking outside the modal box
   if (modal) {
@@ -638,7 +943,11 @@ document.addEventListener('DOMContentLoaded', function () {
 
   // Close on Escape key
   document.addEventListener('keydown', e => {
-    if (e.key === 'Escape' && modal && modal.classList.contains('open')) closeModal();
+    if (e.key === 'Escape') {
+      if (modal && modal.classList.contains('open')) closeModal();
+      const bsModal = document.getElementById('betslip-modal');
+      if (bsModal && bsModal.classList.contains('open')) closeBetSlip();
+    }
   });
 
   // Bookmaker toggle buttons
@@ -652,9 +961,75 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   });
 
+  // Admin panel pick form
+  const adminPickForm = document.getElementById('admin-pick-form');
+  if (adminPickForm) adminPickForm.addEventListener('submit', handleAdminPickSubmit);
+
+  // ── Bet Slip Calculator wiring ──
+  const fab          = document.getElementById('betslip-fab');
+  const bsModal      = document.getElementById('betslip-modal');
+  const bsCloseBtn   = document.getElementById('betslip-close');
+  const bsAddBtn     = document.getElementById('bs-add-btn');
+  const bsClearBtn   = document.getElementById('bs-clear-btn');
+  const bsParlayChk  = document.getElementById('bs-parlay-toggle');
+  const bsParlayWRow = document.getElementById('bs-parlay-wager-row');
+  const bsParlayWager= document.getElementById('bs-parlay-wager');
+
+  function openBetSlip() {
+    if (bsModal) { bsModal.classList.add('open'); bsModal.setAttribute('aria-hidden', 'false'); }
+    updateBetSlipUI();
+  }
+  function closeBetSlip() {
+    if (bsModal) { bsModal.classList.remove('open'); bsModal.setAttribute('aria-hidden', 'true'); }
+  }
+
+  if (fab)        fab.addEventListener('click', openBetSlip);
+  if (bsCloseBtn) bsCloseBtn.addEventListener('click', closeBetSlip);
+  if (bsModal)    bsModal.addEventListener('click', e => { if (e.target === bsModal) closeBetSlip(); });
+
+  if (bsAddBtn) {
+    bsAddBtn.addEventListener('click', function() {
+      const matchup = (document.getElementById('bs-matchup')?.value || '').trim();
+      const pick    = (document.getElementById('bs-pick')?.value    || '').trim();
+      const odds    = Number(document.getElementById('bs-odds')?.value  || 0);
+      const wager   = parseFloat(document.getElementById('bs-wager')?.value || 0);
+      if (!odds || wager <= 0) {
+        alert('Please enter valid odds and a wager amount.');
+        return;
+      }
+      betSlipLegs.push({ matchup, pick, odds, wager });
+      // Clear input fields
+      ['bs-matchup','bs-pick','bs-odds','bs-wager'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.value = '';
+      });
+      updateBetSlipUI();
+    });
+  }
+
+  if (bsClearBtn) {
+    bsClearBtn.addEventListener('click', function() {
+      betSlipLegs = [];
+      updateBetSlipUI();
+    });
+  }
+
+  if (bsParlayChk) {
+    bsParlayChk.addEventListener('change', function() {
+      if (bsParlayWRow) bsParlayWRow.style.display = this.checked ? 'block' : 'none';
+      updateBetSlipUI();
+    });
+  }
+  if (bsParlayWager) {
+    bsParlayWager.addEventListener('input', updateBetSlipUI);
+  }
+
   // Restore session
   const session = getSession();
   updateNavForUser(session);
+
+  // Render picks section for all users
+  renderPicksSection();
 
   // Load live data
   loadOdds();
