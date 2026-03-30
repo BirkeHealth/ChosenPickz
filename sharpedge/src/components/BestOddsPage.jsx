@@ -3,7 +3,7 @@
  *
  * Full-page component that lets users search for the best available
  * moneyline (head-to-head) odds across ALL bookmakers for a chosen sport
- * and date up to one month in the future.
+ * and any upcoming date.
  *
  * For each event it scans every bookmaker returned by The Odds API and
  * highlights the single best (highest-payout) odds for each outcome,
@@ -85,7 +85,6 @@ function getBestOdds(bookmakers) {
 
 export default function BestOddsPage({ onBack }) {
   const today    = isoDate(0);
-  const maxDate  = isoDate(30); // up to one month out
 
   const [sport,    setSport]    = useState(SPORTS[0].key);
   const [date,     setDate]     = useState(today);
@@ -147,8 +146,8 @@ export default function BestOddsPage({ onBack }) {
           Best Available <span style={{ color: '#d4a843' }}>Odds</span>
         </h1>
         <p className="font-dm mb-10" style={{ color: '#8888a0' }}>
-          Compare moneyline odds across all sportsbooks for any upcoming event —
-          up to 30 days out. We highlight the best payout for each team.
+          Compare moneyline odds across all sportsbooks for any upcoming event.
+          We highlight the best payout for each team.
         </p>
 
         {/* ── Search controls ── */}
@@ -187,7 +186,6 @@ export default function BestOddsPage({ onBack }) {
               type="date"
               value={date}
               min={today}
-              max={maxDate}
               onChange={e => setDate(e.target.value)}
               className="rounded-lg px-3 py-2 font-dm text-sm"
               style={{
