@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pick of the Week — CH0SEN1 PICKZ</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="styles/main.css" />
+  <link rel="stylesheet" href="styles/theme.css" />
+  <style>
+    /* ── Pick of the Week page specific styles ── */
+    .pick-hero {
+      text-align: center;
+      padding: 3.5rem 1.5rem 2rem;
+      background: radial-gradient(ellipse at 50% 0%, rgba(249,115,22,0.12) 0%, transparent 70%);
+    }
+    .pick-hero h1 {
+      font-family: 'Bebas Neue', cursive;
+      font-size: clamp(2.8rem, 8vw, 5.5rem);
+      letter-spacing: 4px;
+      line-height: 1;
+      color: var(--text);
+    }
+    .pick-hero h1 span { color: var(--orange); }
+    .pick-hero p { color: var(--muted); font-size: 1.05rem; margin-top: 0.75rem; }
+
+    /* Featured pick showcase */
+    .featured-pick {
+      background: linear-gradient(135deg, rgba(249,115,22,0.08) 0%, var(--surface) 60%);
+      border: 2px solid var(--orange);
+      border-radius: 16px;
+      padding: 2rem 2rem 1.75rem;
+      margin-bottom: 2rem;
+      position: relative;
+      overflow: hidden;
+    }
+    .featured-pick::before {
+      content: '★';
+      position: absolute;
+      top: -0.5rem;
+      right: 1.5rem;
+      font-size: 8rem;
+      color: rgba(249,115,22,0.05);
+      line-height: 1;
+      pointer-events: none;
+      user-select: none;
+    }
+    .featured-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      background: var(--orange);
+      color: #fff;
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      padding: 0.25rem 0.75rem;
+      border-radius: 20px;
+      margin-bottom: 1rem;
+    }
+    .featured-pick-sport {
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--blue);
+      margin-bottom: 0.4rem;
+    }
+    .featured-pick-matchup {
+      font-family: 'Bebas Neue', cursive;
+      font-size: clamp(1.8rem, 5vw, 3rem);
+      letter-spacing: 3px;
+      color: var(--text);
+      margin-bottom: 0.5rem;
+    }
+    .featured-pick-line {
+      font-family: 'Bebas Neue', cursive;
+      font-size: 1.6rem;
+      letter-spacing: 2px;
+      color: var(--orange);
+      margin-bottom: 0.3rem;
+    }
+    .featured-pick-time {
+      font-size: 0.82rem;
+      color: var(--muted);
+      margin-bottom: 1.25rem;
+    }
+    .featured-pick-rationale {
+      font-size: 0.92rem;
+      color: var(--text);
+      line-height: 1.6;
+      border-top: 1px solid var(--surface2);
+      padding-top: 1.25rem;
+      margin-top: 0.5rem;
+    }
+    .featured-pick-rationale p { margin-bottom: 0.75rem; }
+    .featured-pick-rationale p:last-child { margin-bottom: 0; }
+    .featured-pick-stats {
+      display: flex;
+      gap: 1.5rem;
+      flex-wrap: wrap;
+      margin-top: 1.25rem;
+    }
+    .pick-stat {
+      text-align: center;
+    }
+    .pick-stat-value {
+      font-family: 'Bebas Neue', cursive;
+      font-size: 1.6rem;
+      letter-spacing: 1px;
+      color: var(--gold);
+    }
+    .pick-stat-label {
+      font-size: 0.72rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-top: 0.1rem;
+    }
+
+    /* Confidence meter */
+    .confidence-meter {
+      margin-top: 1.25rem;
+    }
+    .confidence-label {
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.7px;
+      color: var(--muted);
+      margin-bottom: 0.4rem;
+    }
+    .confidence-bar-track {
+      background: var(--surface2);
+      border-radius: 6px;
+      height: 10px;
+      overflow: hidden;
+    }
+    .confidence-bar-fill {
+      height: 100%;
+      border-radius: 6px;
+      background: linear-gradient(90deg, var(--blue) 0%, var(--orange) 100%);
+      transition: width 0.5s;
+    }
+    .confidence-pct {
+      font-size: 0.82rem;
+      color: var(--orange);
+      font-weight: 700;
+      margin-top: 0.3rem;
+    }
+
+    /* Past picks table */
+    .past-picks-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.88rem;
+    }
+    .past-picks-table th {
+      text-align: left;
+      padding: 0.5rem 0.75rem;
+      color: var(--muted);
+      font-weight: 700;
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.7px;
+      border-bottom: 1px solid var(--surface2);
+    }
+    .past-picks-table td {
+      padding: 0.65rem 0.75rem;
+      border-bottom: 1px solid var(--surface2);
+      color: var(--text);
+    }
+    .past-picks-table tr:last-child td { border-bottom: none; }
+    .past-picks-table tr:hover td { background: var(--surface2); }
+    .result-win  { color: var(--success); font-weight: 700; }
+    .result-loss { color: #f87171;        font-weight: 700; }
+    .result-push { color: var(--gold);    font-weight: 700; }
+    .result-pending { color: var(--muted); font-weight: 600; }
+  </style>
+</head>
+<body>
+
+  <!-- ── NAV ── -->
+  <nav>
+    <a class="nav-logo" href="index.html">
+      CH<span class="ch-blue">0</span>SEN<span class="ch-blue">1</span> PICKZ
+    </a>
+    <div class="nav-links">
+      <a href="index.html#live-bets">Live Bets</a>
+      <a href="best-odds.html">Best Odds</a>
+      <a href="news.html">News</a>
+      <a href="analysis.html">Analysis</a>
+      <a href="pick.html" class="active">Pick of the Week</a>
+      <a href="about.html">About</a>
+    </div>
+  </nav>
+
+  <!-- ── HERO ── -->
+  <div class="pick-hero">
+    <h1>Pick of the <span>Week</span></h1>
+    <p>Our highest-confidence pick — with full rationale and data</p>
+  </div>
+
+  <main>
+
+    <!-- ── FEATURED PICK ── -->
+    <section id="featured-pick">
+      <h2 class="section-heading">&#127942; This Week's Pick</h2>
+
+      <div class="featured-pick" id="pick-of-week">
+        <div class="featured-badge">&#9733; Pick of the Week</div>
+        <div class="featured-pick-sport">NFL · Divisional Round</div>
+        <div class="featured-pick-matchup">[Team A] @ [Team B]</div>
+        <div class="featured-pick-line">&#127942; [Team B] -3.5 · Best Line: FanDuel</div>
+        <div class="featured-pick-time">&#128336; [Game Date &amp; Time] — [Venue]</div>
+
+        <!-- Confidence meter -->
+        <div class="confidence-meter">
+          <div class="confidence-label">Confidence Level</div>
+          <div class="confidence-bar-track">
+            <div class="confidence-bar-fill" style="width:78%"></div>
+          </div>
+          <div class="confidence-pct">78% Confidence</div>
+        </div>
+
+        <!-- Pick stats summary -->
+        <div class="featured-pick-stats">
+          <div class="pick-stat">
+            <div class="pick-stat-value">-110</div>
+            <div class="pick-stat-label">Best Odds</div>
+          </div>
+          <div class="pick-stat">
+            <div class="pick-stat-value">-3.5</div>
+            <div class="pick-stat-label">Spread</div>
+          </div>
+          <div class="pick-stat">
+            <div class="pick-stat-value">8-4</div>
+            <div class="pick-stat-label">ATS Record</div>
+          </div>
+          <div class="pick-stat">
+            <div class="pick-stat-value">4-1</div>
+            <div class="pick-stat-label">Last 5 H2H</div>
+          </div>
+        </div>
+
+        <!-- Rationale -->
+        <div class="featured-pick-rationale" id="pick-rationale">
+          <p>
+            <strong>Why we like this pick:</strong> [Placeholder — connect <code>scripts/pick.js</code> to populate dynamic picks and rationale here. You can drive this content from a CMS, a Google Sheet, or a manual JSON file.]
+          </p>
+          <p>
+            <strong>Key factors:</strong> Home field advantage, recent line movement from -2 to -3.5 suggests sharp money on [Team B], opponent averaging 22+ points allowed per game over last 5 weeks.
+          </p>
+          <p>
+            <strong>Injury watch:</strong> No major injuries reported on either side as of Wednesday practice report.
+          </p>
+          <p style="color:var(--muted); font-size:0.82rem; margin-top:1rem;">
+            &#9432; Picks are for entertainment only. Please gamble responsibly. See <a href="about.html" style="color:var(--gold);">About &amp; Legal</a>.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── PICK HISTORY ── -->
+    <section id="pick-history">
+      <h2 class="section-heading">&#128203; Pick History</h2>
+      <p class="loading-msg" style="text-align:left; padding:0 0 1rem; color:var(--muted); font-size:0.88rem;">
+        Historical picks will populate here via <code>scripts/pick.js</code> — drive from a static JSON file or CMS.
+      </p>
+      <div style="overflow-x:auto;">
+        <table class="past-picks-table">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Sport</th>
+              <th>Matchup</th>
+              <th>Pick</th>
+              <th>Odds</th>
+              <th>Result</th>
+            </tr>
+          </thead>
+          <tbody id="picks-history-body">
+            <tr>
+              <td>Jan 01</td>
+              <td>NFL</td>
+              <td>Team A @ Team B</td>
+              <td>Team B -3</td>
+              <td>-110</td>
+              <td><span class="result-win">WIN ✓</span></td>
+            </tr>
+            <tr>
+              <td>Dec 25</td>
+              <td>NBA</td>
+              <td>Team C @ Team D</td>
+              <td>Over 218.5</td>
+              <td>-108</td>
+              <td><span class="result-loss">LOSS ✗</span></td>
+            </tr>
+            <tr>
+              <td>Dec 22</td>
+              <td>NHL</td>
+              <td>Team E @ Team F</td>
+              <td>Team E ML</td>
+              <td>+135</td>
+              <td><span class="result-win">WIN ✓</span></td>
+            </tr>
+            <tr>
+              <td>Dec 18</td>
+              <td>NFL</td>
+              <td>Team G @ Team H</td>
+              <td>Under 47.5</td>
+              <td>-112</td>
+              <td><span class="result-push">PUSH →</span></td>
+            </tr>
+            <tr>
+              <td>Dec 15</td>
+              <td>NBA</td>
+              <td>Team I @ Team J</td>
+              <td>Team I -4.5</td>
+              <td>-110</td>
+              <td><span class="result-pending">Pending</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ── SEASON RECORD ── -->
+    <section id="season-record">
+      <h2 class="section-heading">&#128200; Season Record</h2>
+      <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:1rem;" id="record-grid">
+        <div style="background:var(--surface); border:1px solid var(--surface2); border-radius:10px; padding:1.25rem; text-align:center;">
+          <div style="font-family:'Bebas Neue',cursive; font-size:2.5rem; color:var(--success); letter-spacing:2px;" id="rec-wins">--</div>
+          <div style="font-size:0.78rem; color:var(--muted); text-transform:uppercase; letter-spacing:0.7px;">Wins</div>
+        </div>
+        <div style="background:var(--surface); border:1px solid var(--surface2); border-radius:10px; padding:1.25rem; text-align:center;">
+          <div style="font-family:'Bebas Neue',cursive; font-size:2.5rem; color:#f87171; letter-spacing:2px;" id="rec-losses">--</div>
+          <div style="font-size:0.78rem; color:var(--muted); text-transform:uppercase; letter-spacing:0.7px;">Losses</div>
+        </div>
+        <div style="background:var(--surface); border:1px solid var(--surface2); border-radius:10px; padding:1.25rem; text-align:center;">
+          <div style="font-family:'Bebas Neue',cursive; font-size:2.5rem; color:var(--gold); letter-spacing:2px;" id="rec-pushes">--</div>
+          <div style="font-size:0.78rem; color:var(--muted); text-transform:uppercase; letter-spacing:0.7px;">Pushes</div>
+        </div>
+        <div style="background:var(--surface); border:1px solid var(--surface2); border-radius:10px; padding:1.25rem; text-align:center;">
+          <div style="font-family:'Bebas Neue',cursive; font-size:2.5rem; color:var(--orange); letter-spacing:2px;" id="rec-units">--</div>
+          <div style="font-size:0.78rem; color:var(--muted); text-transform:uppercase; letter-spacing:0.7px;">Units Profit</div>
+        </div>
+      </div>
+      <p class="loading-msg" style="margin-top:1rem;">Record stats populate via <code>scripts/pick.js</code>.</p>
+    </section>
+
+  </main>
+
+  <!-- ── FOOTER ── -->
+  <footer>
+    <p>&copy; 2026 CH0SEN1 PICKZ &mdash; For entertainment purposes only. <a href="about.html" style="color:var(--gold); text-decoration:none;">About &amp; Legal</a></p>
+  </footer>
+
+  <script src="config.js"></script>
+  <script src="scripts/pick.js"></script>
+</body>
+</html>

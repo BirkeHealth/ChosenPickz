@@ -1,0 +1,104 @@
+/**
+ * styles/main.css — ChosenPickz supplemental layout styles
+ *
+ * This file extends the base styles in /styles.css with additional layout
+ * utilities and page-specific foundations. It is loaded after styles.css on
+ * all inner pages (news, analysis, pick, about).
+ *
+ * Future additions: card grids, data tables, chart wrappers, skeleton loaders,
+ * sport-specific accent overrides.
+ */
+
+/* ── Page transition fade-in ── */
+body {
+  animation: pageFadeIn 0.25s ease forwards;
+}
+
+@keyframes pageFadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Utility: visually hidden (for screen readers) ── */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ── Scrollable horizontal wrapper ── */
+.scroll-x {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* ── Data skeleton loader (placeholder while fetching) ── */
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--surface2) 25%,
+    var(--surface3) 50%,
+    var(--surface2) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 6px;
+  color: transparent;
+  user-select: none;
+}
+
+@keyframes shimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* ── Two-column layout for side-by-side sections ── */
+.two-col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+}
+
+@media (max-width: 700px) {
+  .two-col { grid-template-columns: 1fr; }
+}
+
+/* ── Section separator ── */
+.section-divider {
+  border: none;
+  border-top: 1px solid var(--surface2);
+  margin: 2rem 0;
+}
+
+/* ── Inline code styling ── */
+code {
+  background: var(--surface2);
+  border: 1px solid var(--surface3);
+  border-radius: 4px;
+  padding: 0.1em 0.4em;
+  font-size: 0.85em;
+  font-family: 'Courier New', Courier, monospace;
+  color: var(--gold);
+}
+
+/* ── Responsive nav: collapse links on small screens ── */
+@media (max-width: 640px) {
+  nav {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+  .nav-links {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+  .nav-links a {
+    font-size: 0.82rem;
+    padding: 0.3rem 0.5rem;
+  }
+}

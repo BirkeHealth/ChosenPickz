@@ -10,13 +10,28 @@ const DIST_DIR = path.join(__dirname, 'sharpedge', 'dist');
 
 // Root-level static files served directly from the project root (the landing page app)
 const ROOT_STATIC_FILES = new Set([
+  // ── HTML pages ──
   'index.html',
   'chosepickz.html',
   'live-bets.html',
+  'best-odds.html',
+  'news.html',
+  'analysis.html',
+  'pick.html',
+  'about.html',
+  // ── Root scripts & styles ──
   'styles.css',
   'app.js',
   'config.js',
   'picks.js',
+  // ── Sportsbook scaffold styles ──
+  'styles/main.css',
+  'styles/theme.css',
+  // ── Sportsbook scaffold scripts ──
+  'scripts/odds.js',
+  'scripts/news.js',
+  'scripts/analysis.js',
+  'scripts/pick.js',
 ]);
 
 const HTML_404 = `<!DOCTYPE html>
