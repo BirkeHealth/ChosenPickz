@@ -956,9 +956,27 @@ footer {
 .betslip-fab-label { font-size: 0.85rem; }
 
 .betslip-box {
-  max-width: 560px;
-  max-height: 90vh;
+  max-width: 480px;
+  width: 100%;
+  height: 100%;
+  max-height: 100vh;
   overflow-y: auto;
+  border-radius: 14px 0 0 14px;
+  /* Slide-in from right */
+  transform: translateX(100%);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+@media (max-width: 480px) {
+  .betslip-box { border-radius: 0; }
+}
+/* Override the generic modal-box translateY animation for the drawer */
+#betslip-modal {
+  justify-content: flex-end;
+  align-items: stretch;
+  overflow: hidden;
+}
+#betslip-modal.open .betslip-box {
+  transform: translateX(0);
 }
 .betslip-add-row {
   display: flex;
@@ -1013,6 +1031,24 @@ footer {
 .bs-leg-matchup { font-size: 0.85rem; font-weight: 700; color: var(--text); }
 .bs-leg-pick    { font-size: 0.8rem;  color: var(--orange); }
 .bs-leg-calc    { font-size: 0.78rem; color: var(--muted); margin-top: 0.1rem; }
+.bs-leg-stake-row {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin-top: 0.35rem;
+}
+.bs-stake-label {
+  font-size: 0.78rem;
+  color: var(--muted);
+  white-space: nowrap;
+}
+.bs-leg-stake {
+  max-width: 90px;
+  min-width: 70px;
+  padding: 0.3rem 0.5rem;
+  font-size: 0.8rem;
+  flex: none;
+}
 .bs-leg-remove {
   background: none;
   border: none;

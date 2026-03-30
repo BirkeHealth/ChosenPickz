@@ -871,8 +871,13 @@ function updateBetSlipUI() {
       <div class="bs-leg">
         <div class="bs-leg-info">
           <div class="bs-leg-matchup">${escapeHtml(leg.matchup || 'Game')}</div>
-          <div class="bs-leg-pick">${escapeHtml(leg.pick || '')} &nbsp;·&nbsp; Odds: <strong>${leg.odds >= 0 ? '+' : ''}${leg.odds}</strong> · Wager: $${Number(leg.wager).toFixed(2)}</div>
-          ${!isParlay ? `<div class="bs-leg-calc">Payout: $${total} (Win: $${winAmt})</div>` : ''}
+          <div class="bs-leg-pick">${escapeHtml(leg.pick || '')} &nbsp;·&nbsp; Odds: <strong>${leg.odds >= 0 ? '+' : ''}${leg.odds}</strong></div>
+          ${!isParlay ? `
+          <div class="bs-leg-stake-row">
+            <span class="bs-stake-label">Stake ($):</span>
+            <input type="number" class="bs-input bs-wager bs-leg-stake" data-idx="${idx}" value="${Number(leg.wager).toFixed(2)}" min="0" step="0.01" />
+          </div>
+          <div class="bs-leg-calc" id="bs-leg-calc-${idx}">Payout: $${total} (Win: $${winAmt})</div>` : ''}
         </div>
         <button class="bs-leg-remove" data-idx="${idx}" title="Remove">✕</button>
       </div>`;
@@ -1009,13 +1014,46 @@ document.addEventListener('DOMContentLoaded', function () {
       const card    = pill.closest('.bet-card');
       const matchup = (card?.querySelector('.bet-matchup')?.textContent || '').trim();
       const label   = (pill.querySelector('.odds-label')?.textContent || '').trim();
-      betSlipLegs.push({ matchup, pick: label, odds: oddsNum, wager: 0 });
+      betSlipLegs.push({ matchup, pick: label, odds: oddsNum, wager: 50 });
       openBetSlip();
       const bsBox = document.querySelector('.betslip-box');
       if (bsBox) bsBox.scrollTop = 0;
       // Visual feedback: briefly highlight the pill
       pill.classList.add('odds-pill--added');
       setTimeout(function () { pill.classList.remove('odds-pill--added'); }, 1200);
+    });
+  }
+
+  // Event delegation for per-leg stake editing in singles mode
+  const bsLegsEl = document.getElementById('bs-legs');
+  if (bsLegsEl) {
+    bsLegsEl.addEventListener('input', function(e) {
+      const input = e.target.closest('.bs-leg-stake');
+      if (!input) return;
+      const idx = Number(input.dataset.idx);
+      if (isNaN(idx) || idx < 0 || idx >= betSlipLegs.length) return;
+      betSlipLegs[idx].wager = parseFloat(input.value) || 0;
+      saveBetSlip();
+      // Update per-leg calc display
+      const dec = americanToDecimal(betSlipLegs[idx].odds);
+      const w = betSlipLegs[idx].wager;
+      const winAmt = dec && w > 0 ? ((dec - 1) * w).toFixed(2) : '—';
+      const total  = dec && w > 0 ? (dec * w).toFixed(2) : '—';
+      const calcEl = document.getElementById('bs-leg-calc-' + idx);
+      if (calcEl) calcEl.textContent = 'Payout: $' + total + ' (Win: $' + winAmt + ')';
+      // Update summary totals
+      const totalRisk   = betSlipLegs.reduce((s, l) => s + (parseFloat(l.wager) || 0), 0);
+      const totalPayout = betSlipLegs.reduce((s, l) => {
+        const d = americanToDecimal(l.odds);
+        return s + (d && l.wager > 0 ? d * l.wager : 0);
+      }, 0);
+      const totalProfit = totalPayout - totalRisk;
+      const rEl  = document.getElementById('bs-total-risk');
+      const pEl  = document.getElementById('bs-total-payout');
+      const prEl = document.getElementById('bs-total-profit');
+      if (rEl)  rEl.textContent  = '$' + totalRisk.toFixed(2);
+      if (pEl)  pEl.textContent  = '$' + totalPayout.toFixed(2);
+      if (prEl) prEl.textContent = '$' + totalProfit.toFixed(2);
     });
   }
 
