@@ -468,8 +468,10 @@
             return '<option value="' + escHtml(s.key) + '">' + emoji + ' ' + escHtml(s.title) + '</option>';
           }).join('');
 
-        // Restore the previously selected value if it still exists
-        if (select.querySelector('option[value="' + currentVal + '"]')) {
+        // Restore the previously selected value if it still exists.
+        // Escape the value to prevent selector injection.
+        const escapedVal = currentVal.replace(/["\\]/g, '\\$&');
+        if (select.querySelector('option[value="' + escapedVal + '"]')) {
           select.value = currentVal;
         }
       } catch (err) {
@@ -481,6 +483,8 @@
 
     function setMode(mode) {
       currentMode = mode;
+      // Cancel any pending debounced search to avoid stale results
+      clearTimeout(searchDebounceTimer);
       document.querySelectorAll('.bo-tab-btn').forEach(function(b) { b.classList.remove('active'); });
       const activeBtn = document.querySelector('.bo-tab-btn[data-mode="' + mode + '"]');
       if (activeBtn) activeBtn.classList.add('active');
@@ -734,7 +738,7 @@
         // Wire up expand/collapse toggle for all <details> elements
         document.getElementById('expand-toggle').addEventListener('click', function() {
           const allDetails = results.querySelectorAll('details.bo-all-books');
-          const anyOpen = Array.prototype.some.call(allDetails, function(d) { return d.open; });
+          const anyOpen = Array.from(allDetails).some(function(d) { return d.open; });
           allDetails.forEach(function(d) { d.open = !anyOpen; });
           this.textContent = anyOpen ? '▶ Expand All Lines' : '▼ Collapse All Lines';
         });

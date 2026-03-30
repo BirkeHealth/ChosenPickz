@@ -70,7 +70,7 @@ async function oddsHandler(req, res) {
   let endpoint;
   const params = { regions: 'us', markets, oddsFormat: 'american', apiKey };
 
-  if (sport === 'upcoming' || (mode === 'upcoming' && sport === 'upcoming')) {
+  if (sport === 'upcoming') {
     // Use the /upcoming/odds convenience endpoint — no date filters accepted
     endpoint = `${BASE_URL}/sports/upcoming/odds`;
   } else if (mode === 'live') {
