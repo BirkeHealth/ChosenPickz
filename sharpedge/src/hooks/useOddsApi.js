@@ -1,37 +1,42 @@
 import { useReducer, useEffect } from 'react';
 
-// TODO: Set VITE_ODDS_API_KEY in .env file
-// The Odds API: https://api.the-odds-api.com/v4/
-// Supported sports: basketball_ncaab, americanfootball_ncaaf, americanfootball_nfl, basketball_nba, baseball_mlb
-const API_KEY = import.meta.env.VITE_ODDS_API_KEY;
-const BASE_URL = 'https://api.the-odds-api.com/v4';
+/**
+ * useOddsApi — Fetches odds data through the server-side proxy at /api/odds.
+ *
+ * The API key is injected by the backend (routes/odds.js) so it is never
+ * exposed to the browser. Set ODDS_API_KEY as a server environment variable.
+ *
+ * @param {string} sport  – sport key OR "upcoming" for all-sports upcoming games
+ * @param {string} [mode] – "upcoming" | "live" | "today" (default: "upcoming")
+ */
+
+const PROXY_BASE = '/api/odds';
 
 const initialState = { data: null, loading: false, error: null };
 
 function oddsReducer(state, action) {
   switch (action.type) {
-    case 'FETCH_START': return { ...state, loading: true, error: null };
+    case 'FETCH_START':   return { ...state, loading: true, error: null };
     case 'FETCH_SUCCESS': return { data: action.payload, loading: false, error: null };
-    case 'FETCH_ERROR': return { ...state, loading: false, error: action.payload };
-    case 'NO_KEY': return { data: null, loading: false, error: action.payload };
-    default: return state;
+    case 'FETCH_ERROR':   return { ...state, loading: false, error: action.payload };
+    default:              return state;
   }
 }
 
-export function useOddsApi(sport = 'upcoming') {
+export function useOddsApi(sport = 'upcoming', mode = 'upcoming') {
   const [state, dispatch] = useReducer(oddsReducer, initialState);
 
   useEffect(() => {
-    if (!API_KEY) {
-      dispatch({ type: 'NO_KEY', payload: 'No API key configured. Set VITE_ODDS_API_KEY in .env' });
-      return;
-    }
     const controller = new AbortController();
-    const url = `${BASE_URL}/sports/${sport}/odds/?regions=us&markets=h2h&oddsFormat=american&apiKey=${API_KEY}`;
+    const params     = new URLSearchParams({ sport, mode });
+    const url        = `${PROXY_BASE}?${params}`;
+
     dispatch({ type: 'FETCH_START' });
     fetch(url, { signal: controller.signal })
       .then(res => {
-        if (!res.ok) throw new Error(`API error: ${res.status}`);
+        if (!res.ok) return res.json().then(body => {
+          throw new Error((body && body.error) || `API error: ${res.status}`);
+        });
         return res.json();
       })
       .then(json => dispatch({ type: 'FETCH_SUCCESS', payload: json }))
@@ -41,8 +46,7 @@ export function useOddsApi(sport = 'upcoming') {
         }
       });
     return () => controller.abort();
-  }, [sport]);
+  }, [sport, mode]);
 
   return { data: state.data, loading: state.loading, error: state.error };
 }
-

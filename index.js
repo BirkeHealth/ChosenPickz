@@ -1,7 +1,8 @@
 const http = require('http');
 const fs = require('fs');
 const path = require('path');
-const oddsHandler = require('./routes/odds');
+const oddsHandler   = require('./routes/odds');
+const sportsHandler = require('./routes/sports');
 
 const PORT = process.env.PORT || 3000;
 
@@ -118,6 +119,13 @@ const server = http.createServer((req, res) => {
   // key is never exposed to the frontend.
   if (urlPath === '/api/odds') {
     oddsHandler(req, res);
+    return;
+  }
+
+  // ── Sports list proxy ──────────────────────────────────────────────────────
+  // Returns the full list of sports from The Odds API, cached for 5 minutes.
+  if (urlPath === '/api/sports') {
+    sportsHandler(req, res);
     return;
   }
 

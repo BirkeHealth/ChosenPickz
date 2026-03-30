@@ -8,11 +8,16 @@
  * For each event it scans every bookmaker returned by The Odds API and
  * highlights the single best (highest-payout) odds for each outcome,
  * showing which sportsbook to use.
+ *
+ * API calls are routed through /api/odds (server-side proxy) so that the
+ * Odds API key is never exposed in the browser.
  */
 
 import { useState } from 'react';
 
-const API_KEY = import.meta.env.VITE_ODDS_API_KEY || '378d22c76a76769fa0078d2d9e88fb60';
+// Backend proxy endpoint — the server injects the API key server-side.
+// Set ODDS_API_KEY as a server environment variable (see .env.example).
+const PROXY_BASE = '/api/odds';
 
 // Sports supported by The Odds API that we expose in the dropdown
 const SPORTS = [
@@ -98,23 +103,19 @@ export default function BestOddsPage({ onBack }) {
     setError(null);
     setSearched(true);
 
-    // The Odds API accepts a `date` param (ISO 8601) to filter events.
-    // We append the date as a commenceTimeTo / commenceTimeFrom window.
-    // To get all events on the chosen day we span midnight→midnight.
+    // Route the request through the backend proxy so the API key is never
+    // sent to the browser.  Use "date" mode with a midnight→midnight window.
     const from = `${date}T00:00:00Z`;
     const to   = `${date}T23:59:59Z`;
-
-    const url =
-      `https://api.the-odds-api.com/v4/sports/${encodeURIComponent(sport)}/odds/` +
-      `?apiKey=${encodeURIComponent(API_KEY)}` +
-      `&regions=us&markets=h2h&oddsFormat=american` +
-      `&commenceTimeFrom=${encodeURIComponent(from)}` +
-      `&commenceTimeTo=${encodeURIComponent(to)}`;
+    const params = new URLSearchParams({ sport, mode: 'date', from, to });
 
     try {
-      const res = await fetch(url);
-      if (!res.ok) throw new Error(`API error ${res.status}`);
+      const res  = await fetch(`${PROXY_BASE}?${params}`);
       const data = await res.json();
+      if (!res.ok) {
+        const msg = (data && data.error) || `API error ${res.status}`;
+        throw new Error(msg);
+      }
       setEvents(Array.isArray(data) ? data : []);
     } catch (err) {
       setError(err.message);

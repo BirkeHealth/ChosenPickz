@@ -244,8 +244,8 @@
     .bo-book-row {
       display: flex;
       flex-wrap: wrap;
-      align-items: center;
-      gap: 0.75rem;
+      align-items: flex-start;
+      gap: 0.5rem 0.75rem;
       padding: 0.45rem 0.75rem;
       border-radius: 6px;
       background: rgba(255,255,255,0.02);
@@ -260,9 +260,43 @@
       flex-shrink: 0;
       font-size: 0.78rem;
     }
-    .bo-outcome { color: var(--text); }
+    .bo-market-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.3rem 1rem;
+      flex: 1;
+    }
+    .bo-market-label {
+      font-size: 0.65rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--muted);
+      width: 100%;
+    }
+    .bo-outcome { color: var(--text); white-space: nowrap; }
     .bo-outcome .pos { color: var(--success); font-weight: 700; }
     .bo-outcome .neg { color: #f87171;        font-weight: 700; }
+
+    /* Expand-all toolbar */
+    .bo-toolbar {
+      display: flex;
+      justify-content: flex-end;
+      margin-bottom: 0.75rem;
+    }
+    .bo-expand-btn {
+      background: none;
+      border: 1px solid var(--surface2);
+      color: var(--muted);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.78rem;
+      font-weight: 600;
+      padding: 0.3rem 0.85rem;
+      border-radius: 20px;
+      cursor: pointer;
+      transition: border-color 0.15s, color 0.15s;
+    }
+    .bo-expand-btn:hover { border-color: var(--gold); color: var(--text); }
   </style>
 </head>
 <body>
@@ -299,6 +333,8 @@
       <div class="ctrl-group">
         <label for="sport-select">Sport</label>
         <select id="sport-select">
+          <!-- Populated from /api/sports; fallback options shown until loaded -->
+          <option value="upcoming">🌟 All Sports (Upcoming)</option>
           <option value="americanfootball_nfl">🏈 NFL</option>
           <option value="basketball_nba">🏀 NBA</option>
           <option value="baseball_mlb">⚾ MLB</option>
@@ -332,28 +368,51 @@
     <p>&copy; 2026 CH0SEN1 PICKZ &mdash; For entertainment purposes only.</p>
   </footer>
 
-  <!-- API config (shared with landing page) -->
+  <!-- config.js still loaded for NewsAPI / EmailJS keys used by other pages -->
   <script src="config.js"></script>
   <script>
     /**
      * best-odds.js — Best Available Odds search page
      *
-     * Fetches moneyline odds from The Odds API for the selected sport and time
-     * window. Supports Live Now, Today, Next 7 Days, and a custom date picker.
-     * Highlights the best (highest payout) available odds per team/outcome
-     * and shows which sportsbook offers them.
+     * All Odds API calls are routed through the server-side proxy at /api/odds
+     * and /api/sports so that the API key is never exposed in the browser.
+     *
+     * Best-practices implemented:
+     *  • Live mode omits date filters (commenceTimeFrom/To cause 422 on live).
+     *  • Upcoming mode uses /v4/sports/upcoming/odds via the proxy.
+     *  • Sport list is populated dynamically from /api/sports (5-min cache).
+     *  • Debounced sport-change handler avoids excessive API requests.
+     *  • All available bookmaker lines are rendered — no artificial cap.
+     *  • h2h, spreads, and totals are all fetched and displayed.
+     *  • HTTP 422 / 429 / 5xx errors show specific, actionable messages.
      */
 
-    // ── STATE ───────────────────────────────────────────────────────────────
+    // ── STATE ────────────────────────────────────────────────────────────────
     let currentMode = 'today'; // 'live' | 'today' | 'upcoming' | 'date'
+    let searchDebounceTimer = null;
 
-    // ── CONSTANTS ───────────────────────────────────────────────────────────
-    const MS_PER_HOUR = 60 * 60 * 1000;
-    const MS_PER_DAY  = 24 * MS_PER_HOUR;
+    // ── CONSTANTS ────────────────────────────────────────────────────────────
+    const MS_PER_DAY = 24 * 60 * 60 * 1000;
 
-    // ── INIT ────────────────────────────────────────────────────────────────
+    // Emoji prefix map for sport groups returned by /api/sports
+    const SPORT_EMOJI = {
+      americanfootball: '🏈',
+      basketball:       '🏀',
+      baseball:         '⚾',
+      icehockey:        '🏒',
+      soccer:           '⚽',
+      mma:              '🥊',
+      tennis:           '🎾',
+      boxing:           '🥊',
+      golf:             '⛳',
+      cricket:          '🏏',
+      rugbyleague:      '🏉',
+      rugbyunion:       '🏉',
+    };
+
+    // ── INIT ─────────────────────────────────────────────────────────────────
     (function init() {
-      // Seed date picker with today's date (no min restriction — past dates allowed)
+      // Seed date picker with today's date
       const today = new Date().toISOString().slice(0, 10);
       document.getElementById('date-input').value = today;
 
@@ -366,29 +425,69 @@
         if (mode !== 'date') searchOdds();
       });
 
-      // Wire up the search button (used in 'date' mode)
+      // Search button (used in 'date' mode)
       document.getElementById('search-btn').addEventListener('click', searchOdds);
 
-      // Re-run search when sport changes (applies to all modes)
+      // Debounced sport-change handler — avoids firing a request on every keystroke
       document.getElementById('sport-select').addEventListener('change', function() {
-        if (currentMode !== 'date') searchOdds();
+        if (currentMode !== 'date') {
+          clearTimeout(searchDebounceTimer);
+          searchDebounceTimer = setTimeout(searchOdds, 300);
+        }
       });
 
-      // Auto-load today on page open
-      searchOdds();
+      // Load sports list from the backend, then auto-load initial results
+      loadSports().then(searchOdds);
     })();
+
+    // ── SPORTS LIST ──────────────────────────────────────────────────────────
+
+    /**
+     * Fetch all active sports from /api/sports and populate the sport selector.
+     * Falls back to the hardcoded <option> elements already in the HTML if the
+     * request fails, so the page always remains functional.
+     */
+    async function loadSports() {
+      try {
+        const res = await fetch('/api/sports');
+        if (!res.ok) return; // silently fall back to hardcoded options
+        const sports = await res.json();
+        if (!Array.isArray(sports) || sports.length === 0) return;
+
+        const activeSports = sports.filter(s => s.active && !s.has_outrights);
+        if (activeSports.length === 0) return;
+
+        const select = document.getElementById('sport-select');
+        const currentVal = select.value;
+
+        select.innerHTML =
+          '<option value="upcoming">🌟 All Sports (Upcoming)</option>' +
+          activeSports.map(function(s) {
+            const prefix = s.key.split('_')[0];
+            const emoji  = SPORT_EMOJI[prefix] || '🏆';
+            return '<option value="' + escHtml(s.key) + '">' + emoji + ' ' + escHtml(s.title) + '</option>';
+          }).join('');
+
+        // Restore the previously selected value if it still exists
+        if (select.querySelector('option[value="' + currentVal + '"]')) {
+          select.value = currentVal;
+        }
+      } catch (err) {
+        console.warn('[best-odds] Could not load sports list:', err.message);
+      }
+    }
+
+    // ── MODE / UI ────────────────────────────────────────────────────────────
 
     function setMode(mode) {
       currentMode = mode;
-      // Update active tab styling
-      document.querySelectorAll('.bo-tab-btn').forEach(b => b.classList.remove('active'));
-      const activeBtn = document.querySelector(`.bo-tab-btn[data-mode="${mode}"]`);
+      document.querySelectorAll('.bo-tab-btn').forEach(function(b) { b.classList.remove('active'); });
+      const activeBtn = document.querySelector('.bo-tab-btn[data-mode="' + mode + '"]');
       if (activeBtn) activeBtn.classList.add('active');
-      // Show/hide date picker
       document.getElementById('date-controls').style.display = mode === 'date' ? 'flex' : 'none';
     }
 
-    // ── HELPERS ─────────────────────────────────────────────────────────────
+    // ── HELPERS ──────────────────────────────────────────────────────────────
 
     function escHtml(str) {
       return String(str)
@@ -423,31 +522,54 @@
         soccer_epl:             'EPL',
         mma_mixed_martial_arts: 'MMA',
       };
-      return labels[key] || key.toUpperCase();
+      return labels[key] || key.replace(/_/g, ' ').toUpperCase();
     }
 
     /**
-     * Scan all bookmakers for the given event and return the best
-     * (highest payout) moneyline odds per team/outcome.
-     * @param {Array} bookmakers
-     * @returns {{ name, price, bookmakerTitle }[]}
+     * Return user-friendly error text for a given HTTP status code.
+     * @param {number} status
+     * @param {string} [rawMsg]
+     * @returns {string}
      */
-    function getBestOdds(bookmakers) {
+    function apiErrorMessage(status, rawMsg) {
+      if (status === 422) {
+        return 'The request parameters are invalid for this endpoint (HTTP 422). ' +
+          'This can happen when the selected sport has no events in the chosen window. ' +
+          'Try a different sport or time range.';
+      }
+      if (status === 429) {
+        return 'API rate limit reached (HTTP 429). Please wait a moment and try again.';
+      }
+      if (status === 401 || status === 403) {
+        return 'API authentication error (HTTP ' + status + '). Please check the server configuration.';
+      }
+      if (status >= 500) {
+        return 'The odds server is currently unavailable (HTTP ' + status + '). Please try again later.';
+      }
+      return rawMsg || 'Failed to load odds (HTTP ' + status + '). Please try again.';
+    }
+
+    // ── BEST-ODDS CALCULATOR ──────────────────────────────────────────────────
+
+    /**
+     * Scan all bookmakers for the given event and return the best
+     * (highest payout) odds per outcome for the specified market.
+     * American odds: numerically larger value = better payout for the bettor
+     * (e.g. +170 > +150 and -110 > -200).
+     */
+    function getBestOddsByMarket(bookmakers, marketKey) {
       const best = {};
       for (const bm of bookmakers) {
-        const h2h = (bm.markets || []).find(m => m.key === 'h2h');
-        if (!h2h) continue;
-        for (const outcome of h2h.outcomes) {
+        const market = (bm.markets || []).find(function(m) { return m.key === marketKey; });
+        if (!market) continue;
+        for (const outcome of market.outcomes) {
           const prev = best[outcome.name];
-          // "Best" = highest payout for the bettor.
-          // American odds: numerically larger value is always better for the
-          // bettor regardless of sign — e.g. +170 > +150, and -150 > -200
-          // (less juice). `outcome.price > prev.price` is the correct comparison.
           if (!prev || outcome.price > prev.price) {
             best[outcome.name] = {
-              name:            outcome.name,
-              price:           outcome.price,
-              bookmakerTitle:  bm.title || bm.key,
+              name:           outcome.name,
+              price:          outcome.price,
+              point:          outcome.point,
+              bookmakerTitle: bm.title || bm.key,
             };
           }
         }
@@ -455,110 +577,114 @@
       return Object.values(best);
     }
 
-    // ── RENDER ──────────────────────────────────────────────────────────────
+    // ── RENDER ────────────────────────────────────────────────────────────────
 
-    // renderEvent accepts an optional `renderTime` (Date) so that the live
-    // status is consistent across all cards rendered in the same batch.
-    function renderEvent(event, renderTime) {
-      const bookmakers = event.bookmakers || [];
-      const bestOdds   = getBestOdds(bookmakers);
-      const sport      = sportLabel(event.sport_key);
-      const matchup    = escHtml(event.away_team) + ' <span style="color:var(--muted)">@</span> ' + escHtml(event.home_team);
-      const isLive     = new Date(event.commence_time) <= (renderTime || new Date());
-
-      // Best-odds pills
-      const bestPillsHtml = bestOdds.map(o => {
+    /**
+     * Build HTML for a single best-odds pill (moneyline only — most important
+     * line for quick decision-making).
+     */
+    function renderBestPills(bookmakers) {
+      const bestH2H = getBestOddsByMarket(bookmakers, 'h2h');
+      if (bestH2H.length === 0) return '';
+      const pillsHtml = bestH2H.map(function(o) {
         const cls   = o.price >= 0 ? 'positive' : 'negative';
         const fmted = fmtOdds(o.price);
-        return `
-          <div class="bo-best-pill">
-            <div class="team-name">${escHtml(o.name)}</div>
-            <div class="best-price ${cls}">${escHtml(fmted)}</div>
-            <div class="via-book">via ${escHtml(o.bookmakerTitle)}</div>
-          </div>`;
+        return '<div class="bo-best-pill">' +
+          '<div class="team-name">'   + escHtml(o.name)            + '</div>' +
+          '<div class="best-price ' + cls + '">' + escHtml(fmted) + '</div>' +
+          '<div class="via-book">via ' + escHtml(o.bookmakerTitle) + '</div>' +
+          '</div>';
       }).join('');
-
-      // All-bookmakers detail rows
-      const bookRowsHtml = bookmakers
-        .filter(bm => (bm.markets || []).some(m => m.key === 'h2h'))
-        .map(bm => {
-          const h2h = bm.markets.find(m => m.key === 'h2h');
-          const outcomesHtml = h2h.outcomes.map(o => {
-            const cls   = o.price >= 0 ? 'pos' : 'neg';
-            const fmted = fmtOdds(o.price);
-            return `<span class="bo-outcome">${escHtml(o.name)}: <span class="${cls}">${escHtml(fmted)}</span></span>`;
-          }).join(' &nbsp;·&nbsp; ');
-          return `
-            <div class="bo-book-row">
-              <span class="bo-book-name">${escHtml(bm.title || bm.key)}</span>
-              ${outcomesHtml}
-            </div>`;
-        }).join('');
-
-      return `
-        <div class="bo-event-card">
-          <div class="bo-event-header">
-            <div>
-              <div class="bo-sport-label">${escHtml(sport)}</div>
-              <div class="bo-matchup">${matchup}</div>
-              <div class="bo-time">&#128336; ${escHtml(fmtTime(event.commence_time))}${isLive ? ' &nbsp;<span class="bo-live-badge">Live</span>' : ''}</div>
-            </div>
-            <span class="bo-books-badge">${bookmakers.length} book${bookmakers.length !== 1 ? 's' : ''}</span>
-          </div>
-
-          ${bestOdds.length > 0 ? `
-            <div class="bo-best-label">&#127942; Best Available Odds</div>
-            <div class="bo-best-row">${bestPillsHtml}</div>
-          ` : '<p class="loading-msg" style="margin:0">No odds available for this event yet.</p>'}
-
-          ${bookRowsHtml ? `
-            <details class="bo-all-books">
-              <summary>View all ${bookmakers.length} bookmaker(s) &#9662;</summary>
-              ${bookRowsHtml}
-            </details>
-          ` : ''}
-        </div>`;
+      return '<div class="bo-best-label">&#127942; Best Moneyline (h2h)</div>' +
+             '<div class="bo-best-row">' + pillsHtml + '</div>';
     }
 
-    // ── SEARCH ──────────────────────────────────────────────────────────────
+    /**
+     * Render one row per bookmaker showing ALL available markets
+     * (h2h moneyline, spreads, totals).  No artificial limit applied —
+     * every line returned by the API is shown so bettors can compare fully.
+     */
+    function renderBookmakerRows(bookmakers) {
+      const MARKET_LABELS = { h2h: 'Moneyline', spreads: 'Spread', totals: 'Total' };
+      return bookmakers.map(function(bm) {
+        const marketsHtml = (bm.markets || []).map(function(market) {
+          const label = MARKET_LABELS[market.key] || market.key;
+          const outcomesHtml = (market.outcomes || []).map(function(o) {
+            const cls   = o.price >= 0 ? 'pos' : 'neg';
+            const fmted = fmtOdds(o.price);
+            const point = (o.point !== undefined && o.point !== null)
+              ? ' (' + (o.point > 0 ? '+' : '') + o.point + ')' : '';
+            return '<span class="bo-outcome">' + escHtml(o.name) + point + ': ' +
+              '<span class="' + cls + '">' + escHtml(fmted) + '</span></span>';
+          }).join(' &nbsp;·&nbsp; ');
+          return '<div class="bo-market-label">' + escHtml(label) + '</div>' + outcomesHtml;
+        }).join('');
+
+        return '<div class="bo-book-row">' +
+          '<span class="bo-book-name">' + escHtml(bm.title || bm.key) + '</span>' +
+          '<div class="bo-market-group">' + marketsHtml + '</div>' +
+          '</div>';
+      }).join('');
+    }
+
+    /**
+     * Render a single event card.
+     * @param {object} event       - Odds API event object
+     * @param {Date}   renderTime  - Reference time for live-status badge
+     */
+    function renderEvent(event, renderTime) {
+      const bookmakers = event.bookmakers || [];
+      const sport      = sportLabel(event.sport_key);
+      const matchup    = escHtml(event.away_team) +
+        ' <span style="color:var(--muted)">@</span> ' + escHtml(event.home_team);
+      const isLive     = new Date(event.commence_time) <= (renderTime || new Date());
+      const bookRowsHtml = renderBookmakerRows(bookmakers);
+
+      return '<div class="bo-event-card">' +
+        '<div class="bo-event-header">' +
+          '<div>' +
+            '<div class="bo-sport-label">' + escHtml(sport) + '</div>' +
+            '<div class="bo-matchup">' + matchup + '</div>' +
+            '<div class="bo-time">&#128336; ' + escHtml(fmtTime(event.commence_time)) +
+              (isLive ? ' &nbsp;<span class="bo-live-badge">Live</span>' : '') + '</div>' +
+          '</div>' +
+          '<span class="bo-books-badge">' + bookmakers.length +
+            ' book' + (bookmakers.length !== 1 ? 's' : '') + '</span>' +
+        '</div>' +
+
+        (bookmakers.length > 0
+          ? renderBestPills(bookmakers)
+          : '<p class="loading-msg" style="margin:0">No odds available for this event yet.</p>') +
+
+        (bookRowsHtml
+          ? '<details class="bo-all-books" open>' +
+              '<summary>All ' + bookmakers.length + ' bookmaker line(s) &#9662;</summary>' +
+              bookRowsHtml +
+            '</details>'
+          : '') +
+        '</div>';
+    }
+
+    // ── SEARCH ────────────────────────────────────────────────────────────────
 
     async function searchOdds() {
-      const apiKey  = (window.APP_CONFIG || {}).ODDS_API_KEY || '';
       const sport   = document.getElementById('sport-select').value;
       const results = document.getElementById('bo-results');
       const btn     = document.getElementById('search-btn');
-
-      if (!apiKey || apiKey === 'YOUR_ODDS_API_KEY') {
-        results.innerHTML =
-          '<p class="error-msg">Add your Odds API key in <strong>config.js</strong> to search odds. ' +
-          'Get a free key at <a href="https://the-odds-api.com/" target="_blank" rel="noopener" ' +
-          'style="color:var(--gold)">the-odds-api.com</a>.</p>';
-        return;
-      }
 
       btn.disabled    = true;
       btn.textContent = 'Searching…';
       results.innerHTML = '<p class="loading-msg">Fetching best odds…</p>';
 
-      // Build date window based on current mode
-      const now = new Date();
-      let from, to;
+      // Build query parameters for /api/odds
+      const now    = new Date();
+      const params = new URLSearchParams({ sport: sport, mode: currentMode });
 
-      if (currentMode === 'live') {
-        // Games that have already started (up to 24 h ago) but aren't yet completed
-        const cutoff = new Date(now.getTime() - MS_PER_DAY);
-        from = cutoff.toISOString();
-        to   = now.toISOString();
-      } else if (currentMode === 'today') {
+      if (currentMode === 'today') {
         const todayStr = now.toISOString().slice(0, 10);
-        from = todayStr + 'T00:00:00Z';
-        to   = todayStr + 'T23:59:59Z';
-      } else if (currentMode === 'upcoming') {
-        const sevenDays = new Date(now.getTime() + 7 * MS_PER_DAY);
-        from = now.toISOString();
-        to   = sevenDays.toISOString();
-      } else {
-        // 'date' mode — use the date picker value
+        params.set('from', todayStr + 'T00:00:00Z');
+        params.set('to',   todayStr + 'T23:59:59Z');
+      } else if (currentMode === 'date') {
         const date = document.getElementById('date-input').value;
         if (!date) {
           results.innerHTML = '<p class="error-msg">Please select a date.</p>';
@@ -566,34 +692,56 @@
           btn.textContent = '🔍 Search Odds';
           return;
         }
-        from = date + 'T00:00:00Z';
-        to   = date + 'T23:59:59Z';
+        params.set('from', date + 'T00:00:00Z');
+        params.set('to',   date + 'T23:59:59Z');
       }
-
-      const url =
-        'https://api.the-odds-api.com/v4/sports/' + encodeURIComponent(sport) + '/odds/' +
-        '?apiKey=' + encodeURIComponent(apiKey) +
-        '&regions=us&markets=h2h&oddsFormat=american' +
-        '&commenceTimeFrom=' + encodeURIComponent(from) +
-        '&commenceTimeTo='   + encodeURIComponent(to);
+      // live / upcoming modes: no date params — the proxy handles the correct endpoint
 
       try {
-        const res  = await fetch(url);
-        if (!res.ok) throw new Error('API error ' + res.status);
+        const res  = await fetch('/api/odds?' + params.toString());
         const data = await res.json();
 
+        if (!res.ok) {
+          // Forward specific, actionable error messages based on HTTP status
+          const msg = apiErrorMessage(res.status, data && data.error);
+          console.error('[best-odds] API error ' + res.status + ':', data);
+          results.innerHTML = '<p class="error-msg">' + escHtml(msg) + '</p>';
+          return;
+        }
+
         if (!Array.isArray(data) || data.length === 0) {
-          const modeLabels = { live: 'live right now', today: 'today', upcoming: 'the next 7 days', date: 'the selected date' };
+          const modeLabels = {
+            live:     'live right now',
+            today:    'today',
+            upcoming: 'the next 7 days',
+            date:     'the selected date',
+          };
           results.innerHTML =
-            '<p class="loading-msg">No events found for ' + (modeLabels[currentMode] || 'the selected window') +
+            '<p class="loading-msg">No events found for ' +
+            (modeLabels[currentMode] || 'the selected window') +
             '. Try a different sport or time window.</p>';
           return;
         }
 
-        results.innerHTML = data.map(e => renderEvent(e, now)).join('');
+        // Render expand-all toolbar + all event cards (no artificial limit)
+        const cardsHtml = data.map(function(e) { return renderEvent(e, now); }).join('');
+        results.innerHTML =
+          '<div class="bo-toolbar">' +
+            '<button class="bo-expand-btn" id="expand-toggle">▼ Collapse All Lines</button>' +
+          '</div>' +
+          cardsHtml;
+
+        // Wire up expand/collapse toggle for all <details> elements
+        document.getElementById('expand-toggle').addEventListener('click', function() {
+          const allDetails = results.querySelectorAll('details.bo-all-books');
+          const anyOpen = Array.prototype.some.call(allDetails, function(d) { return d.open; });
+          allDetails.forEach(function(d) { d.open = !anyOpen; });
+          this.textContent = anyOpen ? '▶ Expand All Lines' : '▼ Collapse All Lines';
+        });
+
       } catch (err) {
         results.innerHTML = '<p class="error-msg">Failed to load odds: ' + escHtml(err.message) + '</p>';
-        console.error('Best Odds search error:', err);
+        console.error('[best-odds] Search error:', err);
       } finally {
         btn.disabled    = false;
         btn.textContent = '🔍 Search Odds';
