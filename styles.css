@@ -732,3 +732,314 @@ footer {
   section.hero { padding: 3rem 1rem 2rem; }
   .modal-box { margin: 1rem; padding: 2rem 1.25rem; }
 }
+
+/* ── TELEGRAM BUTTON ── */
+.btn-telegram {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: #2ca5e0;
+  color: #fff;
+  padding: 0.6rem 1.5rem;
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: 700;
+  font-size: 0.9rem;
+  transition: background 0.2s, transform 0.15s;
+}
+.btn-telegram:hover { background: #1a94cf; transform: translateY(-1px); }
+
+/* ── ADMIN PANEL ── */
+.admin-form {
+  background: var(--surface);
+  border: 1px solid var(--surface2);
+  border-radius: 10px;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+.admin-form-row {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-bottom: 0.75rem;
+}
+.admin-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  flex: 1;
+  min-width: 180px;
+}
+.admin-field label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--muted);
+}
+.admin-field input,
+.admin-field select {
+  background: var(--surface2);
+  border: 1px solid var(--surface2);
+  border-radius: 6px;
+  color: var(--text);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.9rem;
+  padding: 0.5rem 0.75rem;
+  outline: none;
+  transition: border-color 0.2s;
+}
+.admin-field input:focus,
+.admin-field select:focus { border-color: var(--orange); }
+
+.admin-picks-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+.admin-pick-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  background: var(--surface);
+  border: 1px solid var(--surface2);
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+  flex-wrap: wrap;
+}
+.admin-pick-info { flex: 1; }
+.admin-pick-matchup { font-size: 0.95rem; font-weight: 700; color: var(--text); }
+.admin-pick-meta { font-size: 0.8rem; color: var(--muted); margin-top: 0.2rem; }
+.admin-pick-value { font-size: 0.9rem; color: var(--orange); font-weight: 600; margin-top: 0.2rem; }
+.btn-delete-pick {
+  background: rgba(239,68,68,0.12);
+  border: 1px solid rgba(239,68,68,0.35);
+  color: #f87171;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  padding: 0.3rem 0.8rem;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.btn-delete-pick:hover { background: rgba(239,68,68,0.25); }
+
+/* ── PICKS SECTION ── */
+.picks-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+.pick-card-new {
+  background: var(--surface);
+  border: 1px solid var(--surface2);
+  border-radius: 10px;
+  padding: 1.1rem 1.4rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  transition: border-color 0.2s;
+}
+.pick-card-new:hover { border-color: var(--orange); }
+.pick-card-new .pick-left { flex: 1; }
+.pick-card-new .pick-matchup-new {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text);
+}
+.pick-card-new .pick-meta-new {
+  font-size: 0.78rem;
+  color: var(--muted);
+  margin-top: 0.2rem;
+}
+.pick-card-new .pick-value-new {
+  font-size: 0.92rem;
+  color: var(--orange);
+  font-weight: 700;
+  margin-top: 0.3rem;
+}
+.pick-card-new .pick-note-new {
+  font-size: 0.8rem;
+  color: var(--muted);
+  margin-top: 0.2rem;
+  font-style: italic;
+}
+.pick-confidence-stars { color: var(--gold); font-size: 0.85rem; margin-top: 0.15rem; }
+.pick-lock-badge {
+  display: inline-block;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 0.2rem 0.6rem;
+  border-radius: 20px;
+  flex-shrink: 0;
+}
+.pick-lock-badge.free {
+  background: rgba(34,197,94,0.12);
+  color: #22c55e;
+  border: 1px solid rgba(34,197,94,0.3);
+}
+.pick-lock-badge.locked {
+  background: rgba(249,115,22,0.12);
+  color: var(--orange);
+  border: 1px solid rgba(249,115,22,0.35);
+}
+.pick-sport-badge {
+  display: inline-block;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  padding: 0.18rem 0.55rem;
+  border-radius: 20px;
+  margin-bottom: 0.3rem;
+  background: rgba(29,78,216,0.15);
+  color: #60a5fa;
+  border: 1px solid rgba(29,78,216,0.3);
+}
+
+/* ── BET SLIP CALCULATOR ── */
+.betslip-fab {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  background: var(--orange);
+  color: #fff;
+  border: none;
+  border-radius: 50px;
+  padding: 0.75rem 1.2rem;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.9rem;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 4px 20px rgba(249,115,22,0.4);
+  z-index: 500;
+  transition: background 0.2s, transform 0.15s, box-shadow 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+.betslip-fab:hover {
+  background: var(--orange-dim);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 24px rgba(249,115,22,0.5);
+}
+.betslip-fab-label { font-size: 0.85rem; }
+
+.betslip-box {
+  max-width: 560px;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+.betslip-add-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  align-items: flex-start;
+}
+.bs-input {
+  background: var(--surface2);
+  border: 1px solid var(--surface3);
+  border-radius: 6px;
+  color: var(--text);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.85rem;
+  padding: 0.45rem 0.7rem;
+  outline: none;
+  transition: border-color 0.2s;
+  flex: 1;
+  min-width: 120px;
+}
+.bs-input:focus { border-color: var(--orange); }
+.bs-odds  { max-width: 110px; min-width: 90px; }
+.bs-wager { max-width: 100px; min-width: 80px; }
+.bs-add-btn {
+  padding: 0.45rem 1rem;
+  font-size: 0.85rem;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  white-space: nowrap;
+  align-self: flex-end;
+}
+
+.bs-legs {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+.bs-leg {
+  background: var(--surface2);
+  border: 1px solid var(--surface3);
+  border-radius: 8px;
+  padding: 0.65rem 0.85rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+.bs-leg-info { flex: 1; }
+.bs-leg-matchup { font-size: 0.85rem; font-weight: 700; color: var(--text); }
+.bs-leg-pick    { font-size: 0.8rem;  color: var(--orange); }
+.bs-leg-calc    { font-size: 0.78rem; color: var(--muted); margin-top: 0.1rem; }
+.bs-leg-remove {
+  background: none;
+  border: none;
+  color: var(--muted);
+  font-size: 1rem;
+  cursor: pointer;
+  padding: 0.1rem 0.3rem;
+  transition: color 0.2s;
+}
+.bs-leg-remove:hover { color: #f87171; }
+
+.bs-parlay-row {
+  border-top: 1px solid var(--surface2);
+  padding-top: 0.75rem;
+  margin-bottom: 0.75rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: flex-start;
+}
+.bs-toggle-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--text);
+  cursor: pointer;
+}
+.bs-toggle-label input[type="checkbox"] {
+  accent-color: var(--orange);
+  width: 1rem;
+  height: 1rem;
+  cursor: pointer;
+}
+
+.bs-summary {
+  background: var(--surface);
+  border: 1px solid var(--surface2);
+  border-radius: 8px;
+  padding: 0.85rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+.bs-summary-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.88rem;
+  color: var(--muted);
+}
+.bs-summary-row.highlight {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--success);
+}
+

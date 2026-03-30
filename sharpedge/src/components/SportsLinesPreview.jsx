@@ -139,7 +139,9 @@ export default function SportsLinesPreview() {
               bookmakers[0]
             : bookmakers.find(b => b.key === selectedBook);
 
-        const h2hMarket = bk?.markets?.find(m => m.key === 'h2h');
+        const h2hMarket    = bk?.markets?.find(m => m.key === 'h2h');
+        const spreadMarket = bk?.markets?.find(m => m.key === 'spreads');
+        const totalsMarket = bk?.markets?.find(m => m.key === 'totals');
 
         return (
           <div
@@ -178,7 +180,12 @@ export default function SportsLinesPreview() {
                 >
                   📊 {bk.title}
                 </div>
-                <div className="flex flex-wrap gap-3">
+
+                {/* Moneyline (h2h) */}
+                <div className="text-xs font-dm font-semibold uppercase tracking-widest mb-1" style={{ color: '#8888a0' }}>
+                  Moneyline
+                </div>
+                <div className="flex flex-wrap gap-3 mb-3">
                   {h2hMarket.outcomes.map(outcome => (
                     <div
                       key={outcome.name}
@@ -198,6 +205,74 @@ export default function SportsLinesPreview() {
                     </div>
                   ))}
                 </div>
+
+                {/* Spread */}
+                {spreadMarket && spreadMarket.outcomes.length > 0 && (
+                  <>
+                    <div className="text-xs font-dm font-semibold uppercase tracking-widest mb-1" style={{ color: '#8888a0' }}>
+                      Spread
+                    </div>
+                    <div className="flex flex-wrap gap-3 mb-3">
+                      {spreadMarket.outcomes.map(outcome => {
+                        const ptLabel = outcome.point !== undefined && outcome.point !== null
+                          ? ` (${outcome.point > 0 ? '+' : ''}${outcome.point})`
+                          : '';
+                        return (
+                          <div
+                            key={outcome.name}
+                            className="flex items-center gap-2 px-3 py-1.5 rounded-lg font-dm text-sm"
+                            style={{
+                              background: 'rgba(29,78,216,0.07)',
+                              border: '1px solid rgba(29,78,216,0.2)',
+                            }}
+                          >
+                            <span style={{ color: '#e8e8f0' }}>{outcome.name}{ptLabel}</span>
+                            <span
+                              className="font-bold"
+                              style={{ color: outcome.price > 0 ? '#22c55e' : '#f87171' }}
+                            >
+                              {formatOdds(outcome.price)}
+                            </span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </>
+                )}
+
+                {/* Over/Under (Totals) */}
+                {totalsMarket && totalsMarket.outcomes.length > 0 && (
+                  <>
+                    <div className="text-xs font-dm font-semibold uppercase tracking-widest mb-1" style={{ color: '#8888a0' }}>
+                      Over / Under
+                    </div>
+                    <div className="flex flex-wrap gap-3">
+                      {totalsMarket.outcomes.map(outcome => {
+                        const ptLabel = outcome.point !== undefined && outcome.point !== null
+                          ? ` ${outcome.point}`
+                          : '';
+                        return (
+                          <div
+                            key={outcome.name}
+                            className="flex items-center gap-2 px-3 py-1.5 rounded-lg font-dm text-sm"
+                            style={{
+                              background: 'rgba(34,197,94,0.07)',
+                              border: '1px solid rgba(34,197,94,0.2)',
+                            }}
+                          >
+                            <span style={{ color: '#e8e8f0' }}>{outcome.name}{ptLabel}</span>
+                            <span
+                              className="font-bold"
+                              style={{ color: outcome.price > 0 ? '#22c55e' : '#f87171' }}
+                            >
+                              {formatOdds(outcome.price)}
+                            </span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </>
+                )}
               </div>
             ) : (
               <p className="text-xs font-dm" style={{ color: '#8888a0' }}>

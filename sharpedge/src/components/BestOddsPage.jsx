@@ -7,7 +7,7 @@
  *
  * For each event it scans every bookmaker returned by The Odds API and
  * highlights the single best (highest-payout) odds for each outcome,
- * showing which sportsbook to use.
+ * showing which sportsbook to use.  Spread and O/U best odds are also shown.
  *
  * API calls are routed through /api/odds (server-side proxy) so that the
  * Odds API key is never exposed in the browser.
@@ -56,29 +56,24 @@ function fmtTime(isoString) {
 
 /**
  * Given an event's bookmakers array, find the single best (highest payout)
- * odds for each outcome in the h2h market.
+ * odds for each outcome in the specified market.
  *
- * Returns an array of { name, price, bookmakerTitle } objects — one per team.
+ * Returns an array of { name, price, point, bookmakerTitle } objects.
  */
-function getBestOdds(bookmakers) {
-  const best = {}; // keyed by outcome name
+function getBestOddsForMarket(bookmakers, marketKey) {
+  const best = {};
 
   for (const bm of bookmakers) {
-    const h2h = bm.markets?.find(m => m.key === 'h2h');
-    if (!h2h) continue;
-    for (const outcome of h2h.outcomes) {
+    const market = bm.markets?.find(m => m.key === marketKey);
+    if (!market) continue;
+    for (const outcome of market.outcomes) {
       const prev = best[outcome.name];
-      // "Best" for a bettor = highest payout.
-      // American odds comparison: numerically larger value is always better for
-      // the bettor regardless of sign — e.g. +170 > +150, and -150 > -200
-      // (less juice). So `outcome.price > prev.price` is the correct comparison.
-      const isBetter =
-        !prev ||
-        outcome.price > prev.price;
+      const isBetter = !prev || outcome.price > prev.price;
       if (isBetter) {
         best[outcome.name] = {
           name: outcome.name,
           price: outcome.price,
+          point: outcome.point,
           bookmakerTitle: bm.title || bm.key,
         };
       }
@@ -147,7 +142,7 @@ export default function BestOddsPage({ onBack }) {
           Best Available <span style={{ color: '#d4a843' }}>Odds</span>
         </h1>
         <p className="font-dm mb-10" style={{ color: '#8888a0' }}>
-          Compare moneyline odds across all sportsbooks for any upcoming event.
+          Compare moneyline, spread &amp; O/U odds across all sportsbooks for any upcoming event.
           We highlight the best payout for each team.
         </p>
 
@@ -258,7 +253,9 @@ export default function BestOddsPage({ onBack }) {
         {!loading && events.length > 0 && (
           <div className="flex flex-col gap-6">
             {events.map(event => {
-              const bestOdds = getBestOdds(event.bookmakers || []);
+              const bestH2H    = getBestOddsForMarket(event.bookmakers || [], 'h2h');
+              const bestSpread = getBestOddsForMarket(event.bookmakers || [], 'spreads');
+              const bestTotals = getBestOddsForMarket(event.bookmakers || [], 'totals');
 
               return (
                 <div
@@ -294,17 +291,17 @@ export default function BestOddsPage({ onBack }) {
                     </div>
                   </div>
 
-                  {/* Best odds per team */}
-                  {bestOdds.length > 0 ? (
-                    <div>
+                  {/* Best h2h moneyline */}
+                  {bestH2H.length > 0 && (
+                    <div className="mb-4">
                       <p
                         className="text-xs font-dm font-semibold uppercase tracking-widest mb-3"
                         style={{ color: '#8888a0' }}
                       >
-                        🏆 Best Available Odds
+                        🏆 Best Moneyline (h2h)
                       </p>
                       <div className="flex flex-wrap gap-3">
-                        {bestOdds.map(o => (
+                        {bestH2H.map(o => (
                           <div
                             key={o.name}
                             className="flex-1 min-w-48 rounded-lg px-4 py-3"
@@ -326,18 +323,98 @@ export default function BestOddsPage({ onBack }) {
                         ))}
                       </div>
                     </div>
-                  ) : (
+                  )}
+
+                  {/* Best Spread */}
+                  {bestSpread.length > 0 && (
+                    <div className="mb-4">
+                      <p
+                        className="text-xs font-dm font-semibold uppercase tracking-widest mb-3"
+                        style={{ color: '#8888a0' }}
+                      >
+                        📈 Best Spread
+                      </p>
+                      <div className="flex flex-wrap gap-3">
+                        {bestSpread.map(o => {
+                          const ptLabel = o.point !== undefined && o.point !== null
+                            ? ` (${o.point > 0 ? '+' : ''}${o.point})`
+                            : '';
+                          return (
+                            <div
+                              key={o.name}
+                              className="flex-1 min-w-48 rounded-lg px-4 py-3"
+                              style={{ background: '#111118', border: '1px solid #2a2a3a' }}
+                            >
+                              <div className="font-dm text-sm font-semibold mb-1" style={{ color: '#e8e8f0' }}>
+                                {o.name}{ptLabel}
+                              </div>
+                              <div
+                                className="text-2xl font-bebas tracking-wide"
+                                style={{ color: o.price > 0 ? '#22c55e' : '#f87171' }}
+                              >
+                                {fmtOdds(o.price)}
+                              </div>
+                              <div className="text-xs font-dm mt-1" style={{ color: '#8888a0' }}>
+                                via {o.bookmakerTitle}
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Best O/U (Totals) */}
+                  {bestTotals.length > 0 && (
+                    <div className="mb-4">
+                      <p
+                        className="text-xs font-dm font-semibold uppercase tracking-widest mb-3"
+                        style={{ color: '#8888a0' }}
+                      >
+                        ⚖️ Best O/U (Totals)
+                      </p>
+                      <div className="flex flex-wrap gap-3">
+                        {bestTotals.map(o => {
+                          const ptLabel = o.point !== undefined && o.point !== null
+                            ? ` ${o.point}`
+                            : '';
+                          return (
+                            <div
+                              key={o.name}
+                              className="flex-1 min-w-48 rounded-lg px-4 py-3"
+                              style={{ background: '#111118', border: '1px solid #2a2a3a' }}
+                            >
+                              <div className="font-dm text-sm font-semibold mb-1" style={{ color: '#e8e8f0' }}>
+                                {o.name}{ptLabel}
+                              </div>
+                              <div
+                                className="text-2xl font-bebas tracking-wide"
+                                style={{ color: o.price > 0 ? '#22c55e' : '#f87171' }}
+                              >
+                                {fmtOdds(o.price)}
+                              </div>
+                              <div className="text-xs font-dm mt-1" style={{ color: '#8888a0' }}>
+                                via {o.bookmakerTitle}
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+
+                  {bestH2H.length === 0 && bestSpread.length === 0 && bestTotals.length === 0 && (
                     <p className="text-xs font-dm" style={{ color: '#8888a0' }}>
                       No odds available yet for this event.
                     </p>
                   )}
 
-                  {/* All bookmaker odds (collapsible reference) */}
+                  {/* All bookmaker odds (collapsible reference) — collapsed by default */}
                   {(event.bookmakers || []).length > 0 && (
                     <details className="mt-4">
                       <summary
                         className="text-xs font-dm font-semibold cursor-pointer select-none"
-                        style={{ color: '#8888a0' }}
+                        style={{ color: '#F97316' }}
                       >
                         View all {event.bookmakers.length} bookmaker(s) ▾
                       </summary>
