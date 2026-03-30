@@ -223,7 +223,7 @@
   <!-- ── HERO ── -->
   <div class="bo-hero">
     <h1>Best Available <span>Odds</span></h1>
-    <p>Compare moneyline odds across all sportsbooks · Up to 30 days out · Best payout highlighted</p>
+    <p>Compare moneyline odds across all sportsbooks · Any upcoming date · Best payout highlighted</p>
   </div>
 
   <main>
@@ -244,7 +244,7 @@
         </select>
       </div>
       <div class="ctrl-group">
-        <label for="date-input">Date (up to 30 days out)</label>
+        <label for="date-input">Date</label>
         <input type="date" id="date-input" />
       </div>
       <button class="bo-search-btn" id="search-btn">🔍 Search Odds</button>
@@ -274,16 +274,11 @@
 
     // ── INIT DATE PICKER ────────────────────────────────────────────────────
     (function initDatePicker() {
-      const today   = new Date();
-      const maxDate = new Date();
-      maxDate.setDate(maxDate.getDate() + 30);
-
-      const fmt = d => d.toISOString().slice(0, 10);
-
+      const today = new Date();
+      const fmt   = d => d.toISOString().slice(0, 10);
       const input = document.getElementById('date-input');
       input.value = fmt(today);
       input.min   = fmt(today);
-      input.max   = fmt(maxDate);
     })();
 
     // ── HELPERS ─────────────────────────────────────────────────────────────
@@ -432,14 +427,11 @@
         return;
       }
 
-      // Validate date range
+      // Validate date — must not be in the past
       const today = new Date().toISOString().slice(0, 10);
-      const maxD  = new Date();
-      maxD.setDate(maxD.getDate() + 30);
-      const maxDate = maxD.toISOString().slice(0, 10);
 
-      if (date < today || date > maxDate) {
-        results.innerHTML = '<p class="error-msg">Please select a date between today and 30 days from now.</p>';
+      if (date < today) {
+        results.innerHTML = '<p class="error-msg">Please select today or a future date.</p>';
         return;
       }
 
