@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { mockPicks, sportColors } from './data/mockPicks';
 import SportsLinesPreview from './components/SportsLinesPreview';
+import BestOddsPage from './components/BestOddsPage';
 
 // TODO: Uncomment to use live The Odds API data
 // import { useOddsApi } from './hooks/useOddsApi';
@@ -264,6 +265,8 @@ function PricingCard({ plan }) {
 
 export default function App() {
   const [activeTab, setActiveTab] = useState('ALL');
+  // Simple client-side page routing: 'home' | 'best-odds'
+  const [currentPage, setCurrentPage] = useState('home');
 
   // TODO: Uncomment to use live data from The Odds API
   // const { data: oddsData, loading, error } = useOddsApi('upcoming');
@@ -279,10 +282,14 @@ export default function App() {
         className="sticky top-0 z-50 flex items-center justify-between px-6 py-4"
         style={{ background: '#111118', borderBottom: '1px solid #2a2a3a' }}
       >
-        {/* Logo */}
-        <div className="text-2xl font-bebas tracking-widest" style={{ color: '#d4a843' }}>
+        {/* Logo — clicking returns to home */}
+        <button
+          onClick={() => setCurrentPage('home')}
+          className="text-2xl font-bebas tracking-widest transition-opacity duration-200"
+          style={{ color: '#d4a843', background: 'none', border: 'none', cursor: 'pointer' }}
+        >
           SharpEdge
-        </div>
+        </button>
 
         {/* Center Links */}
         <div className="hidden md:flex items-center gap-6">
@@ -290,6 +297,7 @@ export default function App() {
             <a
               key={link}
               href={`#${link.toLowerCase()}`}
+              onClick={() => setCurrentPage('home')}
               className="text-sm font-dm transition-colors duration-200"
               style={{ color: '#8888a0' }}
               onMouseEnter={e => (e.currentTarget.style.color = '#e8e8f0')}
@@ -298,6 +306,20 @@ export default function App() {
               {link}
             </a>
           ))}
+          {/* Best Odds page link */}
+          <button
+            onClick={() => setCurrentPage('best-odds')}
+            className="text-sm font-dm font-semibold transition-colors duration-200 px-3 py-1 rounded-lg"
+            style={
+              currentPage === 'best-odds'
+                ? { color: '#d4a843', background: 'rgba(212,168,67,0.1)', border: '1px solid rgba(212,168,67,0.3)' }
+                : { color: '#8888a0', background: 'none', border: '1px solid transparent', cursor: 'pointer' }
+            }
+            onMouseEnter={e => { if (currentPage !== 'best-odds') e.currentTarget.style.color = '#e8e8f0'; }}
+            onMouseLeave={e => { if (currentPage !== 'best-odds') e.currentTarget.style.color = '#8888a0'; }}
+          >
+            🏆 Best Odds
+          </button>
         </div>
 
         {/* Right Buttons */}
@@ -315,12 +337,21 @@ export default function App() {
             style={{ background: '#d4a843', color: '#0a0a0f' }}
             onMouseEnter={e => (e.currentTarget.style.background = '#f0c060')}
             onMouseLeave={e => (e.currentTarget.style.background = '#d4a843')}
-            onClick={() => document.getElementById('pricing')?.scrollIntoView({ behavior: 'smooth' })}
+            onClick={() => {
+              setCurrentPage('home');
+              setTimeout(() => document.getElementById('pricing')?.scrollIntoView({ behavior: 'smooth' }), 50);
+            }}
           >
             Get Access
           </button>
         </div>
       </nav>
+
+      {/* ─── PAGE CONTENT ─── */}
+      {currentPage === 'best-odds' ? (
+        <BestOddsPage onBack={() => setCurrentPage('home')} />
+      ) : (
+      <>
 
       {/* ─── HERO ─── */}
       <section
@@ -555,6 +586,8 @@ export default function App() {
           </div>
         </div>
       </footer>
+      </>
+      )}
     </div>
   );
 }

@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Best Available Odds — CH0SEN1 PICKZ</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    /* ── Best-Odds page specific styles ── */
+    .bo-hero {
+      text-align: center;
+      padding: 3.5rem 1.5rem 2rem;
+      background: radial-gradient(ellipse at 50% 0%, rgba(29,78,216,0.12) 0%, transparent 70%);
+    }
+    .bo-hero h1 {
+      font-family: 'Bebas Neue', cursive;
+      font-size: clamp(2.8rem, 8vw, 5.5rem);
+      letter-spacing: 4px;
+      line-height: 1;
+      color: var(--text);
+    }
+    .bo-hero h1 span { color: var(--gold); }
+    .bo-hero p { color: var(--muted); font-size: 1.05rem; margin-top: 0.75rem; }
+
+    .bo-controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      align-items: flex-end;
+      background: var(--surface);
+      border: 1px solid var(--surface2);
+      border-radius: 12px;
+      padding: 1.25rem 1.5rem;
+      margin-bottom: 2rem;
+    }
+    .bo-controls .ctrl-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.3rem;
+      flex: 1;
+      min-width: 160px;
+    }
+    .bo-controls label {
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.7px;
+      color: var(--muted);
+    }
+    .bo-controls select,
+    .bo-controls input[type="date"] {
+      background: var(--surface2);
+      border: 1px solid var(--surface3);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.9rem;
+      padding: 0.45rem 0.75rem;
+      border-radius: 7px;
+      outline: none;
+      color-scheme: dark;
+    }
+    .bo-controls select:focus,
+    .bo-controls input[type="date"]:focus {
+      border-color: var(--gold);
+    }
+    .bo-search-btn {
+      background: var(--gold);
+      color: #0a0a0a;
+      border: none;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.9rem;
+      font-weight: 700;
+      padding: 0.55rem 1.5rem;
+      border-radius: 7px;
+      cursor: pointer;
+      transition: background 0.2s;
+      white-space: nowrap;
+      align-self: flex-end;
+    }
+    .bo-search-btn:hover  { background: var(--gold-dim); }
+    .bo-search-btn:disabled { background: var(--surface2); color: var(--muted); cursor: not-allowed; }
+
+    /* Event cards */
+    .bo-event-card {
+      background: var(--surface);
+      border: 1px solid var(--surface2);
+      border-radius: 10px;
+      padding: 1.25rem 1.5rem;
+      margin-bottom: 1.25rem;
+      transition: border-color 0.2s;
+    }
+    .bo-event-card:hover { border-color: var(--gold); }
+    .bo-event-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+    }
+    .bo-sport-label {
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--blue);
+      margin-bottom: 0.25rem;
+    }
+    .bo-matchup {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--text);
+    }
+    .bo-time {
+      font-size: 0.8rem;
+      color: var(--muted);
+      margin-top: 0.2rem;
+    }
+    .bo-books-badge {
+      font-size: 0.72rem;
+      font-weight: 700;
+      padding: 0.2rem 0.65rem;
+      border-radius: 20px;
+      background: rgba(34,197,94,0.12);
+      color: #22c55e;
+      border: 1px solid rgba(34,197,94,0.3);
+      white-space: nowrap;
+      align-self: flex-start;
+    }
+
+    /* Best odds row */
+    .bo-best-label {
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.7px;
+      color: var(--muted);
+      margin-bottom: 0.6rem;
+    }
+    .bo-best-row {
+      display: flex;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+      margin-bottom: 1rem;
+    }
+    .bo-best-pill {
+      background: var(--surface2);
+      border: 1px solid var(--surface3);
+      border-radius: 8px;
+      padding: 0.6rem 1rem;
+      flex: 1;
+      min-width: 140px;
+    }
+    .bo-best-pill .team-name {
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 0.25rem;
+    }
+    .bo-best-pill .best-price {
+      font-family: 'Bebas Neue', cursive;
+      font-size: 1.6rem;
+      letter-spacing: 1px;
+    }
+    .best-price.positive { color: var(--success); }
+    .best-price.negative { color: #f87171; }
+    .bo-best-pill .via-book {
+      font-size: 0.7rem;
+      color: var(--muted);
+      margin-top: 0.1rem;
+    }
+
+    /* All-books accordion */
+    .bo-all-books summary {
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--muted);
+      cursor: pointer;
+      user-select: none;
+      margin-top: 0.5rem;
+    }
+    .bo-book-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.45rem 0.75rem;
+      border-radius: 6px;
+      background: rgba(255,255,255,0.02);
+      border: 1px solid var(--surface2);
+      margin-top: 0.4rem;
+      font-size: 0.8rem;
+    }
+    .bo-book-name {
+      font-weight: 700;
+      color: var(--gold);
+      width: 110px;
+      flex-shrink: 0;
+      font-size: 0.78rem;
+    }
+    .bo-outcome { color: var(--text); }
+    .bo-outcome .pos { color: var(--success); font-weight: 700; }
+    .bo-outcome .neg { color: #f87171;        font-weight: 700; }
+  </style>
+</head>
+<body>
+
+  <!-- ── NAV ── -->
+  <nav>
+    <a class="nav-logo" href="index.html">
+      CH<span class="ch-blue">0</span>SEN<span class="ch-blue">1</span> PICKZ
+    </a>
+    <div class="nav-links">
+      <a href="index.html#live-bets">Live Bets</a>
+      <a href="best-odds.html" class="active">Best Odds</a>
+      <a href="index.html#pricing">Pricing</a>
+    </div>
+  </nav>
+
+  <!-- ── HERO ── -->
+  <div class="bo-hero">
+    <h1>Best Available <span>Odds</span></h1>
+    <p>Compare moneyline odds across all sportsbooks · Up to 30 days out · Best payout highlighted</p>
+  </div>
+
+  <main>
+    <!-- ── SEARCH CONTROLS ── -->
+    <div class="bo-controls">
+      <div class="ctrl-group">
+        <label for="sport-select">Sport</label>
+        <select id="sport-select">
+          <option value="americanfootball_nfl">🏈 NFL</option>
+          <option value="basketball_nba">🏀 NBA</option>
+          <option value="baseball_mlb">⚾ MLB</option>
+          <option value="icehockey_nhl">🏒 NHL</option>
+          <option value="americanfootball_ncaaf">🏈 NCAAF</option>
+          <option value="basketball_ncaab">🏀 NCAAB</option>
+          <option value="soccer_usa_mls">⚽ MLS</option>
+          <option value="soccer_epl">⚽ EPL</option>
+          <option value="mma_mixed_martial_arts">🥊 MMA</option>
+        </select>
+      </div>
+      <div class="ctrl-group">
+        <label for="date-input">Date (up to 30 days out)</label>
+        <input type="date" id="date-input" />
+      </div>
+      <button class="bo-search-btn" id="search-btn">🔍 Search Odds</button>
+    </div>
+
+    <!-- ── RESULTS ── -->
+    <div id="bo-results">
+      <p class="loading-msg">Select a sport and date above, then click Search Odds.</p>
+    </div>
+  </main>
+
+  <!-- ── FOOTER ── -->
+  <footer>
+    <p>&copy; 2026 CH0SEN1 PICKZ &mdash; For entertainment purposes only.</p>
+  </footer>
+
+  <!-- API config (shared with landing page) -->
+  <script src="config.js"></script>
+  <script>
+    /**
+     * best-odds.js — Best Available Odds search page
+     *
+     * Fetches moneyline odds from The Odds API for the selected sport and date,
+     * then highlights the best (highest payout) available odds per team/outcome
+     * and shows which sportsbook offers them.
+     */
+
+    // ── INIT DATE PICKER ────────────────────────────────────────────────────
+    (function initDatePicker() {
+      const today   = new Date();
+      const maxDate = new Date();
+      maxDate.setDate(maxDate.getDate() + 30);
+
+      const fmt = d => d.toISOString().slice(0, 10);
+
+      const input = document.getElementById('date-input');
+      input.value = fmt(today);
+      input.min   = fmt(today);
+      input.max   = fmt(maxDate);
+    })();
+
+    // ── HELPERS ─────────────────────────────────────────────────────────────
+
+    function escHtml(str) {
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    function fmtOdds(price) {
+      if (typeof price !== 'number') return 'N/A';
+      return price >= 0 ? '+' + price : String(price);
+    }
+
+    function fmtTime(isoString) {
+      return new Date(isoString).toLocaleString('en-US', {
+        weekday: 'short', month: 'short', day: 'numeric',
+        hour: 'numeric', minute: '2-digit',
+      });
+    }
+
+    function sportLabel(key) {
+      const labels = {
+        americanfootball_nfl:   'NFL',
+        americanfootball_ncaaf: 'NCAAF',
+        basketball_nba:         'NBA',
+        basketball_ncaab:       'NCAAB',
+        baseball_mlb:           'MLB',
+        icehockey_nhl:          'NHL',
+        soccer_usa_mls:         'MLS',
+        soccer_epl:             'EPL',
+        mma_mixed_martial_arts: 'MMA',
+      };
+      return labels[key] || key.toUpperCase();
+    }
+
+    /**
+     * Scan all bookmakers for the given event and return the best
+     * (highest payout) moneyline odds per team/outcome.
+     * @param {Array} bookmakers
+     * @returns {{ name, price, bookmakerTitle }[]}
+     */
+    function getBestOdds(bookmakers) {
+      const best = {};
+      for (const bm of bookmakers) {
+        const h2h = (bm.markets || []).find(m => m.key === 'h2h');
+        if (!h2h) continue;
+        for (const outcome of h2h.outcomes) {
+          const prev = best[outcome.name];
+          // "Best" = highest payout for the bettor.
+          // American odds: numerically larger value is always better for the
+          // bettor regardless of sign — e.g. +170 > +150, and -150 > -200
+          // (less juice). `outcome.price > prev.price` is the correct comparison.
+          if (!prev || outcome.price > prev.price) {
+            best[outcome.name] = {
+              name:            outcome.name,
+              price:           outcome.price,
+              bookmakerTitle:  bm.title || bm.key,
+            };
+          }
+        }
+      }
+      return Object.values(best);
+    }
+
+    // ── RENDER ──────────────────────────────────────────────────────────────
+
+    function renderEvent(event) {
+      const bookmakers = event.bookmakers || [];
+      const bestOdds   = getBestOdds(bookmakers);
+      const sport      = sportLabel(event.sport_key);
+      const matchup    = escHtml(event.away_team) + ' <span style="color:var(--muted)">@</span> ' + escHtml(event.home_team);
+
+      // Best-odds pills
+      const bestPillsHtml = bestOdds.map(o => {
+        const cls   = o.price >= 0 ? 'positive' : 'negative';
+        const fmted = fmtOdds(o.price);
+        return `
+          <div class="bo-best-pill">
+            <div class="team-name">${escHtml(o.name)}</div>
+            <div class="best-price ${cls}">${escHtml(fmted)}</div>
+            <div class="via-book">via ${escHtml(o.bookmakerTitle)}</div>
+          </div>`;
+      }).join('');
+
+      // All-bookmakers detail rows
+      const bookRowsHtml = bookmakers
+        .filter(bm => (bm.markets || []).some(m => m.key === 'h2h'))
+        .map(bm => {
+          const h2h = bm.markets.find(m => m.key === 'h2h');
+          const outcomesHtml = h2h.outcomes.map(o => {
+            const cls   = o.price >= 0 ? 'pos' : 'neg';
+            const fmted = fmtOdds(o.price);
+            return `<span class="bo-outcome">${escHtml(o.name)}: <span class="${cls}">${escHtml(fmted)}</span></span>`;
+          }).join(' &nbsp;·&nbsp; ');
+          return `
+            <div class="bo-book-row">
+              <span class="bo-book-name">${escHtml(bm.title || bm.key)}</span>
+              ${outcomesHtml}
+            </div>`;
+        }).join('');
+
+      return `
+        <div class="bo-event-card">
+          <div class="bo-event-header">
+            <div>
+              <div class="bo-sport-label">${escHtml(sport)}</div>
+              <div class="bo-matchup">${matchup}</div>
+              <div class="bo-time">&#128336; ${escHtml(fmtTime(event.commence_time))}</div>
+            </div>
+            <span class="bo-books-badge">${bookmakers.length} book${bookmakers.length !== 1 ? 's' : ''}</span>
+          </div>
+
+          ${bestOdds.length > 0 ? `
+            <div class="bo-best-label">&#127942; Best Available Odds</div>
+            <div class="bo-best-row">${bestPillsHtml}</div>
+          ` : '<p class="loading-msg" style="margin:0">No odds available for this event yet.</p>'}
+
+          ${bookRowsHtml ? `
+            <details class="bo-all-books">
+              <summary>View all ${bookmakers.length} bookmaker(s) &#9662;</summary>
+              ${bookRowsHtml}
+            </details>
+          ` : ''}
+        </div>`;
+    }
+
+    // ── SEARCH ──────────────────────────────────────────────────────────────
+
+    async function searchOdds() {
+      const apiKey  = (window.APP_CONFIG || {}).ODDS_API_KEY || '';
+      const sport   = document.getElementById('sport-select').value;
+      const date    = document.getElementById('date-input').value;
+      const results = document.getElementById('bo-results');
+      const btn     = document.getElementById('search-btn');
+
+      if (!apiKey || apiKey === 'YOUR_ODDS_API_KEY') {
+        results.innerHTML =
+          '<p class="error-msg">Add your Odds API key in <strong>config.js</strong> to search odds. ' +
+          'Get a free key at <a href="https://the-odds-api.com/" target="_blank" rel="noopener" ' +
+          'style="color:var(--gold)">the-odds-api.com</a>.</p>';
+        return;
+      }
+
+      // Validate date range
+      const today = new Date().toISOString().slice(0, 10);
+      const maxD  = new Date();
+      maxD.setDate(maxD.getDate() + 30);
+      const maxDate = maxD.toISOString().slice(0, 10);
+
+      if (date < today || date > maxDate) {
+        results.innerHTML = '<p class="error-msg">Please select a date between today and 30 days from now.</p>';
+        return;
+      }
+
+      btn.disabled    = true;
+      btn.textContent = 'Searching…';
+      results.innerHTML = '<p class="loading-msg">Fetching best odds…</p>';
+
+      // Build API URL filtering by the chosen date window
+      const from = date + 'T00:00:00Z';
+      const to   = date + 'T23:59:59Z';
+      const url  =
+        'https://api.the-odds-api.com/v4/sports/' + encodeURIComponent(sport) + '/odds/' +
+        '?apiKey=' + encodeURIComponent(apiKey) +
+        '&regions=us&markets=h2h&oddsFormat=american' +
+        '&commenceTimeFrom=' + encodeURIComponent(from) +
+        '&commenceTimeTo='   + encodeURIComponent(to);
+
+      try {
+        const res  = await fetch(url);
+        if (!res.ok) throw new Error('API error ' + res.status);
+        const data = await res.json();
+
+        if (!Array.isArray(data) || data.length === 0) {
+          results.innerHTML = '<p class="loading-msg">No events found for the selected sport and date. Try a different date.</p>';
+          return;
+        }
+
+        results.innerHTML = data.map(renderEvent).join('');
+      } catch (err) {
+        results.innerHTML = '<p class="error-msg">Failed to load odds: ' + escHtml(err.message) + '</p>';
+        console.error('Best Odds search error:', err);
+      } finally {
+        btn.disabled    = false;
+        btn.textContent = '🔍 Search Odds';
+      }
+    }
+
+    document.getElementById('search-btn').addEventListener('click', searchOdds);
+  </script>
+</body>
+</html>

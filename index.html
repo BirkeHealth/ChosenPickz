@@ -18,6 +18,7 @@
     </a>
     <div class="nav-links">
       <a href="#live-bets">Live Bets</a>
+      <a href="best-odds.html">Best Odds</a>
       <a href="#pricing">Pricing</a>
       <!-- shown when logged in -->
       <span id="nav-user" class="nav-user" style="display:none;">
@@ -47,6 +48,14 @@
     <!-- ── LIVE BETS ── -->
     <section id="live-bets">
       <h2 class="section-heading">&#9679; Live Bet Previews</h2>
+      <!-- Sportsbook toggle: switch which bookmaker's odds are displayed -->
+      <div class="bookmaker-toggle" aria-label="Select sportsbook">
+        <button class="bookmaker-toggle-btn active" data-bookmaker="all">All Books</button>
+        <button class="bookmaker-toggle-btn" data-bookmaker="fanduel">FanDuel</button>
+        <button class="bookmaker-toggle-btn" data-bookmaker="draftkings">DraftKings</button>
+        <button class="bookmaker-toggle-btn" data-bookmaker="betmgm">BetMGM</button>
+        <button class="bookmaker-toggle-btn" data-bookmaker="caesars">Caesars</button>
+      </div>
       <div id="bets-container" class="bets-grid">
         <p class="loading-msg">Loading upcoming games…</p>
       </div>
