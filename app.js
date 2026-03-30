@@ -18,6 +18,13 @@ const CFG = window.APP_CONFIG || {};
 const ODDS_API_KEY = CFG.ODDS_API_KEY  || '';
 const NEWS_API_KEY = CFG.NEWS_API_KEY  || '';
 
+// ── SPORTSBOOK TOGGLE STATE ────────────────────────────────────────────────
+// Tracks which bookmaker the user has selected for the live-preview cards.
+// 'all'  → pick the first available book (DraftKings preferred, then FanDuel)
+// Other values match a bookmaker key returned by The Odds API (e.g. 'fanduel')
+let currentBookmaker = 'all';
+let cachedGames = []; // last-fetched games; re-rendered on bookmaker switch
+
 // Popular US sports to check (in priority order)
 const SPORTS = [
   'americanfootball_nfl',
@@ -150,23 +157,55 @@ function getTotals(outcomes) {
 
 // ── RENDER BET CARD ────────────────────────────────────────────────────────
 
-function renderBetCard(game) {
+/**
+ * Build the HTML for one bet-preview card.
+ * @param {Object} game          - A single event from The Odds API.
+ * @param {string} bookmakerKey  - Which bookmaker to display. 'all' uses the
+ *                                 first available (DraftKings preferred).
+ */
+function renderBetCard(game, bookmakerKey = 'all') {
   const homeTeam = game.home_team || 'Home';
   const awayTeam = game.away_team || 'Away';
   const gameTime = formatGameTime(game.commence_time);
   const sport    = sportLabel(game.sport_key);
 
   const bookmakers = game.bookmakers || [];
-  const bk =
-    bookmakers.find(b => b.key === 'draftkings') ||
-    bookmakers.find(b => b.key === 'fanduel')    ||
-    bookmakers[0];
+
+  // Select the requested bookmaker.
+  // When 'all' is chosen we pick the first available (DraftKings preferred).
+  // When a specific book is chosen we only use it — no silent fallback —
+  // so users can see when their preferred book doesn't cover a game.
+  let bk;
+  if (bookmakerKey === 'all') {
+    bk =
+      bookmakers.find(b => b.key === 'draftkings') ||
+      bookmakers.find(b => b.key === 'fanduel')    ||
+      bookmakers[0];
+  } else {
+    bk = bookmakers.find(b => b.key === bookmakerKey);
+  }
+
+  const bookmakerName = bk ? (bk.title || bk.key) : 'N/A';
+
+  // If the requested book isn't available for this game, show a notice instead
+  // of silently displaying a different book's odds.
+  if (!bk) {
+    return `
+      <div class="bet-card">
+        <div class="bet-sport">${escapeHtml(sport)}</div>
+        <div class="bet-matchup">${escapeHtml(awayTeam)} @ ${escapeHtml(homeTeam)}</div>
+        <div class="bet-time">&#128336; ${escapeHtml(gameTime)}</div>
+        <p class="loading-msg" style="margin-top:0.75rem;text-align:left;">
+          ${escapeHtml(bookmakerName === 'N/A' ? 'Selected sportsbook' : bookmakerName)} does not have odds for this game.
+        </p>
+      </div>`;
+  }
 
   let mlHome = 'N/A', mlAway = 'N/A';
   let spreadHome = 'N/A', spreadAway = 'N/A';
   let total = 'N/A';
 
-    if (bk && Array.isArray(bk.markets)) {
+  if (bk && Array.isArray(bk.markets)) {
     const h2h     = bk.markets.find(m => m.key === 'h2h');
     const spreads = bk.markets.find(m => m.key === 'spreads');
     const totals  = bk.markets.find(m => m.key === 'totals');
@@ -214,7 +253,20 @@ function renderBetCard(game) {
           <span class="odds-value">${escapeHtml(total)}</span>
         </div>
       </div>
+      <div class="bet-source">📊 Source: ${escapeHtml(bookmakerName)}</div>
     </div>`;
+}
+
+// ── RENDER CACHED GAMES ────────────────────────────────────────────────────
+
+/**
+ * Re-renders the bets grid from the cached games using the currently
+ * selected bookmaker.  Called by loadOdds() and by the toggle buttons.
+ */
+function renderBets() {
+  const container = document.getElementById('bets-container');
+  if (!container || cachedGames.length === 0) return;
+  container.innerHTML = cachedGames.map(g => renderBetCard(g, currentBookmaker)).join('');
 }
 
 // ── FETCH ODDS ─────────────────────────────────────────────────────────────
@@ -258,7 +310,8 @@ async function loadOdds() {
       return;
     }
 
-    container.innerHTML = results.map(renderBetCard).join('');
+    cachedGames = results;
+    renderBets();
   } catch (err) {
     container.innerHTML = '<p class="error-msg">Unable to load live odds. Please try again later.</p>';
     console.error('Odds API error:', err);
@@ -591,6 +644,17 @@ document.addEventListener('DOMContentLoaded', function () {
   // Close on Escape key
   document.addEventListener('keydown', e => {
     if (e.key === 'Escape' && modal && modal.classList.contains('open')) closeModal();
+  });
+
+  // Bookmaker toggle buttons
+  document.querySelectorAll('.bookmaker-toggle-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      currentBookmaker = btn.dataset.bookmaker;
+      // Update active styling
+      document.querySelectorAll('.bookmaker-toggle-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      renderBets();
+    });
   });
 
   // Restore session

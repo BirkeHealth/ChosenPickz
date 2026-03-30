@@ -288,6 +288,35 @@ main section { margin-bottom: 3.5rem; }
 }
 
 /* ── LIVE BETS GRID ── */
+
+/* Sportsbook toggle row above the live-bets grid */
+.bookmaker-toggle {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1.25rem;
+  flex-wrap: wrap;
+}
+.bookmaker-toggle-btn {
+  background: var(--surface2);
+  color: var(--muted);
+  border: 1px solid var(--surface2);
+  padding: 0.35rem 0.9rem;
+  border-radius: 6px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: color 0.2s, background 0.2s, border-color 0.2s;
+}
+.bookmaker-toggle-btn:hover {
+  color: var(--text);
+}
+.bookmaker-toggle-btn.active {
+  background: rgba(249,115,22,0.15);
+  color: var(--orange);
+  border-color: rgba(249,115,22,0.4);
+}
+
 .bets-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
@@ -346,6 +375,15 @@ main section { margin-bottom: 3.5rem; }
 .odds-pill .odds-value {
   font-weight: 700;
   color: var(--orange);
+}
+/* Label showing which sportsbook's odds are displayed on a bet card */
+.bet-source {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--muted);
+  margin-top: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 /* ── SPORTS NEWS ── */

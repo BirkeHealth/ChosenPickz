@@ -3,6 +3,15 @@ import { useState, useEffect } from 'react';
 const API_KEY = import.meta.env.VITE_ODDS_API_KEY || '378d22c76a76769fa0078d2d9e88fb60';
 const ODDS_API_URL = `https://api.the-odds-api.com/v4/sports/upcoming/odds/?regions=us&markets=h2h&oddsFormat=american&apiKey=${API_KEY}`;
 
+// Sportsbooks available for toggling in the preview
+const BOOKMAKERS = [
+  { key: 'all',        label: 'All Books' },
+  { key: 'fanduel',   label: 'FanDuel' },
+  { key: 'draftkings', label: 'DraftKings' },
+  { key: 'betmgm',    label: 'BetMGM' },
+  { key: 'caesars',   label: 'Caesars' },
+];
+
 function formatCommenceTime(isoString) {
   const date = new Date(isoString);
   return date.toLocaleString('en-US', {
@@ -23,6 +32,8 @@ export default function SportsLinesPreview() {
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  // Which bookmaker to show odds from ('all' = first available)
+  const [selectedBook, setSelectedBook] = useState('all');
 
   useEffect(() => {
     let cancelled = false;
@@ -89,81 +100,114 @@ export default function SportsLinesPreview() {
 
   return (
     <div className="flex flex-col gap-6">
-      {events.map(event => (
-        <div
-          key={event.id}
-          className="rounded-xl p-5"
-          style={{ background: '#1c1c28', border: '1px solid #2a2a3a' }}
-        >
-          {/* Event header */}
-          <div className="flex flex-wrap items-center justify-between gap-2 mb-4">
-            <div>
+      {/* ── Sportsbook toggle ── */}
+      <div className="flex flex-wrap gap-2" role="group" aria-label="Select sportsbook">
+        {BOOKMAKERS.map(bm => (
+          <button
+            key={bm.key}
+            onClick={() => setSelectedBook(bm.key)}
+            className="px-3 py-1.5 rounded-lg text-sm font-dm font-semibold transition-all duration-200"
+            style={
+              selectedBook === bm.key
+                ? {
+                    background: 'rgba(212,168,67,0.15)',
+                    color: '#d4a843',
+                    border: '1px solid rgba(212,168,67,0.4)',
+                  }
+                : {
+                    background: '#111118',
+                    color: '#8888a0',
+                    border: '1px solid #2a2a3a',
+                  }
+            }
+          >
+            {bm.label}
+          </button>
+        ))}
+      </div>
+
+      {/* ── Event cards ── */}
+      {events.map(event => {
+        const bookmakers = event.bookmakers || [];
+
+        // Select the requested book; only fall back when showing 'all'
+        const bk =
+          selectedBook === 'all'
+            ? bookmakers.find(b => b.key === 'draftkings') ||
+              bookmakers.find(b => b.key === 'fanduel') ||
+              bookmakers[0]
+            : bookmakers.find(b => b.key === selectedBook);
+
+        const h2hMarket = bk?.markets?.find(m => m.key === 'h2h');
+
+        return (
+          <div
+            key={event.id}
+            className="rounded-xl p-5"
+            style={{ background: '#1c1c28', border: '1px solid #2a2a3a' }}
+          >
+            {/* Event header */}
+            <div className="flex flex-wrap items-center justify-between gap-2 mb-4">
+              <div>
+                <div
+                  className="text-xs font-bold uppercase tracking-widest mb-1 font-dm"
+                  style={{ color: '#d4a843' }}
+                >
+                  {event.sport_title}
+                </div>
+                <div className="text-lg font-bebas tracking-wider" style={{ color: '#e8e8f0' }}>
+                  {event.away_team} <span style={{ color: '#8888a0' }}>@</span> {event.home_team}
+                </div>
+              </div>
+              <div className="text-xs font-dm" style={{ color: '#8888a0' }}>
+                🕐 {formatCommenceTime(event.commence_time)}
+              </div>
+            </div>
+
+            {/* Odds from selected bookmaker */}
+            {bk && h2hMarket ? (
               <div
-                className="text-xs font-bold uppercase tracking-widest mb-1 font-dm"
-                style={{ color: '#d4a843' }}
+                className="rounded-lg px-4 py-3"
+                style={{ background: '#111118', border: '1px solid #2a2a3a' }}
               >
-                {event.sport_title}
-              </div>
-              <div className="text-lg font-bebas tracking-wider" style={{ color: '#e8e8f0' }}>
-                {event.away_team} <span style={{ color: '#8888a0' }}>@</span> {event.home_team}
-              </div>
-            </div>
-            <div className="text-xs font-dm" style={{ color: '#8888a0' }}>
-              🕐 {formatCommenceTime(event.commence_time)}
-            </div>
-          </div>
-
-          {/* Bookmakers */}
-          {event.bookmakers && event.bookmakers.length > 0 ? (
-            <div className="flex flex-col gap-3">
-              {event.bookmakers
-                .filter(bookmaker => bookmaker.markets?.some(m => m.key === 'h2h'))
-                .map(bookmaker => {
-                const h2hMarket = bookmaker.markets.find(m => m.key === 'h2h');
-
-                return (
-                  <div
-                    key={bookmaker.key}
-                    className="rounded-lg px-4 py-3"
-                    style={{ background: '#111118', border: '1px solid #2a2a3a' }}
-                  >
+                {/* Bookmaker source label */}
+                <div
+                  className="text-xs font-dm font-semibold uppercase tracking-widest mb-2"
+                  style={{ color: '#8888a0' }}
+                >
+                  📊 {bk.title}
+                </div>
+                <div className="flex flex-wrap gap-3">
+                  {h2hMarket.outcomes.map(outcome => (
                     <div
-                      className="text-xs font-dm font-semibold uppercase tracking-widest mb-2"
-                      style={{ color: '#8888a0' }}
+                      key={outcome.name}
+                      className="flex items-center gap-2 px-3 py-1.5 rounded-lg font-dm text-sm"
+                      style={{
+                        background: 'rgba(212,168,67,0.07)',
+                        border: '1px solid rgba(212,168,67,0.2)',
+                      }}
                     >
-                      {bookmaker.title}
+                      <span style={{ color: '#e8e8f0' }}>{outcome.name}</span>
+                      <span
+                        className="font-bold"
+                        style={{ color: outcome.price > 0 ? '#22c55e' : '#f87171' }}
+                      >
+                        {formatOdds(outcome.price)}
+                      </span>
                     </div>
-                    <div className="flex flex-wrap gap-3">
-                      {h2hMarket.outcomes.map(outcome => (
-                        <div
-                          key={outcome.name}
-                          className="flex items-center gap-2 px-3 py-1.5 rounded-lg font-dm text-sm"
-                          style={{
-                            background: 'rgba(212,168,67,0.07)',
-                            border: '1px solid rgba(212,168,67,0.2)',
-                          }}
-                        >
-                          <span style={{ color: '#e8e8f0' }}>{outcome.name}</span>
-                          <span
-                            className="font-bold"
-                            style={{ color: outcome.price > 0 ? '#22c55e' : '#f87171' }}
-                          >
-                            {formatOdds(outcome.price)}
-                          </span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          ) : (
-            <p className="text-xs font-dm" style={{ color: '#8888a0' }}>
-              No bookmaker odds available for this event.
-            </p>
-          )}
-        </div>
-      ))}
+                  ))}
+                </div>
+              </div>
+            ) : (
+              <p className="text-xs font-dm" style={{ color: '#8888a0' }}>
+                No odds available from{' '}
+                {selectedBook === 'all' ? 'any bookmaker' : BOOKMAKERS.find(b => b.key === selectedBook)?.label || selectedBook}{' '}
+                for this event.
+              </p>
+            )}
+          </div>
+        );
+      })}
     </div>
   );
 }

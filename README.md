@@ -21,10 +21,32 @@ This repository contains **two separate apps** that work independently:
 The public landing page includes:
 
 - **Responsive hero section** with brand colors (Black, Gold, Orange, Royal Blue)
-- **Live Odds** — real-time game odds from [The Odds API](https://the-odds-api.com/)
+- **Live Odds** — real-time game odds from [The Odds API](https://the-odds-api.com/) with a **sportsbook toggle** (All Books / FanDuel / DraftKings / BetMGM / Caesars)
 - **Sports News** — latest headlines from [NewsAPI.org](https://newsapi.org/)
 - **Pricing section** — Starter / Pro / Elite plans
 - **Authentication modal** — Login + Sign Up with email confirmation
+- **Best Available Odds page** (`best-odds.html`) — search and compare odds across all sportsbooks for any sport and date up to 30 days out
+
+### Sportsbook Toggle (Live Bet Previews)
+
+The Live Bet Previews section includes a row of toggle buttons so users can choose which sportsbook's odds to display:
+
+- **All Books** (default) — shows the first available bookmaker (DraftKings preferred)
+- **FanDuel**, **DraftKings**, **BetMGM**, **Caesars** — switch to that specific book's odds
+
+The selected sportsbook name is always shown at the bottom of each card ("📊 Source: FanDuel").
+
+### Best Available Odds Page (`best-odds.html`)
+
+A dedicated search page where users can:
+
+1. Select a **sport** from the dropdown (NFL, NBA, MLB, NHL, NCAAF, NCAAB, MLS, EPL, MMA)
+2. Pick a **date** up to 30 days in the future
+3. Click **Search Odds** to fetch all available moneyline odds from every sportsbook
+
+For each event the page highlights the **best available payout** per team across all bookmakers and shows which sportsbook to use.  An expandable section lists all books' odds for reference.
+
+Navigate to it from the nav bar → **Best Odds**, or directly at `/best-odds.html`.
 
 ### API Key Setup
 
@@ -140,6 +162,12 @@ The server starts on port 3000 (or `$PORT` if set).
 
 > **SharpEdge** is a separate React + Vite + Tailwind CSS app located in the `sharpedge/` directory.  
 > It displays premium sports lines, sharp picks, and live odds in a sleek dark interface.
+
+### Features
+
+- **Live Lines preview** with sportsbook toggle (All Books / FanDuel / DraftKings / BetMGM / Caesars)
+- **Best Available Odds page** — search any sport by date up to 30 days out and see the best moneyline payout per team across all bookmakers, with the source sportsbook clearly labelled
+- Sharp picks dashboard, pricing plans, Whop checkout embed
 
 ### Preview SharpEdge Locally
 
