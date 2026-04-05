@@ -6,7 +6,7 @@
  *  - Fetching upcoming game odds from The Odds API (up to 5 games)
  *  - Fetching top sports headlines from NewsAPI.org
  *  - Auth: signup (create user), login (validate user), logout
- *  - Email confirmation via EmailJS (or on-screen code fallback)
+ *  - Email confirmation via server-side SMTP (or on-screen code fallback)
  *
  * User data is persisted in localStorage (client-side demo).
  * For production use a secure server-side auth system with hashed passwords.
@@ -455,38 +455,19 @@ function clearAlerts() {
   });
 }
 
-// ── EMAIL CONFIRMATION (EmailJS) ───────────────────────────────────────────
+// ── EMAIL CONFIRMATION (server-side SMTP) ──────────────────────────────────
 
 async function sendConfirmationEmail(toEmail, toName, code) {
-  const { EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, EMAILJS_PUBLIC_KEY } = CFG;
-
-  if (!EMAILJS_SERVICE_ID || EMAILJS_SERVICE_ID === 'YOUR_EMAILJS_SERVICE_ID'
-    || !EMAILJS_TEMPLATE_ID || EMAILJS_TEMPLATE_ID === 'YOUR_EMAILJS_TEMPLATE_ID'
-    || !EMAILJS_PUBLIC_KEY  || EMAILJS_PUBLIC_KEY  === 'YOUR_EMAILJS_PUBLIC_KEY') {
-    return false; // EmailJS not configured — caller will show on-screen code
-  }
-
-  // Dynamically load EmailJS SDK if not already present
-  if (typeof emailjs === 'undefined') {
-    await new Promise((resolve, reject) => {
-      const s = document.createElement('script');
-      s.src = 'https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js';
-      s.onload = resolve;
-      s.onerror = reject;
-      document.head.appendChild(s);
-    });
-    emailjs.init(EMAILJS_PUBLIC_KEY);
-  }
-
   try {
-    await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, {
-      to_email:     toEmail,
-      to_name:      toName,
-      confirm_code: code,
+    const res = await fetch('/api/send-confirmation-email', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({ to_email: toEmail, to_name: toName, confirm_code: code }),
     });
-    return true;
+    const data = await res.json();
+    return data.ok === true;
   } catch (err) {
-    console.warn('EmailJS send failed:', err);
+    console.warn('Email send failed:', err);
     return false;
   }
 }
@@ -548,7 +529,7 @@ async function handleSignup(e) {
   users.push(newUser);
   saveUsers(users);
 
-  // Attempt to send confirmation email via EmailJS
+  // Attempt to send confirmation email via server-side SMTP
   const emailSent = await sendConfirmationEmail(email, name, code);
 
   // Reset button
@@ -569,7 +550,7 @@ async function handleSignup(e) {
     showAlert('signup', 'info',
       `✓ Account created for <strong>${escapeHtml(name)}</strong>! ` +
       `Enter the verification code below to activate your account. ` +
-      `<a href="https://www.emailjs.com/" target="_blank" rel="noopener" style="color:var(--gold)">Set up EmailJS</a> to receive codes by email.`);
+      `(To send codes by email, configure SMTP settings in your server's .env file.)`);
   }
 
   if (box && codeDisplay) {
