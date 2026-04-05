@@ -7,6 +7,17 @@ const newsHandler   = require('./routes/news');
 
 const PORT = process.env.PORT || 3000;
 
+// ── Startup environment checks ────────────────────────────────────────────────
+if (!process.env.NEWS_API_KEY || process.env.NEWS_API_KEY === 'YOUR_NEWS_API_KEY_HERE') {
+  console.warn('[startup] WARNING: NEWS_API_KEY is not set. Sports news will be unavailable.');
+  console.warn('[startup]   Set NEWS_API_KEY in your .env file or as a server environment variable.');
+  console.warn('[startup]   See .env.example for details.');
+}
+if (!process.env.ODDS_API_KEY || process.env.ODDS_API_KEY === 'YOUR_ODDS_API_KEY_HERE') {
+  console.warn('[startup] WARNING: ODDS_API_KEY is not set. Live odds will be unavailable.');
+  console.warn('[startup]   Set ODDS_API_KEY in your .env file or as a server environment variable.');
+}
+
 const ROOT_DIR = __dirname;
 const DIST_DIR = path.join(__dirname, 'sharpedge', 'dist');
 

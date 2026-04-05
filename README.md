@@ -73,12 +73,17 @@ window.APP_CONFIG = {
 
 1. Sign up for free at <https://newsapi.org/register>
 2. Copy your API key from your account page.
-3. **Recommended (server-side proxy):** Add `NEWS_API_KEY=your_key` to your `.env` file.  
-   The app serves headlines through `/api/news` so the key is never sent to the browser.
-4. **Optional (browser fallback):** Set `NEWS_API_KEY` in `config.js` for local development.
+3. **Production (required):** Set `NEWS_API_KEY` as a server environment variable.  
+   - On **Render**: Dashboard → your service → *Environment* → add `NEWS_API_KEY=<your_key>`  
+   - On **Heroku**: `heroku config:set NEWS_API_KEY=<your_key>`  
+   - Locally: add `NEWS_API_KEY=your_key` to your `.env` file (see `.env.example`).  
+   The app proxies all news requests through `/api/news` so the key is never exposed to the browser.
+4. **Optional (browser fallback — local dev only):** Set `NEWS_API_KEY` in `config.js`.  
+   This fallback is not used when the server proxy is configured.
 
 > ⚠️ **CORS note:** NewsAPI restricts browser (client-side) requests on the free Developer plan.  
-> Always use the server-side `.env` key for production so requests go through the `/api/news` proxy.
+> The server-side proxy (`/api/news`) must have `NEWS_API_KEY` set for sports news to load in production.  
+> If the key is missing the server returns a 503 and the "Unable to load sports news" error appears.
 
 #### EmailJS (signup email confirmation)
 
@@ -100,11 +105,21 @@ If EmailJS is **not** configured the sign-up flow still works — the confirmati
 
 ### Running the Landing Page Locally
 
-The landing page is served by the Node.js server at the root URL. Run:
+The landing page is served by the Node.js server at the root URL.
 
-```bash
-npm start
-```
+1. Copy `.env.example` to `.env` and fill in your API keys:
+
+   ```bash
+   cp .env.example .env
+   # Edit .env and set NEWS_API_KEY and ODDS_API_KEY
+   ```
+
+2. Install dependencies and start the server:
+
+   ```bash
+   yarn install
+   yarn start
+   ```
 
 Then open [http://localhost:3000](http://localhost:3000) in your browser to see the landing page.
 
@@ -140,7 +155,8 @@ For a production deployment, replace this with a secure server-side auth system 
 ### Running Locally
 
 ```bash
-npm start
+yarn install
+yarn start
 ```
 
 The server starts on port 3000 (or `$PORT` if set).  
