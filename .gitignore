@@ -2,3 +2,4 @@ node_modules/
 sharpedge/node_modules/
 sharpedge/dist/
 .env
+package-lock.json

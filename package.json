@@ -2,6 +2,7 @@
   "name": "chosenpickz",
   "version": "1.0.0",
   "description": "Sports picks dashboard",
+  "license": "MIT",
   "main": "index.js",
   "scripts": {
     "install:ui": "cd sharpedge && npm install",
