@@ -4,6 +4,7 @@ const path = require('path');
 const oddsHandler   = require('./routes/odds');
 const sportsHandler = require('./routes/sports');
 const newsHandler   = require('./routes/news');
+const emailHandler  = require('./routes/email');
 
 const PORT = process.env.PORT || 3000;
 
@@ -16,6 +17,12 @@ if (!process.env.NEWS_API_KEY || process.env.NEWS_API_KEY === 'YOUR_NEWS_API_KEY
 if (!process.env.ODDS_API_KEY || process.env.ODDS_API_KEY === 'YOUR_ODDS_API_KEY_HERE') {
   console.warn('[startup] WARNING: ODDS_API_KEY is not set. Live odds will be unavailable.');
   console.warn('[startup]   Set ODDS_API_KEY in your .env file or as a server environment variable.');
+}
+
+if (!process.env.SMTP_HOST || !process.env.SMTP_USER || !process.env.SMTP_PASS) {
+  console.warn('[startup] WARNING: SMTP_* variables are not set. Signup confirmation emails will be unavailable.');
+  console.warn('[startup]   Set SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS (and optionally SMTP_FROM) in your .env file.');
+  console.warn('[startup]   See .env.example for details.');
 }
 
 const ROOT_DIR = __dirname;
@@ -126,6 +133,14 @@ const server = http.createServer((req, res) => {
   let urlPath = req.url;
   // Strip query strings
   urlPath = urlPath.split('?')[0];
+
+  // ── Email confirmation ─────────────────────────────────────────────────────
+  // Sends a signup-verification email via server-side SMTP so credentials
+  // never reach the browser.
+  if (urlPath === '/api/send-confirmation-email') {
+    emailHandler(req, res);
+    return;
+  }
 
   // ── Odds API proxy ─────────────────────────────────────────────────────────
   // Fetches ML (h2h), spread, and O/U (totals) odds server-side so the API

@@ -23,13 +23,12 @@
  *    ⚠️  Note: NewsAPI restricts browser (CORS) access on the free tier.
  *        For production use a server-side proxy or upgrade to a paid plan.
  *
- *  EMAILJS (for signup email confirmation)
- *    1. Sign up for free at https://www.emailjs.com/
- *    2. Create an Email Service and an Email Template.
- *       Template variables used: {{to_email}}, {{to_name}}, {{confirm_code}}
- *    3. Copy your Service ID, Template ID, and Public Key.
- *    4. Paste them below.
- *    If EmailJS keys are absent the app will display the confirmation
+ *  EMAIL CONFIRMATION
+ *    Signup confirmation emails are sent server-side via SMTP.
+ *    No keys are needed here — configure SMTP_HOST, SMTP_PORT, SMTP_USER,
+ *    SMTP_PASS (and optionally SMTP_FROM) in your server's .env file.
+ *    See .env.example for details.
+ *    If SMTP is not configured the app will display the confirmation
  *    code directly on screen so you can test the sign-up flow locally.
  */
 
@@ -41,9 +40,4 @@ window.APP_CONFIG = {
   // To update this key: sign in at https://newsapi.org/, copy your API key,
   // and replace the value below.  Then save this file and restart the app.
   NEWS_API_KEY: 'a387f4253113414cbde66602bfecc96f',
-
-  // ── EmailJS (signup email confirmation) ───────────────────────────────────
-  EMAILJS_SERVICE_ID:  'YOUR_EMAILJS_SERVICE_ID',
-  EMAILJS_TEMPLATE_ID: 'YOUR_EMAILJS_TEMPLATE_ID',
-  EMAILJS_PUBLIC_KEY:  'YOUR_EMAILJS_PUBLIC_KEY',
 };
