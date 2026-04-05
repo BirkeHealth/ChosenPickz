@@ -3,6 +3,7 @@ const fs = require('fs');
 const path = require('path');
 const oddsHandler   = require('./routes/odds');
 const sportsHandler = require('./routes/sports');
+const newsHandler   = require('./routes/news');
 
 const PORT = process.env.PORT || 3000;
 
@@ -31,6 +32,7 @@ const ROOT_STATIC_FILES = new Set([
   // ── Sportsbook scaffold scripts ──
   'scripts/odds.js',
   'scripts/news.js',
+  'scripts/sportsNews.js',
   'scripts/analysis.js',
   'scripts/pick.js',
 ]);
@@ -126,6 +128,14 @@ const server = http.createServer((req, res) => {
   // Returns the full list of sports from The Odds API, cached for 5 minutes.
   if (urlPath === '/api/sports') {
     sportsHandler(req, res);
+    return;
+  }
+
+  // ── News proxy ─────────────────────────────────────────────────────────────
+  // Fetches top sports headlines from NewsAPI.org server-side so the API key
+  // is never exposed to the browser.
+  if (urlPath === '/api/news') {
+    newsHandler(req, res);
     return;
   }
 

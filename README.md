@@ -73,10 +73,12 @@ window.APP_CONFIG = {
 
 1. Sign up for free at <https://newsapi.org/register>
 2. Copy your API key from your account page.
-3. Set `NEWS_API_KEY` in `config.js`.
+3. **Recommended (server-side proxy):** Add `NEWS_API_KEY=your_key` to your `.env` file.  
+   The app serves headlines through `/api/news` so the key is never sent to the browser.
+4. **Optional (browser fallback):** Set `NEWS_API_KEY` in `config.js` for local development.
 
 > ⚠️ **CORS note:** NewsAPI restricts browser (client-side) requests on the free Developer plan.  
-> For production either proxy requests through a server-side endpoint or upgrade to a paid plan.
+> Always use the server-side `.env` key for production so requests go through the `/api/news` proxy.
 
 #### EmailJS (signup email confirmation)
 
