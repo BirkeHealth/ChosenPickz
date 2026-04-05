@@ -4,8 +4,10 @@
  * Copy this file (or edit it directly) and replace the placeholder values
  * with your real API keys before deploying.
  *
- * ⚠️  Never commit real API keys to a public repository.
- *     Add `config.js` to .gitignore when using real keys.
+ * ⚠️  This file contains browser-side keys for a client app.
+ *     Keys placed here are visible to end users.  For production,
+ *     prefer using the server-side proxy so the key stays in .env
+ *     and is never sent to the browser.
  *
  * ─── API KEY SETUP ──────────────────────────────────────────────────────────
  *
@@ -36,7 +38,9 @@ window.APP_CONFIG = {
   ODDS_API_KEY: '378d22c76a76769fa0078d2d9e88fb60',
 
   // ── NewsAPI.org ───────────────────────────────────────────────────────────
-  NEWS_API_KEY: 'YOUR_NEWS_API_KEY',
+  // To update this key: sign in at https://newsapi.org/, copy your API key,
+  // and replace the value below.  Then save this file and restart the app.
+  NEWS_API_KEY: 'a387f4253113414cbde66602bfecc96f',
 
   // ── EmailJS (signup email confirmation) ───────────────────────────────────
   EMAILJS_SERVICE_ID:  'YOUR_EMAILJS_SERVICE_ID',
