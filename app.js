@@ -1131,6 +1131,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
   // Load live data
   loadOdds();
-  // Only call loadNews() when sportsNews.js is not loaded (avoids double render)
+  // Only call loadNews() when sportsNews.js is not loaded (avoids double render
+  // since SportsNewsModule auto-initialises on DOMContentLoaded and targets the
+  // same #news-list element that loadNews() would populate)
   if (!window.SportsNewsModule) loadNews();
 });

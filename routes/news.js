@@ -49,7 +49,7 @@ async function newsHandler(req, res) {
   const urlObj   = new URL(req.url, 'http://localhost');
   const category = urlObj.searchParams.get('category') || 'sports';
   const language = urlObj.searchParams.get('language') || 'en';
-  const pageSize = Math.min(parseInt(urlObj.searchParams.get('pageSize') || '10', 10), 20);
+  const pageSize = Math.min(Math.max(1, parseInt(urlObj.searchParams.get('pageSize') || '10', 10) || 10), 20);
 
   const cacheKey = `${category}:${language}:${pageSize}`;
   const cached = getCached(cacheKey);

@@ -43,6 +43,10 @@
     return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
   }
 
+  function getSourceName(article) {
+    return article && article.source && article.source.name ? article.source.name : '';
+  }
+
   // ── Renderers ─────────────────────────────────────────────────────────────
 
   /**
@@ -59,7 +63,7 @@
           escHtml(a.title || '') +
         '</a>' +
         '<div class="news-meta">' +
-          escHtml(a.source && a.source.name ? a.source.name : '') +
+          escHtml(getSourceName(a)) +
           (a.publishedAt ? ' &mdash; ' + escHtml(fmtDate(a.publishedAt)) : '') +
         '</div>' +
       '</li>';
@@ -85,9 +89,7 @@
           ? '<p class="news-card-summary">' + escHtml(a.description) + '</p>'
           : '') +
         '<div class="news-card-meta">' +
-          '<span class="source">' +
-            escHtml(a.source && a.source.name ? a.source.name : '') +
-          '</span>' +
+          '<span class="source">' + escHtml(getSourceName(a)) + '</span>' +
           '<span>' + escHtml(fmtDate(a.publishedAt || '')) + '</span>' +
         '</div>' +
       '</div>';
