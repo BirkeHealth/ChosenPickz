@@ -329,45 +329,73 @@ async function loadOdds() {
 }
 
 // ── FETCH NEWS ─────────────────────────────────────────────────────────────
+// News is fetched through the server-side proxy at /api/news so that the
+// API key is never exposed to the browser.  Falls back to a direct call
+// using the browser-side key if the proxy is not configured.
+// This function is only called when scripts/sportsNews.js is not loaded.
 
 async function loadNews() {
   const list = document.getElementById('news-list');
   if (!list) return;
 
-  if (!NEWS_API_KEY || NEWS_API_KEY === 'YOUR_NEWS_API_KEY') {
-    list.innerHTML =
-      '<li class="loading-msg">Add your NewsAPI key in <strong>config.js</strong> to load sports headlines. ' +
-      'Get a free key at <a href="https://newsapi.org/" target="_blank" rel="noopener" ' +
-      'style="color:var(--orange)">newsapi.org</a>.</li>';
-    return;
-  }
-
   try {
-    const url =
-      `https://newsapi.org/v2/top-headlines` +
-      `?category=sports&language=en&pageSize=5&apiKey=${encodeURIComponent(NEWS_API_KEY)}`;
+    // Try the server-side proxy first
+    const proxyRes = await fetch('/api/news?category=sports&language=en&pageSize=5');
 
-    const res = await fetch(url);
-    if (!res.ok) throw new Error(`NewsAPI ${res.status}`);
-
-    const data = await res.json();
-    const articles = (data.articles || []).slice(0, 5);
-
-    if (!articles.length) {
-      list.innerHTML = '<li class="loading-msg">No headlines available right now.</li>';
+    if (proxyRes.ok) {
+      const data = await proxyRes.json();
+      const articles = (data.articles || []).slice(0, 5);
+      if (!articles.length) {
+        list.innerHTML = '<li class="loading-msg">No headlines available right now.</li>';
+        return;
+      }
+      list.innerHTML = articles.map(a => `
+        <li class="news-item">
+          <a href="${escapeHtml(a.url)}" target="_blank" rel="noopener noreferrer">
+            ${escapeHtml(a.title)}
+          </a>
+          <div class="news-meta">
+            ${escapeHtml(a.source && a.source.name ? a.source.name : '')}
+            ${a.publishedAt ? ' &mdash; ' + escapeHtml(new Date(a.publishedAt).toLocaleDateString()) : ''}
+          </div>
+        </li>`).join('');
       return;
     }
 
-    list.innerHTML = articles.map(a => `
-      <li class="news-item">
-        <a href="${escapeHtml(a.url)}" target="_blank" rel="noopener noreferrer">
-          ${escapeHtml(a.title)}
-        </a>
-        <div class="news-meta">
-          ${escapeHtml(a.source && a.source.name ? a.source.name : '')}
-          ${a.publishedAt ? ' &mdash; ' + escapeHtml(new Date(a.publishedAt).toLocaleDateString()) : ''}
-        </div>
-      </li>`).join('');
+    // Proxy not configured — fall back to the client-side key
+    if (proxyRes.status === 503) {
+      if (!NEWS_API_KEY || NEWS_API_KEY === 'YOUR_NEWS_API_KEY') {
+        list.innerHTML =
+          '<li class="loading-msg">Add your NewsAPI key in <strong>config.js</strong> to load sports headlines. ' +
+          'Get a free key at <a href="https://newsapi.org/" target="_blank" rel="noopener" ' +
+          'style="color:var(--orange)">newsapi.org</a>.</li>';
+        return;
+      }
+      const url =
+        `https://newsapi.org/v2/top-headlines` +
+        `?category=sports&language=en&pageSize=5&apiKey=${encodeURIComponent(NEWS_API_KEY)}`;
+      const res = await fetch(url);
+      if (!res.ok) throw new Error(`NewsAPI ${res.status}`);
+      const data = await res.json();
+      const articles = (data.articles || []).slice(0, 5);
+      if (!articles.length) {
+        list.innerHTML = '<li class="loading-msg">No headlines available right now.</li>';
+        return;
+      }
+      list.innerHTML = articles.map(a => `
+        <li class="news-item">
+          <a href="${escapeHtml(a.url)}" target="_blank" rel="noopener noreferrer">
+            ${escapeHtml(a.title)}
+          </a>
+          <div class="news-meta">
+            ${escapeHtml(a.source && a.source.name ? a.source.name : '')}
+            ${a.publishedAt ? ' &mdash; ' + escapeHtml(new Date(a.publishedAt).toLocaleDateString()) : ''}
+          </div>
+        </li>`).join('');
+      return;
+    }
+
+    throw new Error(`News proxy HTTP ${proxyRes.status}`);
   } catch (err) {
     list.innerHTML = '<li class="error-msg">Unable to load sports news. Please try again later.</li>';
     console.error('NewsAPI error:', err);
@@ -1103,5 +1131,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
   // Load live data
   loadOdds();
-  loadNews();
+  // Only call loadNews() when sportsNews.js is not loaded (avoids double render)
+  if (!window.SportsNewsModule) loadNews();
 });
