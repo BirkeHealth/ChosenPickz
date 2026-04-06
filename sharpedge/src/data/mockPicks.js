@@ -112,7 +112,7 @@ export const mockPicksHistory = [
     pickValue: 'KC -115',
     confidence: 3,
     result: 'LOSS',
-    profit: '1.00',
+    profit: '-1.00',
   },
   {
     id: 103,

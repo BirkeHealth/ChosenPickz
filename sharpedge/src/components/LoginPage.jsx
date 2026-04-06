@@ -1,19 +1,5 @@
 import { useState } from 'react';
-
-const SESSION_KEY = 'cp_session';
-const USERS_KEY   = 'cp_users';
-
-// Hash a password with SHA-256 using the Web Crypto API.
-// TODO: Replace client-side hashing with a proper server-side auth flow
-//       (e.g., POST /api/auth/login that verifies credentials and returns a JWT).
-async function hashPassword(password) {
-  const encoder = new TextEncoder();
-  const data = encoder.encode(password);
-  const hashBuf = await crypto.subtle.digest('SHA-256', data);
-  return Array.from(new Uint8Array(hashBuf))
-    .map(b => b.toString(16).padStart(2, '0'))
-    .join('');
-}
+import { SESSION_KEY, USERS_KEY, hashPassword } from '../utils/auth';
 
 export default function LoginPage({ onLoginSuccess, onBack }) {
   const [email, setEmail]       = useState('');

@@ -125,7 +125,7 @@ function HistoryCard({ pick }) {
             className="text-xs font-dm font-semibold"
             style={{ color: pick.result === 'WIN' ? '#22c55e' : pick.result === 'LOSS' ? '#ef4444' : '#8888a0' }}
           >
-            {pick.result === 'WIN' ? '+' : pick.result === 'LOSS' ? '-' : ''}{pick.profit}u
+            {pick.result === 'WIN' ? `+${pick.profit}` : pick.profit}u
           </span>
         </div>
       </div>
@@ -326,10 +326,11 @@ export default function BoardPortal({ session, onLogout }) {
                   { label: 'Wins', value: mockPicksHistory.filter(p => p.result === 'WIN').length },
                   {
                     label: 'Win Rate',
-                    value: `${Math.round(
-                      (mockPicksHistory.filter(p => p.result === 'WIN').length /
-                        mockPicksHistory.filter(p => p.result !== 'PUSH').length) * 100
-                    )}%`,
+                    value: (() => {
+                      const decided = mockPicksHistory.filter(p => p.result !== 'PUSH').length;
+                      if (decided === 0) return 'N/A';
+                      return `${Math.round((mockPicksHistory.filter(p => p.result === 'WIN').length / decided) * 100)}%`;
+                    })(),
                   },
                 ].map(s => (
                   <div

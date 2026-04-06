@@ -4,6 +4,7 @@ import SportsLinesPreview from './components/SportsLinesPreview';
 import BestOddsPage from './components/BestOddsPage';
 import BoardPortal from './components/BoardPortal';
 import LoginPage from './components/LoginPage';
+import { SESSION_KEY } from './utils/auth';
 
 // TODO: Uncomment to use live The Odds API data
 // import { useOddsApi } from './hooks/useOddsApi';
@@ -277,7 +278,6 @@ export default function App() {
   // ── Auth state ──────────────────────────────────────────────────────────────
   // TODO: Replace localStorage session with a real server-side auth token (JWT,
   //       secure cookie, etc.) once server-side authentication is implemented.
-  const SESSION_KEY = 'cp_session';
   const [session, setSession] = useState(() => {
     try {
       const raw = localStorage.getItem(SESSION_KEY);

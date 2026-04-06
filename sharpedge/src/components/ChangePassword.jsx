@@ -1,16 +1,5 @@
 import { useState } from 'react';
-
-const SESSION_KEY = 'cp_session';
-const USERS_KEY   = 'cp_users';
-
-async function hashPassword(password) {
-  const encoder = new TextEncoder();
-  const data = encoder.encode(password);
-  const hashBuf = await crypto.subtle.digest('SHA-256', data);
-  return Array.from(new Uint8Array(hashBuf))
-    .map(b => b.toString(16).padStart(2, '0'))
-    .join('');
-}
+import { USERS_KEY, hashPassword } from '../utils/auth';
 
 export default function ChangePassword({ session, onBack }) {
   const [currentPw, setCurrentPw]   = useState('');
