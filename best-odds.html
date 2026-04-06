@@ -346,15 +346,13 @@
         <select id="sport-select">
           <!-- Populated from /api/sports; fallback options shown until loaded -->
           <option value="upcoming">🌟 All Sports (Upcoming)</option>
-          <option value="americanfootball_nfl">🏈 NFL</option>
-          <option value="basketball_nba">🏀 NBA</option>
           <option value="baseball_mlb">⚾ MLB</option>
-          <option value="icehockey_nhl">🏒 NHL</option>
           <option value="americanfootball_ncaaf">🏈 NCAAF</option>
-          <option value="basketball_ncaab">🏀 NCAAB</option>
-          <option value="soccer_usa_mls">⚽ MLS</option>
-          <option value="soccer_epl">⚽ EPL</option>
-          <option value="mma_mixed_martial_arts">🥊 MMA</option>
+          <option value="basketball_ncaab">🏀 NCAAB (Men)</option>
+          <option value="basketball_ncaaw">🏀 NCAAW (Women)</option>
+          <option value="americanfootball_nfl">🏈 NFL</option>
+          <option value="icehockey_nhl">🏒 NHL</option>
+          <option value="basketball_nba">🏀 NBA</option>
         </select>
       </div>
     </div>
@@ -492,6 +490,17 @@
 
     // ── SPORTS LIST ──────────────────────────────────────────────────────────
 
+    // Only show these sports on the site
+    const ALLOWED_SPORTS = new Set([
+      'baseball_mlb',
+      'americanfootball_ncaaf',
+      'basketball_ncaab',
+      'basketball_ncaaw',
+      'americanfootball_nfl',
+      'icehockey_nhl',
+      'basketball_nba',
+    ]);
+
     /**
      * Fetch all active sports from /api/sports and populate the sport selector.
      * Falls back to the hardcoded <option> elements already in the HTML if the
@@ -504,7 +513,7 @@
         const sports = await res.json();
         if (!Array.isArray(sports) || sports.length === 0) return;
 
-        const activeSports = sports.filter(s => s.active && !s.has_outrights);
+        const activeSports = sports.filter(s => s.active && !s.has_outrights && ALLOWED_SPORTS.has(s.key));
         if (activeSports.length === 0) return;
 
         const select = document.getElementById('sport-select');
@@ -566,15 +575,13 @@
 
     function sportLabel(key) {
       const labels = {
-        americanfootball_nfl:   'NFL',
-        americanfootball_ncaaf: 'NCAAF',
-        basketball_nba:         'NBA',
-        basketball_ncaab:       'NCAAB',
         baseball_mlb:           'MLB',
+        americanfootball_ncaaf: 'NCAAF',
+        basketball_ncaab:       'NCAAB (Men)',
+        basketball_ncaaw:       'NCAAW (Women)',
+        americanfootball_nfl:   'NFL',
         icehockey_nhl:          'NHL',
-        soccer_usa_mls:         'MLS',
-        soccer_epl:             'EPL',
-        mma_mixed_martial_arts: 'MMA',
+        basketball_nba:         'NBA',
       };
       return labels[key] || key.replace(/_/g, ' ').toUpperCase();
     }
