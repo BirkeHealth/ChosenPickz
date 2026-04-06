@@ -40,9 +40,11 @@ const ROOT_STATIC_FILES = new Set([
   'pick.html',
   'about.html',
   'todays-picks.html',
+  'handicapper-portal.html',
   // ── Root scripts & styles ──
   'styles.css',
   'app.js',
+  'handicapper-portal.js',
   'config.js',
   'picks.js',
   // ── Sportsbook scaffold styles ──

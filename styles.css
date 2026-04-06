@@ -1262,3 +1262,604 @@ footer {
   text-align: center;
 }
 
+
+/* ════════════════════════════════════════════════════════════════
+   HANDICAPPER BOARD MANAGEMENT PORTAL
+   ════════════════════════════════════════════════════════════════ */
+
+/* ── Portal Header ── */
+.portal-header {
+  background: var(--surface);
+  border-bottom: 1px solid var(--surface2);
+  padding: 1.25rem 2rem;
+}
+.portal-header-inner {
+  max-width: 1400px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+.portal-title {
+  font-family: 'Bebas Neue', cursive;
+  font-size: 2rem;
+  color: var(--orange);
+  letter-spacing: 1px;
+}
+.portal-subtitle {
+  font-size: 0.85rem;
+  color: var(--muted);
+  margin-top: 0.15rem;
+}
+.portal-stats-bar {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+.portal-stat-card {
+  background: var(--surface2);
+  border: 1px solid var(--surface3);
+  border-radius: 8px;
+  padding: 0.5rem 1rem;
+  text-align: center;
+  min-width: 70px;
+}
+.portal-stat-value {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--text);
+  font-family: 'Bebas Neue', cursive;
+}
+.portal-stat-label {
+  font-size: 0.7rem;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-top: 0.1rem;
+}
+
+/* ── Two-panel layout ── */
+.portal-layout {
+  display: flex;
+  gap: 0;
+  max-width: 1400px;
+  margin: 0 auto;
+  min-height: calc(100vh - 130px);
+}
+.portal-panel {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.portal-panel--left {
+  flex: 0 0 58%;
+  border-right: 2px solid var(--surface2);
+  overflow-y: auto;
+  max-height: calc(100vh - 130px);
+  position: sticky;
+  top: 72px; /* height of sticky nav */
+}
+.portal-panel--right {
+  flex: 1;
+  overflow-y: auto;
+  max-height: calc(100vh - 130px);
+  position: sticky;
+  top: 72px;
+}
+
+/* ── Panel headers ── */
+.panel-header {
+  padding: 1.25rem 1.5rem 0.75rem;
+  border-bottom: 1px solid var(--surface2);
+  position: sticky;
+  top: 0;
+  background: var(--bg);
+  z-index: 10;
+}
+.panel-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--text);
+}
+.panel-desc {
+  font-size: 0.8rem;
+  color: var(--muted);
+  margin-top: 0.15rem;
+}
+
+/* ── Sport filter tabs ── */
+.portal-sport-tabs {
+  display: flex;
+  gap: 0.35rem;
+  padding: 0.75rem 1.5rem;
+  flex-wrap: wrap;
+  border-bottom: 1px solid var(--surface2);
+  background: var(--bg);
+  position: sticky;
+  top: 72px;
+  z-index: 9;
+}
+.portal-sport-tab {
+  background: var(--surface2);
+  border: 1px solid var(--surface3);
+  color: var(--muted);
+  border-radius: 20px;
+  padding: 0.3rem 0.85rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.18s;
+  font-family: 'DM Sans', sans-serif;
+  white-space: nowrap;
+}
+.portal-sport-tab:hover,
+.portal-sport-tab.active {
+  background: rgba(249,115,22,0.15);
+  border-color: var(--orange);
+  color: var(--orange);
+}
+
+/* ── Sportsbook filter ── */
+.portal-book-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.6rem 1.5rem;
+  border-bottom: 1px solid var(--surface2);
+  flex-wrap: wrap;
+}
+.portal-book-label {
+  font-size: 0.78rem;
+  color: var(--muted);
+  white-space: nowrap;
+}
+.portal-book-tabs {
+  display: flex;
+  gap: 0.3rem;
+  flex-wrap: wrap;
+}
+.portal-book-btn {
+  background: var(--surface2);
+  border: 1px solid var(--surface3);
+  color: var(--muted);
+  border-radius: 6px;
+  padding: 0.25rem 0.65rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.18s;
+  font-family: 'DM Sans', sans-serif;
+}
+.portal-book-btn:hover,
+.portal-book-btn.active {
+  border-color: var(--blue);
+  color: var(--blue);
+  background: rgba(29,78,216,0.1);
+}
+
+/* ── Search input ── */
+.portal-search-row {
+  padding: 0.6rem 1.5rem;
+  border-bottom: 1px solid var(--surface2);
+}
+.portal-search-input {
+  width: 100%;
+  background: var(--surface2);
+  border: 1px solid var(--surface3);
+  border-radius: 8px;
+  padding: 0.45rem 0.85rem;
+  color: var(--text);
+  font-size: 0.85rem;
+  font-family: 'DM Sans', sans-serif;
+  outline: none;
+  transition: border-color 0.18s;
+}
+.portal-search-input:focus {
+  border-color: var(--orange);
+}
+.portal-search-input::placeholder { color: var(--muted); }
+
+/* ── Odds Board ── */
+.portal-odds-board {
+  padding: 1rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+/* ── Game Card ── */
+.portal-game-card {
+  background: var(--surface);
+  border: 1px solid var(--surface2);
+  border-radius: 10px;
+  padding: 1rem;
+  transition: border-color 0.18s;
+}
+.portal-game-card:hover { border-color: var(--surface3); }
+
+.portal-game-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+  flex-wrap: wrap;
+}
+.portal-game-sport {
+  background: var(--orange);
+  color: #000;
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 0.15rem 0.55rem;
+  border-radius: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.portal-game-time {
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+.portal-game-book {
+  font-size: 0.72rem;
+  color: var(--muted);
+  margin-left: auto;
+}
+.portal-game-matchup {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 0.75rem;
+}
+.vs-text {
+  color: var(--muted);
+  font-weight: 400;
+  font-size: 0.9rem;
+}
+.portal-game-odds { display: flex; flex-direction: column; gap: 0.5rem; }
+
+.portal-odds-row-label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 0.25rem;
+}
+.portal-odds-row {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+/* ── Odds Pill (clickable) ── */
+.portal-odds-pill {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: var(--surface2);
+  border: 1px solid var(--surface3);
+  border-radius: 8px;
+  padding: 0.4rem 0.7rem;
+  cursor: pointer;
+  transition: all 0.18s;
+  flex: 1;
+  min-width: 130px;
+  user-select: none;
+}
+.portal-odds-pill:hover {
+  border-color: var(--orange);
+  background: rgba(249,115,22,0.12);
+}
+.portal-odds-pill:focus-visible {
+  outline: 2px solid var(--orange);
+  outline-offset: 2px;
+}
+.portal-odds-pill--added {
+  border-color: var(--success) !important;
+  background: rgba(34,197,94,0.15) !important;
+}
+.portal-odds-label {
+  font-size: 0.78rem;
+  color: var(--muted);
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.portal-odds-value {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--text);
+  white-space: nowrap;
+}
+.portal-odds-type-tag {
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: var(--blue);
+  background: rgba(29,78,216,0.15);
+  border-radius: 4px;
+  padding: 0.1rem 0.3rem;
+  white-space: nowrap;
+}
+
+/* ── Pick Slip (right panel) ── */
+.portal-slip-list {
+  padding: 1rem 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  flex: 1;
+}
+.slip-empty {
+  color: var(--muted);
+  font-size: 0.9rem;
+  padding: 1.5rem 0;
+  text-align: center;
+}
+.slip-empty-hint {
+  font-size: 0.78rem;
+  color: var(--muted);
+  margin-top: 0.4rem;
+  line-height: 1.5;
+}
+
+/* ── Slip Item ── */
+.slip-item {
+  background: var(--surface);
+  border: 1px solid var(--surface2);
+  border-radius: 10px;
+  padding: 0.9rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+.slip-item-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+.slip-sport-badge {
+  background: var(--orange);
+  color: #000;
+  font-size: 0.65rem;
+  font-weight: 700;
+  padding: 0.12rem 0.45rem;
+  border-radius: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-right: 0.3rem;
+}
+.slip-type-badge {
+  background: rgba(29,78,216,0.2);
+  color: #93c5fd;
+  font-size: 0.65rem;
+  font-weight: 700;
+  padding: 0.12rem 0.45rem;
+  border-radius: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.slip-remove-btn {
+  background: none;
+  border: none;
+  color: var(--muted);
+  font-size: 0.85rem;
+  cursor: pointer;
+  padding: 0.25rem;
+  line-height: 1;
+  border-radius: 4px;
+  transition: color 0.15s;
+}
+.slip-remove-btn:hover { color: #f87171; }
+
+.slip-matchup {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--text);
+}
+.slip-pick {
+  font-size: 0.88rem;
+  color: var(--orange);
+  font-weight: 600;
+}
+.slip-controls {
+  display: flex;
+  gap: 0.5rem;
+}
+.slip-field {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+.slip-label {
+  font-size: 0.7rem;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+.slip-confidence,
+.slip-visibility {
+  background: var(--surface2);
+  border: 1px solid var(--surface3);
+  border-radius: 6px;
+  color: var(--text);
+  font-size: 0.8rem;
+  padding: 0.3rem 0.5rem;
+  font-family: 'DM Sans', sans-serif;
+  cursor: pointer;
+}
+.slip-confidence:focus,
+.slip-visibility:focus { outline: 1px solid var(--orange); }
+
+.slip-note-row { display: flex; }
+.slip-note-input {
+  flex: 1;
+  background: var(--surface2);
+  border: 1px solid var(--surface3);
+  border-radius: 6px;
+  color: var(--text);
+  font-size: 0.82rem;
+  padding: 0.35rem 0.65rem;
+  font-family: 'DM Sans', sans-serif;
+  outline: none;
+  transition: border-color 0.18s;
+}
+.slip-note-input:focus { border-color: var(--orange); }
+.slip-note-input::placeholder { color: var(--muted); }
+
+.slip-post-btn {
+  width: 100%;
+  margin-top: 0.15rem;
+  font-size: 0.85rem;
+  padding: 0.5rem 1rem;
+}
+
+/* ── Manual Entry ── */
+.portal-manual-btn {
+  margin: 0 1.25rem 0.75rem;
+  width: calc(100% - 2.5rem);
+  font-size: 0.85rem;
+}
+.portal-manual-form {
+  background: var(--surface);
+  border: 1px solid var(--surface2);
+  border-radius: 10px;
+  padding: 1rem;
+  margin: 0 1.25rem 0.75rem;
+}
+.manual-form-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 0.25rem;
+}
+.manual-form-desc {
+  font-size: 0.78rem;
+  color: var(--muted);
+  margin-bottom: 0.75rem;
+}
+
+/* ── Post Feedback ── */
+.portal-post-feedback {
+  margin: 0 1.25rem 0.5rem;
+  padding: 0.6rem 1rem;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  display: none;
+}
+.portal-post-feedback.show { display: block; }
+.portal-post-feedback--success {
+  background: rgba(34,197,94,0.15);
+  border: 1px solid rgba(34,197,94,0.4);
+  color: var(--success);
+}
+.portal-post-feedback--error {
+  background: rgba(239,68,68,0.12);
+  border: 1px solid rgba(239,68,68,0.3);
+  color: #f87171;
+}
+.portal-post-feedback--info {
+  background: rgba(249,115,22,0.12);
+  border: 1px solid rgba(249,115,22,0.35);
+  color: var(--orange);
+}
+
+/* ── Pick History (collapsible) ── */
+.portal-history {
+  border-top: 1px solid var(--surface2);
+  margin-top: 0.5rem;
+}
+.portal-history-toggle {
+  width: 100%;
+  background: none;
+  border: none;
+  color: var(--muted);
+  font-size: 0.85rem;
+  font-weight: 700;
+  font-family: 'DM Sans', sans-serif;
+  padding: 0.9rem 1.25rem;
+  text-align: left;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  transition: color 0.18s;
+}
+.portal-history-toggle:hover { color: var(--text); }
+.history-chevron { margin-left: auto; font-size: 0.75rem; }
+
+.portal-history-list {
+  padding: 0 1.25rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+.history-pick-item {
+  background: var(--surface);
+  border: 1px solid var(--surface2);
+  border-radius: 8px;
+  padding: 0.75rem 0.9rem;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+}
+.history-pick-info { flex: 1; }
+.history-pick-matchup {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--text);
+}
+.history-pick-meta {
+  font-size: 0.75rem;
+  color: var(--muted);
+  margin-top: 0.15rem;
+}
+.history-pick-value {
+  font-size: 0.85rem;
+  color: var(--orange);
+  font-weight: 600;
+  margin-top: 0.15rem;
+}
+.history-pick-note {
+  font-size: 0.78rem;
+  color: var(--muted);
+  font-style: italic;
+  margin-top: 0.15rem;
+}
+.history-pick-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  align-items: flex-end;
+  flex-shrink: 0;
+}
+
+/* ── Responsive: stack panels on smaller screens ── */
+@media (max-width: 900px) {
+  .portal-layout {
+    flex-direction: column;
+  }
+  .portal-panel--left,
+  .portal-panel--right {
+    flex: none;
+    max-height: none;
+    position: static;
+    border-right: none;
+    border-bottom: 2px solid var(--surface2);
+    overflow-y: visible;
+  }
+  .portal-panel--right {
+    border-bottom: none;
+  }
+  .portal-sport-tabs {
+    position: static;
+  }
+  .portal-header-inner {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
