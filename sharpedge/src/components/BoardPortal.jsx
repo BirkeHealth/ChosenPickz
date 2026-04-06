@@ -3,16 +3,31 @@ import { mockPicks, mockPicksHistory, sportColors } from '../data/mockPicks';
 import AccountProfile from './AccountProfile';
 import ChangePassword from './ChangePassword';
 
-// ── Sub-components ──────────────────────────────────────────────────────────
+const SPORT_TABS = [
+  { label: 'All Picks', value: 'ALL' },
+  { label: '⚾ MLB',    value: 'MLB' },
+  { label: '🏈 College Football', value: 'NCAAF' },
+  { label: '🏀 College Basketball (Men)', value: 'NCAAB' },
+  { label: '🏀 College Basketball (Women)', value: 'NCAAW' },
+  { label: '🏈 NFL',   value: 'NFL' },
+  { label: '🏒 NHL',   value: 'NHL' },
+  { label: '🏀 NBA',   value: 'NBA' },
+];
+
+// ── Sub-components (all layout via inline styles — Tailwind v4 classes unreliable) ──
 
 function ConfidenceMeter({ level }) {
   return (
-    <div className="flex gap-1">
+    <div style={{ display: 'flex', gap: '4px' }}>
       {[1, 2, 3, 4, 5].map(i => (
         <div
           key={i}
-          className="w-2 h-2 rounded-full"
-          style={{ backgroundColor: i <= level ? '#d4a843' : '#2a2a3a' }}
+          style={{
+            width: '8px',
+            height: '8px',
+            borderRadius: '50%',
+            backgroundColor: i <= level ? '#d4a843' : '#2a2a3a',
+          }}
         />
       ))}
     </div>
@@ -23,45 +38,67 @@ function LeagueBadge({ sport }) {
   const colors = sportColors[sport] || sportColors.default;
   return (
     <span
-      className="text-xs font-bold px-2 py-0.5 rounded font-dm"
-      style={{ background: colors.bg, color: colors.text, border: `1px solid ${colors.border}` }}
+      style={{
+        fontSize: '0.75rem',
+        fontWeight: 700,
+        padding: '2px 8px',
+        borderRadius: '4px',
+        fontFamily: 'DM Sans, sans-serif',
+        background: colors.bg,
+        color: colors.text,
+        border: `1px solid ${colors.border}`,
+      }}
     >
       {sport}
     </span>
   );
 }
 
-// Active pick card — all picks are unlocked for authenticated members
+// Active pick card — all picks are unlocked for authenticated members.
+// Uses inline styles to match the home page PickCard visual exactly.
 function ActivePickCard({ pick }) {
   return (
     <div
-      className="rounded-xl p-4 flex flex-col gap-3"
-      style={{ background: '#1c1c28', border: '1px solid #2a2a3a' }}
+      style={{
+        background: '#1c1c28',
+        border: '1px solid #2a2a3a',
+        borderRadius: '12px',
+        padding: '16px',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '12px',
+        position: 'relative',
+        overflow: 'hidden',
+        minHeight: '160px',
+      }}
     >
-      <div className="flex items-center justify-between">
+      {/* Top row: league badge + game time */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <LeagueBadge sport={pick.sport} />
-        <span className="text-xs font-dm" style={{ color: '#8888a0' }}>
+        <span style={{ fontSize: '0.75rem', fontFamily: 'DM Sans, sans-serif', color: '#8888a0' }}>
           {pick.gameTime}
         </span>
       </div>
 
-      <div className="text-center">
-        <div className="text-2xl font-bebas tracking-wider" style={{ color: '#e8e8f0' }}>
+      {/* Teams */}
+      <div style={{ textAlign: 'center' }}>
+        <div style={{ fontSize: '1.5rem', fontFamily: 'Bebas Neue, sans-serif', letterSpacing: '0.05em', color: '#e8e8f0' }}>
           {pick.awayTeam.abbr} <span style={{ color: '#8888a0' }}>@</span> {pick.homeTeam.abbr}
         </div>
-        <div className="text-xs font-dm mt-0.5" style={{ color: '#8888a0' }}>
+        <div style={{ fontSize: '0.75rem', fontFamily: 'DM Sans, sans-serif', marginTop: '2px', color: '#8888a0' }}>
           {pick.awayTeam.name} @ {pick.homeTeam.name}
         </div>
       </div>
 
-      <div className="flex items-end justify-between mt-auto">
-        <div className="flex flex-col gap-1.5">
-          <div className="flex items-center gap-2">
-            <span className="text-xs font-dm uppercase tracking-wide" style={{ color: '#8888a0' }}>
+      {/* Bottom row: bet type, pick value, confidence, ACTIVE badge */}
+      <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', marginTop: 'auto' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <span style={{ fontSize: '0.75rem', fontFamily: 'DM Sans, sans-serif', textTransform: 'uppercase', letterSpacing: '0.05em', color: '#8888a0' }}>
               {pick.betType}
             </span>
-            {/* All picks are fully visible for logged-in members */}
-            <span className="text-sm font-bebas tracking-wide" style={{ color: '#d4a843' }}>
+            {/* All picks visible for logged-in members */}
+            <span style={{ fontSize: '0.875rem', fontFamily: 'Bebas Neue, sans-serif', letterSpacing: '0.05em', color: '#d4a843' }}>
               {pick.pickValue}
             </span>
           </div>
@@ -69,8 +106,16 @@ function ActivePickCard({ pick }) {
         </div>
 
         <span
-          className="text-xs font-bold px-2 py-1 rounded font-dm"
-          style={{ background: 'rgba(34,197,94,0.15)', color: '#22c55e', border: '1px solid rgba(34,197,94,0.3)' }}
+          style={{
+            fontSize: '0.75rem',
+            fontWeight: 700,
+            padding: '4px 8px',
+            borderRadius: '4px',
+            fontFamily: 'DM Sans, sans-serif',
+            background: 'rgba(34,197,94,0.15)',
+            color: '#22c55e',
+            border: '1px solid rgba(34,197,94,0.3)',
+          }}
         >
           ACTIVE
         </span>
@@ -79,7 +124,7 @@ function ActivePickCard({ pick }) {
   );
 }
 
-// History row card
+// History row card — also uses inline styles for reliability
 function HistoryCard({ pick }) {
   const resultColors = {
     WIN:  { color: '#22c55e', bg: 'rgba(34,197,94,0.15)',  border: 'rgba(34,197,94,0.3)' },
@@ -90,40 +135,60 @@ function HistoryCard({ pick }) {
 
   return (
     <div
-      className="rounded-xl px-4 py-3 flex flex-col sm:flex-row sm:items-center gap-3"
-      style={{ background: '#1c1c28', border: '1px solid #2a2a3a' }}
+      style={{
+        background: '#1c1c28',
+        border: '1px solid #2a2a3a',
+        borderRadius: '12px',
+        padding: '12px 16px',
+        display: 'flex',
+        alignItems: 'center',
+        gap: '12px',
+        flexWrap: 'wrap',
+      }}
     >
       {/* Date + sport */}
-      <div className="flex items-center gap-3 sm:w-36 shrink-0">
-        <span className="text-xs font-dm" style={{ color: '#8888a0' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '12px', minWidth: '140px', flexShrink: 0 }}>
+        <span style={{ fontSize: '0.75rem', fontFamily: 'DM Sans, sans-serif', color: '#8888a0' }}>
           {pick.date}
         </span>
         <LeagueBadge sport={pick.sport} />
       </div>
 
       {/* Matchup + pick */}
-      <div className="flex-1">
-        <div className="text-sm font-bebas tracking-wider" style={{ color: '#e8e8f0' }}>
+      <div style={{ flex: 1, minWidth: '160px' }}>
+        <div style={{ fontSize: '0.875rem', fontFamily: 'Bebas Neue, sans-serif', letterSpacing: '0.05em', color: '#e8e8f0' }}>
           {pick.awayTeam.abbr} @ {pick.homeTeam.abbr}
         </div>
-        <div className="text-xs font-dm mt-0.5" style={{ color: '#8888a0' }}>
+        <div style={{ fontSize: '0.75rem', fontFamily: 'DM Sans, sans-serif', marginTop: '2px', color: '#8888a0' }}>
           {pick.betType} — <span style={{ color: '#d4a843' }}>{pick.pickValue}</span>
         </div>
       </div>
 
       {/* Confidence + result */}
-      <div className="flex items-center gap-4">
+      <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
         <ConfidenceMeter level={pick.confidence} />
-        <div className="flex items-center gap-2">
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <span
-            className="text-xs font-bold px-2 py-1 rounded font-dm"
-            style={{ background: rc.bg, color: rc.color, border: `1px solid ${rc.border}` }}
+            style={{
+              fontSize: '0.75rem',
+              fontWeight: 700,
+              padding: '4px 8px',
+              borderRadius: '4px',
+              fontFamily: 'DM Sans, sans-serif',
+              background: rc.bg,
+              color: rc.color,
+              border: `1px solid ${rc.border}`,
+            }}
           >
             {pick.result}
           </span>
           <span
-            className="text-xs font-dm font-semibold"
-            style={{ color: pick.result === 'WIN' ? '#22c55e' : pick.result === 'LOSS' ? '#ef4444' : '#8888a0' }}
+            style={{
+              fontSize: '0.75rem',
+              fontWeight: 600,
+              fontFamily: 'DM Sans, sans-serif',
+              color: pick.result === 'WIN' ? '#22c55e' : pick.result === 'LOSS' ? '#ef4444' : '#8888a0',
+            }}
           >
             {pick.result === 'WIN' ? `+${pick.profit}` : pick.profit}u
           </span>
@@ -143,6 +208,7 @@ const NAV_ITEMS = [
 
 export default function BoardPortal({ session, onLogout }) {
   const [view, setView] = useState('active-picks');
+  const [activeTab, setActiveTab] = useState('ALL');
   const [sidebarOpen, setSidebarOpen] = useState(false);
   // Determine if we're on a wide enough screen to show the sidebar statically.
   // We use JS-based detection instead of Tailwind breakpoints to ensure reliability.
@@ -244,20 +310,23 @@ export default function BoardPortal({ session, onLogout }) {
               }),
             }}
           >
-            <p className="text-xs font-dm font-semibold uppercase tracking-widest px-3 mb-3" style={{ color: '#555570' }}>
+            <p style={{ fontSize: '0.75rem', fontFamily: 'DM Sans, sans-serif', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.1em', padding: '0 12px', marginBottom: '12px', color: '#555570' }}>
               Navigation
             </p>
-            <nav className="flex flex-col gap-1">
+            <nav style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
               {NAV_ITEMS.map(item => (
                 <button
                   key={item.id}
                   onClick={() => navigateTo(item.id)}
-                  className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-dm font-medium transition-all duration-150"
-                  style={
-                    view === item.id
-                      ? { background: 'rgba(212,168,67,0.1)', color: '#d4a843', border: '1px solid rgba(212,168,67,0.25)', cursor: 'pointer', textAlign: 'left' }
-                      : { background: 'transparent', color: '#8888a0', border: '1px solid transparent', cursor: 'pointer', textAlign: 'left' }
-                  }
+                  style={{
+                    display: 'flex', alignItems: 'center', gap: '12px',
+                    padding: '10px 12px', borderRadius: '8px',
+                    fontSize: '0.875rem', fontFamily: 'DM Sans, sans-serif', fontWeight: 500,
+                    transition: 'all 0.15s', textAlign: 'left', width: '100%',
+                    ...(view === item.id
+                      ? { background: 'rgba(212,168,67,0.1)', color: '#d4a843', border: '1px solid rgba(212,168,67,0.25)', cursor: 'pointer' }
+                      : { background: 'transparent', color: '#8888a0', border: '1px solid transparent', cursor: 'pointer' }),
+                  }}
                   onMouseEnter={e => { if (view !== item.id) e.currentTarget.style.color = '#e8e8f0'; }}
                   onMouseLeave={e => { if (view !== item.id) e.currentTarget.style.color = '#8888a0'; }}
                 >
@@ -274,53 +343,99 @@ export default function BoardPortal({ session, onLogout }) {
 
           {/* Active Picks */}
           {view === 'active-picks' && (
-            <div className="px-6 py-8 max-w-5xl mx-auto">
-              <div className="flex items-center gap-3 mb-6">
-                <h2 className="text-3xl font-bebas tracking-wider" style={{ color: '#e8e8f0' }}>
+            <div style={{ padding: '32px 24px', maxWidth: '1024px', margin: '0 auto' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '24px' }}>
+                <h2 style={{ fontSize: '1.875rem', fontFamily: 'Bebas Neue, sans-serif', letterSpacing: '0.05em', color: '#e8e8f0', margin: 0 }}>
                   Active <span style={{ color: '#d4a843' }}>Picks</span>
                 </h2>
                 <span
-                  className="flex items-center gap-1.5 text-xs font-dm px-3 py-1 rounded-full"
-                  style={{ background: 'rgba(34,197,94,0.1)', color: '#22c55e', border: '1px solid rgba(34,197,94,0.3)' }}
+                  style={{
+                    display: 'inline-flex', alignItems: 'center', gap: '6px',
+                    fontSize: '0.75rem', fontFamily: 'DM Sans, sans-serif',
+                    padding: '4px 12px', borderRadius: '9999px',
+                    background: 'rgba(34,197,94,0.1)', color: '#22c55e', border: '1px solid rgba(34,197,94,0.3)',
+                  }}
                 >
-                  <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: '#22c55e' }} />
+                  <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#22c55e', display: 'inline-block', animation: 'pulse 2s infinite' }} />
                   Live
                 </span>
               </div>
-              <p className="text-sm font-dm mb-8" style={{ color: '#8888a0' }}>
+              <p style={{ fontSize: '0.875rem', fontFamily: 'DM Sans, sans-serif', marginBottom: '24px', color: '#8888a0' }}>
                 Your current active picks — all picks are unlocked for members.
               </p>
 
-              {mockPicks.length === 0 ? (
-                <div className="text-center py-16 font-dm" style={{ color: '#8888a0' }}>
-                  No active picks right now. Check back soon!
-                </div>
-              ) : (
+              {/* Sport filter tabs — same as home page */}
+              <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '32px' }}>
                 <div
-                  className="grid gap-4"
-                  style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))' }}
+                  style={{
+                    display: 'flex',
+                    flexWrap: 'wrap',
+                    gap: '8px',
+                    padding: '4px',
+                    borderRadius: '9999px',
+                    background: '#111118',
+                    border: '1px solid #2a2a3a',
+                  }}
                 >
-                  {mockPicks.map(pick => (
-                    <ActivePickCard key={pick.id} pick={pick} />
+                  {SPORT_TABS.map(tab => (
+                    <button
+                      key={tab.value}
+                      onClick={() => setActiveTab(tab.value)}
+                      style={{
+                        padding: '8px 16px',
+                        borderRadius: '9999px',
+                        fontSize: '0.875rem',
+                        fontFamily: 'DM Sans, sans-serif',
+                        fontWeight: 500,
+                        cursor: 'pointer',
+                        transition: 'all 0.2s',
+                        ...(activeTab === tab.value
+                          ? { background: '#16161f', color: '#d4a843', border: '1px solid rgba(212,168,67,0.4)' }
+                          : { background: 'transparent', color: '#8888a0', border: '1px solid transparent' }),
+                      }}
+                    >
+                      {tab.label}
+                    </button>
                   ))}
                 </div>
-              )}
+              </div>
+
+              {(() => {
+                const filtered = activeTab === 'ALL' ? mockPicks : mockPicks.filter(p => p.sport === activeTab);
+                return filtered.length === 0 ? (
+                  <div style={{ textAlign: 'center', padding: '64px 0', fontFamily: 'DM Sans, sans-serif', color: '#8888a0' }}>
+                    No picks available for this sport right now.
+                  </div>
+                ) : (
+                  <div
+                    style={{
+                      display: 'grid',
+                      gap: '16px',
+                      gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
+                    }}
+                  >
+                    {filtered.map(pick => (
+                      <ActivePickCard key={pick.id} pick={pick} />
+                    ))}
+                  </div>
+                );
+              })()}
             </div>
           )}
 
           {/* Picks History */}
           {view === 'picks-history' && (
-            <div className="px-6 py-8 max-w-4xl mx-auto">
-              <h2 className="text-3xl font-bebas tracking-wider mb-2" style={{ color: '#e8e8f0' }}>
+            <div style={{ padding: '32px 24px', maxWidth: '896px', margin: '0 auto' }}>
+              <h2 style={{ fontSize: '1.875rem', fontFamily: 'Bebas Neue, sans-serif', letterSpacing: '0.05em', color: '#e8e8f0', margin: '0 0 8px' }}>
                 Picks <span style={{ color: '#d4a843' }}>History</span>
               </h2>
-              <p className="text-sm font-dm mb-8" style={{ color: '#8888a0' }}>
+              <p style={{ fontSize: '0.875rem', fontFamily: 'DM Sans, sans-serif', marginBottom: '32px', color: '#8888a0' }}>
                 {/* TODO: Replace with real historical data from the backend */}
                 A record of all past picks and their outcomes.
               </p>
 
               {/* Summary stats */}
-              <div className="grid grid-cols-3 gap-4 mb-8">
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px', marginBottom: '32px' }}>
                 {[
                   { label: 'Total Picks', value: mockPicksHistory.length },
                   { label: 'Wins', value: mockPicksHistory.filter(p => p.result === 'WIN').length },
@@ -335,16 +450,21 @@ export default function BoardPortal({ session, onLogout }) {
                 ].map(s => (
                   <div
                     key={s.label}
-                    className="rounded-xl p-4 text-center"
-                    style={{ background: '#111118', border: '1px solid #2a2a3a' }}
+                    style={{
+                      background: '#111118',
+                      border: '1px solid #2a2a3a',
+                      borderRadius: '12px',
+                      padding: '16px',
+                      textAlign: 'center',
+                    }}
                   >
-                    <div className="text-2xl font-bebas" style={{ color: '#d4a843' }}>{s.value}</div>
-                    <div className="text-xs font-dm mt-1" style={{ color: '#8888a0' }}>{s.label}</div>
+                    <div style={{ fontSize: '1.5rem', fontFamily: 'Bebas Neue, sans-serif', color: '#d4a843' }}>{s.value}</div>
+                    <div style={{ fontSize: '0.75rem', fontFamily: 'DM Sans, sans-serif', marginTop: '4px', color: '#8888a0' }}>{s.label}</div>
                   </div>
                 ))}
               </div>
 
-              <div className="flex flex-col gap-3">
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                 {mockPicksHistory.map(pick => (
                   <HistoryCard key={pick.id} pick={pick} />
                 ))}
