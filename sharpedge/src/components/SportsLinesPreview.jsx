@@ -11,6 +11,7 @@ const BOOKMAKERS = [
   { key: 'draftkings', label: 'DraftKings' },
   { key: 'betmgm',    label: 'BetMGM' },
   { key: 'caesars',   label: 'Caesars' },
+  { key: 'hardrock',  label: 'Hard Rock' },
 ];
 
 function formatCommenceTime(isoString) {
