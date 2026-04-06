@@ -656,7 +656,7 @@ async function handleLogin(e) {
   }
 
   // Successful login
-  saveSession({ id: user.id, name: user.name, email: user.email, role: user.role, isAdmin: false });
+  saveSession({ id: user.id, name: user.name, email: user.email, role: user.role || null, isAdmin: false });
   updateNavForUser(user);
   closeModal();
 }
@@ -682,9 +682,12 @@ function updateNavForUser(user) {
     if (navGreeting) {
       if (user.isAdmin) {
         navGreeting.textContent = '⚙️ Admin';
+      } else if (user.role === 'handicapper') {
+        navGreeting.textContent = `Hi, ${user.name.split(' ')[0]} · 🏆 Handicapper`;
+      } else if (user.role === 'sports_bettor') {
+        navGreeting.textContent = `Hi, ${user.name.split(' ')[0]} · 🎯 Sports Bettor`;
       } else {
-        const roleLabel = user.role === 'handicapper' ? '🏆 Handicapper' : '🎯 Sports Bettor';
-        navGreeting.textContent = `Hi, ${user.name.split(' ')[0]} · ${roleLabel}`;
+        navGreeting.textContent = `Hi, ${user.name.split(' ')[0]}`;
       }
     }
     if (loginBtn)    loginBtn.style.display    = 'none';
