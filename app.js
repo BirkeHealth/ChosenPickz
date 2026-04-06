@@ -29,13 +29,13 @@ let cachedGames = []; // last-fetched games; re-rendered on bookmaker switch
 
 // Popular US sports to check (in priority order)
 const SPORTS = [
-  'americanfootball_nfl',
-  'basketball_nba',
   'baseball_mlb',
-  'icehockey_nhl',
   'americanfootball_ncaaf',
   'basketball_ncaab',
-  'soccer_usa_mls',
+  'basketball_ncaaw',
+  'americanfootball_nfl',
+  'icehockey_nhl',
+  'basketball_nba',
 ];
 
 // ── STORAGE HELPERS ────────────────────────────────────────────────────────
@@ -145,13 +145,13 @@ function formatGameTime(isoString) {
 
 function sportLabel(sportKey) {
   const labels = {
-    americanfootball_nfl:   'NFL',
-    americanfootball_ncaaf: 'NCAAF',
-    basketball_nba:         'NBA',
-    basketball_ncaab:       'NCAAB',
     baseball_mlb:           'MLB',
+    americanfootball_ncaaf: 'College Football',
+    basketball_ncaab:       'College Basketball (Men)',
+    basketball_ncaaw:       'College Basketball (Women)',
+    americanfootball_nfl:   'NFL',
     icehockey_nhl:          'NHL',
-    soccer_usa_mls:         'MLS',
+    basketball_nba:         'NBA',
   };
   return labels[sportKey] || sportKey.toUpperCase();
 }

@@ -8,9 +8,13 @@ import BestOddsPage from './components/BestOddsPage';
 
 const SPORT_TABS = [
   { label: 'All Picks', value: 'ALL' },
-  { label: '🏈 NFL', value: 'NFL' },
-  { label: '🏀 NBA', value: 'NBA' },
   { label: '⚾ MLB', value: 'MLB' },
+  { label: '🏈 College Football', value: 'NCAAF' },
+  { label: '🏀 College Basketball (Men)', value: 'NCAAB' },
+  { label: '🏀 College Basketball (Women)', value: 'NCAAW' },
+  { label: '🏈 NFL', value: 'NFL' },
+  { label: '🏒 NHL', value: 'NHL' },
+  { label: '🏀 NBA', value: 'NBA' },
 ];
 
 const PRICING_PLANS = [

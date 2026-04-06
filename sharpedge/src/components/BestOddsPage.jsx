@@ -21,16 +21,13 @@ const PROXY_BASE = '/api/odds';
 
 // Sports supported by The Odds API that we expose in the dropdown
 const SPORTS = [
-  { key: 'americanfootball_nfl',   label: '🏈 NFL' },
-  { key: 'basketball_nba',         label: '🏀 NBA' },
   { key: 'baseball_mlb',           label: '⚾ MLB' },
+  { key: 'americanfootball_ncaaf', label: '🏈 College Football' },
+  { key: 'basketball_ncaab',       label: '🏀 College Basketball (Men)' },
+  { key: 'basketball_ncaaw',       label: '🏀 College Basketball (Women)' },
+  { key: 'americanfootball_nfl',   label: '🏈 NFL' },
   { key: 'icehockey_nhl',          label: '🏒 NHL' },
-  { key: 'americanfootball_ncaaf', label: '🏈 NCAAF' },
-  { key: 'basketball_ncaab',       label: '🏀 NCAAB' },
-  { key: 'soccer_usa_mls',         label: '⚽ MLS' },
-  { key: 'soccer_epl',             label: '⚽ EPL' },
-  { key: 'tennis_atp_french_open', label: '🎾 Tennis (ATP)' },
-  { key: 'mma_mixed_martial_arts', label: '🥊 MMA' },
+  { key: 'basketball_nba',         label: '🏀 NBA' },
 ];
 
 /** Return ISO date string (YYYY-MM-DD) offset by `days` from today. */
