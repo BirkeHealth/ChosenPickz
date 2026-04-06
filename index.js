@@ -39,6 +39,7 @@ const ROOT_STATIC_FILES = new Set([
   'analysis.html',
   'pick.html',
   'about.html',
+  'todays-picks.html',
   // ── Root scripts & styles ──
   'styles.css',
   'app.js',

@@ -19,7 +19,10 @@
     <div class="nav-links">
       <a href="#live-bets">Live Bets</a>
       <a href="best-odds.html">Best Odds</a>
+      <a href="todays-picks.html">Today's Picks</a>
       <a href="#pricing">Pricing</a>
+      <!-- shown only to handicapper users when logged in -->
+      <a href="#handicapper-panel" id="nav-dashboard-link" style="display:none;">My Dashboard</a>
       <!-- shown when logged in -->
       <span id="nav-user" class="nav-user" style="display:none;">
         <span id="nav-greeting" class="nav-greeting"></span>
@@ -116,6 +119,67 @@
         <button type="submit" class="btn-primary" style="margin-top:0.5rem;">➕ Post Pick</button>
       </form>
       <div id="admin-picks-list" class="admin-picks-list"></div>
+    </section>
+
+    <!-- ── HANDICAPPER DASHBOARD (visible only when handicapper is logged in) ── -->
+    <section id="handicapper-panel" class="handicapper-panel" style="display:none;">
+      <h2 class="section-heading">🏆 Handicapper Dashboard</h2>
+
+      <!-- Stats bar -->
+      <div id="hcp-stats" class="hcp-stats-bar"></div>
+
+      <!-- Submit pick form -->
+      <form id="hcp-pick-form" class="admin-form">
+        <div class="admin-form-row">
+          <div class="admin-field">
+            <label for="hcp-matchup">Matchup / Teams</label>
+            <input type="text" id="hcp-matchup" placeholder="e.g. Lakers vs Celtics" required />
+          </div>
+          <div class="admin-field">
+            <label for="hcp-sport">Sport</label>
+            <select id="hcp-sport">
+              <option value="NFL">🏈 NFL</option>
+              <option value="NBA">🏀 NBA</option>
+              <option value="MLB">⚾ MLB</option>
+              <option value="NHL">🏒 NHL</option>
+              <option value="NCAAF">🏈 NCAAF</option>
+              <option value="NCAAB">🏀 NCAAB</option>
+              <option value="MLS">⚽ MLS</option>
+              <option value="MMA">🥊 MMA</option>
+            </select>
+          </div>
+        </div>
+        <div class="admin-form-row">
+          <div class="admin-field">
+            <label for="hcp-pick-type">Pick Type</label>
+            <select id="hcp-pick-type">
+              <option value="MoneyLine">MoneyLine</option>
+              <option value="Spread">Spread</option>
+              <option value="Over/Under">Over/Under</option>
+              <option value="Parlay">Parlay</option>
+            </select>
+          </div>
+          <div class="admin-field">
+            <label for="hcp-pick-value">Pick Details</label>
+            <input type="text" id="hcp-pick-value" placeholder="e.g. Lakers -5.5 (-110)" required />
+          </div>
+          <div class="admin-field">
+            <label for="hcp-date">Game Date</label>
+            <input type="date" id="hcp-date" />
+          </div>
+        </div>
+        <div class="admin-form-row">
+          <div class="admin-field" style="flex:1;">
+            <label for="hcp-note">Note (optional)</label>
+            <input type="text" id="hcp-note" placeholder="Analysis or extra context…" />
+          </div>
+        </div>
+        <button type="submit" class="btn-primary" style="margin-top:0.5rem;">➕ Submit Pick</button>
+      </form>
+
+      <!-- Pick history with result editing -->
+      <h3 style="font-size:1rem;font-weight:700;margin-bottom:0.75rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;">My Pick History</h3>
+      <div id="hcp-picks-list" class="admin-picks-list"></div>
     </section>
 
     <!-- ── PICKS SECTION (visible to all, populated by admin) ── -->

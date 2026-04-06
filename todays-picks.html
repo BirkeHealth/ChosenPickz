@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Today's Picks — CH0SEN1 PICKZ</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body class="todays-picks-page">
+
+  <!-- ── NAV ── -->
+  <nav>
+    <a class="nav-logo" href="index.html">
+      CH<span class="ch-blue">0</span>SEN<span class="ch-blue">1</span> PICKZ
+    </a>
+    <div class="nav-links">
+      <a href="index.html">Home</a>
+      <a href="index.html#live-bets">Live Bets</a>
+      <a href="best-odds.html">Best Odds</a>
+      <a href="todays-picks.html" class="active">Today's Picks</a>
+      <a href="index.html#pricing">Pricing</a>
+      <!-- shown only to handicapper users when logged in -->
+      <a href="index.html#handicapper-panel" id="nav-dashboard-link" style="display:none;">My Dashboard</a>
+      <!-- shown when logged in -->
+      <span id="nav-user" class="nav-user" style="display:none;">
+        <span id="nav-greeting" class="nav-greeting"></span>
+        <button class="btn-logout" id="logout-btn">Log Out</button>
+      </span>
+      <!-- shown when logged out -->
+      <button class="btn-login" id="login-btn" style="display:none;">Login</button>
+      <button class="btn-login" id="signup-btn" style="display:none; background:var(--gold); margin-left:-0.5rem;">Sign Up</button>
+    </div>
+  </nav>
+
+  <main>
+    <h1 class="section-heading" style="margin-bottom:0.5rem;">&#127942; Today's Picks</h1>
+    <p id="tp-date-label" style="color:var(--muted);font-size:0.9rem;margin-bottom:1.5rem;"></p>
+
+    <!-- Sport filter -->
+    <div class="tp-filter-bar" id="tp-filter-bar">
+      <button class="tp-filter-btn active" data-sport="all">All Sports</button>
+      <button class="tp-filter-btn" data-sport="NFL">🏈 NFL</button>
+      <button class="tp-filter-btn" data-sport="NBA">🏀 NBA</button>
+      <button class="tp-filter-btn" data-sport="MLB">⚾ MLB</button>
+      <button class="tp-filter-btn" data-sport="NHL">🏒 NHL</button>
+      <button class="tp-filter-btn" data-sport="NCAAF">🏈 NCAAF</button>
+      <button class="tp-filter-btn" data-sport="NCAAB">🏀 NCAAB</button>
+      <button class="tp-filter-btn" data-sport="MLS">⚽ MLS</button>
+      <button class="tp-filter-btn" data-sport="MMA">🥊 MMA</button>
+    </div>
+
+    <div id="tp-picks-container" class="picks-list">
+      <p class="loading-msg">Loading today's picks…</p>
+    </div>
+  </main>
+
+  <!-- ── FOOTER ── -->
+  <footer>
+    <p>&copy; 2026 CH0SEN1 PICKZ &mdash; For entertainment purposes only.</p>
+  </footer>
+
+  <!-- ── LOGIN / SIGNUP MODAL ── -->
+  <div id="auth-modal" class="modal-overlay" aria-hidden="true">
+    <div class="modal-box" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+      <button class="modal-close" id="modal-close" aria-label="Close">&times;</button>
+
+      <!-- Tabs -->
+      <div class="modal-tabs" role="tablist">
+        <button class="modal-tab active" id="tab-login" role="tab" aria-selected="true"
+                aria-controls="panel-login">Log In</button>
+        <button class="modal-tab" id="tab-signup" role="tab" aria-selected="false"
+                aria-controls="panel-signup">Sign Up</button>
+      </div>
+
+      <!-- ── LOGIN PANEL ── -->
+      <div class="form-panel active" id="panel-login" role="tabpanel">
+        <div class="form-alert" id="login-alert"></div>
+        <form class="modal-form" id="login-form">
+          <label for="login-email">Email or Username</label>
+          <input type="text" id="login-email" placeholder="you@example.com or admin"
+                 autocomplete="email" required />
+          <label for="login-password">Password</label>
+          <input type="password" id="login-password" placeholder="••••••••"
+                 autocomplete="current-password" required />
+          <button type="submit" class="btn-primary btn-full" id="login-submit">Log In</button>
+          <p class="modal-footer-text">
+            No account? <a href="#" id="goto-signup">Sign up free</a>
+          </p>
+        </form>
+      </div>
+
+      <!-- ── SIGNUP PANEL ── -->
+      <div class="form-panel" id="panel-signup" role="tabpanel">
+        <div class="form-alert" id="signup-alert"></div>
+        <form class="modal-form" id="signup-form">
+          <div class="role-selection">
+            <p class="role-selection-label">I am signing up as a:</p>
+            <div class="role-cards">
+              <div class="role-card" id="role-handicapper" data-role="handicapper" role="button" tabindex="0" aria-pressed="false">
+                <span class="role-icon">🏆</span>
+                <span class="role-name">Handicapper</span>
+                <span class="role-desc">I provide picks &amp; analysis</span>
+              </div>
+              <div class="role-card" id="role-sports-bettor" data-role="sports_bettor" role="button" tabindex="0" aria-pressed="false">
+                <span class="role-icon">🎯</span>
+                <span class="role-name">Sports Bettor</span>
+                <span class="role-desc">I follow picks &amp; bet on sports</span>
+              </div>
+            </div>
+          </div>
+          <label for="signup-name">Full Name</label>
+          <input type="text" id="signup-name" placeholder="Jane Doe"
+                 autocomplete="name" required />
+          <label for="signup-email">Email</label>
+          <input type="email" id="signup-email" placeholder="you@example.com"
+                 autocomplete="email" required />
+          <label for="signup-password">Password</label>
+          <input type="password" id="signup-password" placeholder="Min 8 characters"
+                 autocomplete="new-password" required minlength="8" />
+          <label for="signup-confirm">Confirm Password</label>
+          <input type="password" id="signup-confirm" placeholder="Repeat password"
+                 autocomplete="new-password" required minlength="8" />
+          <button type="submit" class="btn-primary btn-full" id="signup-submit"
+                  style="background:var(--gold);">Create Account</button>
+          <p class="modal-footer-text">
+            Already a member? <a href="#" id="goto-login">Log in</a>
+          </p>
+        </form>
+
+        <!-- Confirmation-code box — shown after successful signup -->
+        <div id="confirm-box" class="confirm-code-box" style="display:none;">
+          <div class="code-label">Your Verification Code</div>
+          <div class="code-value" id="confirm-code-display"></div>
+          <p style="font-size:0.8rem;color:var(--muted);margin-top:0.5rem;">
+            Enter this code below to verify your email address.
+          </p>
+          <form class="modal-form" id="verify-form" style="margin-top:0.75rem;">
+            <input type="text" id="verify-code-input" placeholder="Enter 6-digit code"
+                   maxlength="6" style="text-align:center;letter-spacing:4px;font-size:1.1rem;" />
+            <button type="submit" class="btn-primary btn-full"
+                    style="background:var(--gold);">Verify Email ✓</button>
+          </form>
+          <div class="form-alert" id="verify-alert" style="margin-top:0.5rem;"></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <script src="config.js"></script>
+  <script src="app.js"></script>
+  <script>
+    // ── TODAY'S PICKS PAGE LOGIC ──────────────────────────────────────────
+
+    (function initTodaysPicks() {
+      const HCP_PICKS_KEY  = 'cp_handicapper_picks';
+      const ADMIN_PICKS_KEY = 'cp_admin_picks';
+
+      function safeJson(key) {
+        try { return JSON.parse(localStorage.getItem(key) || '[]'); } catch { return []; }
+      }
+
+      function escHtml(str) {
+        return String(str)
+          .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+      }
+
+      // Show today's date in heading
+      const dateLabel = document.getElementById('tp-date-label');
+      if (dateLabel) {
+        dateLabel.textContent = new Date().toLocaleDateString([], { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+      }
+
+      const todayStr = new Date().toISOString().slice(0, 10);
+
+      function buildPicks(sportFilter) {
+        const hcpAll    = safeJson(HCP_PICKS_KEY);
+        const adminAll  = safeJson(ADMIN_PICKS_KEY);
+        const session   = (function() { try { return JSON.parse(localStorage.getItem('cp_session') || 'null'); } catch { return null; } })();
+
+        // Handicapper picks for today
+        const hcpToday = hcpAll.filter(function(p) { return p.date === todayStr; });
+
+        // Admin picks (all, since they don't have a date filter in existing system)
+        const adminToday = adminAll;
+
+        let allPicks = [];
+
+        // Admin picks
+        adminToday.forEach(function(p) {
+          if (sportFilter !== 'all' && p.sport !== sportFilter) return;
+          allPicks.push({ _type: 'admin', ...p });
+        });
+
+        // Handicapper picks
+        hcpToday.forEach(function(p) {
+          if (sportFilter !== 'all' && p.sport !== sportFilter) return;
+          allPicks.push({ _type: 'hcp', ...p });
+        });
+
+        return allPicks;
+      }
+
+      function renderPicks(sportFilter) {
+        const container = document.getElementById('tp-picks-container');
+        if (!container) return;
+
+        const session = (function() { try { return JSON.parse(localStorage.getItem('cp_session') || 'null'); } catch { return null; } })();
+        const picks = buildPicks(sportFilter);
+
+        if (picks.length === 0) {
+          container.innerHTML = '<p class="tp-empty">No picks posted for today yet — check back soon!</p>';
+          return;
+        }
+
+        container.innerHTML = picks.map(function(pick) {
+          if (pick._type === 'admin') {
+            const starsHtml  = '⭐'.repeat(pick.confidence || 3);
+            const isLocked   = pick.lock === 'locked' && !session;
+            const postedDate = pick.postedAt ? new Date(pick.postedAt).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : '';
+
+            if (isLocked) {
+              return `
+                <div class="pick-card-new">
+                  <div class="pick-left">
+                    <span class="pick-sport-badge">${escHtml(pick.sport)}</span>
+                    <div class="pick-matchup-new">${escHtml(pick.matchup)}</div>
+                    <div class="pick-meta-new">${escHtml(pick.type)} · ${postedDate}</div>
+                    <div class="pick-value-new" style="filter:blur(5px);user-select:none;">🔒🔒🔒🔒🔒🔒</div>
+                  </div>
+                  <span class="pick-lock-badge locked">🔒 Members Only</span>
+                </div>`;
+            }
+            return `
+              <div class="pick-card-new">
+                <div class="pick-left">
+                  <span class="pick-sport-badge">${escHtml(pick.sport)}</span>
+                  <div class="pick-matchup-new">${escHtml(pick.matchup)}</div>
+                  <div class="pick-meta-new">${escHtml(pick.type)} · ${starsHtml} · ${postedDate}</div>
+                  <div class="pick-value-new">🏆 ${escHtml(pick.value)}</div>
+                  ${pick.note ? `<div class="pick-note-new">${escHtml(pick.note)}</div>` : ''}
+                </div>
+                <span class="pick-lock-badge ${pick.lock === 'locked' ? 'locked' : 'free'}">${pick.lock === 'locked' ? '🔒 Members' : '🆓 Free'}</span>
+              </div>`;
+          }
+
+          // Handicapper pick
+          const postedDate = pick.postedAt ? new Date(pick.postedAt).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : '';
+          return `
+            <div class="pick-card-new">
+              <div class="pick-left">
+                <span class="pick-sport-badge">${escHtml(pick.sport)}</span>
+                <div class="pick-matchup-new">${escHtml(pick.matchup)}</div>
+                <div class="pick-meta-new">${escHtml(pick.pickType)} · ${postedDate}</div>
+                <div class="pick-value-new">🏆 ${escHtml(pick.pickDetails)}</div>
+                ${pick.note ? `<div class="pick-note-new">${escHtml(pick.note)}</div>` : ''}
+                <div class="pick-handicapper">🏆 ${escHtml(pick.handicapperName || 'Handicapper')}</div>
+              </div>
+              <span class="result-badge ${escHtml(pick.result)}">${escHtml(pick.result)}</span>
+            </div>`;
+        }).join('');
+      }
+
+      let activeFilter = 'all';
+      renderPicks(activeFilter);
+
+      // Wire filter buttons
+      const filterBar = document.getElementById('tp-filter-bar');
+      if (filterBar) {
+        filterBar.addEventListener('click', function(e) {
+          const btn = e.target.closest('.tp-filter-btn');
+          if (!btn) return;
+          activeFilter = btn.dataset.sport || 'all';
+          filterBar.querySelectorAll('.tp-filter-btn').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          renderPicks(activeFilter);
+        });
+      }
+    }());
+  </script>
+</body>
+</html>
