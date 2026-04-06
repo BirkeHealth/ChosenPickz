@@ -78,8 +78,12 @@ export const mockPicks = [
 ];
 
 export const sportColors = {
-  NFL: { bg: 'rgba(239,68,68,0.2)', text: '#ef4444', border: 'rgba(239,68,68,0.4)' },
-  NBA: { bg: 'rgba(34,197,94,0.2)', text: '#22c55e', border: 'rgba(34,197,94,0.4)' },
-  MLB: { bg: 'rgba(59,130,246,0.2)', text: '#3b82f6', border: 'rgba(59,130,246,0.4)' },
+  MLB:   { bg: 'rgba(59,130,246,0.2)', text: '#3b82f6', border: 'rgba(59,130,246,0.4)' },
+  NCAAF: { bg: 'rgba(249,115,22,0.2)', text: '#f97316', border: 'rgba(249,115,22,0.4)' },
+  NCAAB: { bg: 'rgba(168,85,247,0.2)', text: '#a855f7', border: 'rgba(168,85,247,0.4)' },
+  NCAAW: { bg: 'rgba(236,72,153,0.2)', text: '#ec4899', border: 'rgba(236,72,153,0.4)' },
+  NFL:   { bg: 'rgba(239,68,68,0.2)',  text: '#ef4444', border: 'rgba(239,68,68,0.4)' },
+  NHL:   { bg: 'rgba(20,184,166,0.2)', text: '#14b8a6', border: 'rgba(20,184,166,0.4)' },
+  NBA:   { bg: 'rgba(34,197,94,0.2)',  text: '#22c55e', border: 'rgba(34,197,94,0.4)' },
   default: { bg: 'rgba(212,168,67,0.2)', text: '#d4a843', border: 'rgba(212,168,67,0.4)' },
 };
