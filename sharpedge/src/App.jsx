@@ -1,7 +1,10 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { mockPicks, sportColors } from './data/mockPicks';
 import SportsLinesPreview from './components/SportsLinesPreview';
 import BestOddsPage from './components/BestOddsPage';
+import BoardPortal from './components/BoardPortal';
+import LoginPage from './components/LoginPage';
+import { SESSION_KEY } from './utils/auth';
 
 // TODO: Uncomment to use live The Odds API data
 // import { useOddsApi } from './hooks/useOddsApi';
@@ -269,8 +272,36 @@ function PricingCard({ plan }) {
 
 export default function App() {
   const [activeTab, setActiveTab] = useState('ALL');
-  // Simple client-side page routing: 'home' | 'best-odds'
+  // Simple client-side page routing: 'home' | 'best-odds' | 'login' | 'board-portal'
   const [currentPage, setCurrentPage] = useState('home');
+
+  // ── Auth state ──────────────────────────────────────────────────────────────
+  // TODO: Replace localStorage session with a real server-side auth token (JWT,
+  //       secure cookie, etc.) once server-side authentication is implemented.
+  const [session, setSession] = useState(() => {
+    try {
+      const raw = localStorage.getItem(SESSION_KEY);
+      return raw ? JSON.parse(raw) : null;
+    } catch {
+      return null;
+    }
+  });
+
+  // If a session already exists on mount, go straight to the Board Portal.
+  useEffect(() => {
+    if (session) setCurrentPage('board-portal');
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const handleLoginSuccess = userData => {
+    setSession(userData);
+    setCurrentPage('board-portal');
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem(SESSION_KEY);
+    setSession(null);
+    setCurrentPage('home');
+  };
 
   // TODO: Uncomment to use live data from The Odds API
   // const { data: oddsData, loading, error } = useOddsApi('upcoming');
@@ -278,6 +309,26 @@ export default function App() {
 
   const filteredPicks =
     activeTab === 'ALL' ? mockPicks : mockPicks.filter(p => p.sport === activeTab);
+
+  // ── Authenticated view: Board Portal ────────────────────────────────────────
+  if (session || currentPage === 'board-portal') {
+    return (
+      <BoardPortal
+        session={session}
+        onLogout={handleLogout}
+      />
+    );
+  }
+
+  // ── Login page ───────────────────────────────────────────────────────────────
+  if (currentPage === 'login') {
+    return (
+      <LoginPage
+        onLoginSuccess={handleLoginSuccess}
+        onBack={() => setCurrentPage('home')}
+      />
+    );
+  }
 
   return (
     <div style={{ background: '#0a0a0f', minHeight: '100vh' }}>
@@ -326,13 +377,14 @@ export default function App() {
           </button>
         </div>
 
-        {/* Right Buttons */}
+        {/* Right Buttons — only shown to unauthenticated users */}
         <div className="flex items-center gap-3">
           <button
-            className="hidden sm:inline-flex px-4 py-2 rounded-lg text-sm font-dm font-semibold transition-all duration-200"
-            style={{ color: '#d4a843', border: '1px solid #d4a843', background: 'transparent' }}
+            className="px-4 py-2 rounded-lg text-sm font-dm font-semibold transition-all duration-200"
+            style={{ color: '#d4a843', border: '1px solid #d4a843', background: 'transparent', cursor: 'pointer' }}
             onMouseEnter={e => (e.currentTarget.style.background = 'rgba(212,168,67,0.1)')}
             onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+            onClick={() => setCurrentPage('login')}
           >
             Log In
           </button>
