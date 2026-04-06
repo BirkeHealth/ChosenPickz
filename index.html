@@ -240,6 +240,21 @@
       <div class="form-panel" id="panel-signup" role="tabpanel">
         <div class="form-alert" id="signup-alert"></div>
         <form class="modal-form" id="signup-form">
+          <div class="role-selection">
+            <p class="role-selection-label">I am signing up as a:</p>
+            <div class="role-cards">
+              <div class="role-card" id="role-handicapper" data-role="handicapper" role="button" tabindex="0" aria-pressed="false">
+                <span class="role-icon">🏆</span>
+                <span class="role-name">Handicapper</span>
+                <span class="role-desc">I provide picks &amp; analysis</span>
+              </div>
+              <div class="role-card" id="role-sports-bettor" data-role="sports_bettor" role="button" tabindex="0" aria-pressed="false">
+                <span class="role-icon">🎯</span>
+                <span class="role-name">Sports Bettor</span>
+                <span class="role-desc">I follow picks &amp; bet on sports</span>
+              </div>
+            </div>
+          </div>
           <label for="signup-name">Full Name</label>
           <input type="text" id="signup-name" placeholder="Jane Doe"
                  autocomplete="name" required />
