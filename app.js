@@ -40,10 +40,22 @@ const SPORTS = [
 
 // ── STORAGE HELPERS ────────────────────────────────────────────────────────
 
-const USERS_KEY   = 'cp_users';
-const SESSION_KEY = 'cp_session';
-const PICKS_KEY   = 'cp_admin_picks';
-const BETSLIP_KEY = 'cp_betslip_legs';
+const USERS_KEY    = 'cp_users';
+const SESSION_KEY  = 'cp_session';
+const PICKS_KEY    = 'cp_admin_picks';
+const BETSLIP_KEY  = 'cp_betslip_legs';
+const DATA_VERSION = 'cp_data_version';
+
+// Version 2 introduced role-based accounts (handicapper / sports_bettor).
+// Clear legacy accounts that lack a role field so users re-register.
+(function migrateStorage() {
+  const version = localStorage.getItem(DATA_VERSION);
+  if (version !== '2') {
+    localStorage.removeItem(USERS_KEY);
+    localStorage.removeItem(SESSION_KEY);
+    localStorage.setItem(DATA_VERSION, '2');
+  }
+}());
 
 function getUsers() {
   try { return JSON.parse(localStorage.getItem(USERS_KEY) || '[]'); }
@@ -425,6 +437,14 @@ function closeModal() {
   // Reset confirm code box
   const box = document.getElementById('confirm-box');
   if (box) box.style.display = 'none';
+  // Re-show signup form in case it was hidden after submit
+  const signupForm = document.getElementById('signup-form');
+  if (signupForm) signupForm.style.display = '';
+  // Reset role card selection
+  document.querySelectorAll('.role-card').forEach(c => {
+    c.classList.remove('selected');
+    c.setAttribute('aria-pressed', 'false');
+  });
   // Re-focus the trigger button
   const btn = document.getElementById('login-btn');
   if (btn) btn.focus();
@@ -478,10 +498,17 @@ async function handleSignup(e) {
   e.preventDefault();
   clearAlerts();
 
+  const selectedRoleCard = document.querySelector('.role-card.selected');
+  const role   = selectedRoleCard ? selectedRoleCard.dataset.role : null;
   const name     = document.getElementById('signup-name').value.trim();
   const email    = document.getElementById('signup-email').value.trim().toLowerCase();
   const password = document.getElementById('signup-password').value;
   const confirm  = document.getElementById('signup-confirm').value;
+
+  if (!role) {
+    showAlert('signup', 'error', 'Please select whether you are a Handicapper or Sports Bettor.');
+    return;
+  }
 
   if (!name || !email || !password || !confirm) {
     showAlert('signup', 'error', 'Please fill in all fields.');
@@ -520,6 +547,7 @@ async function handleSignup(e) {
     id:        Date.now(),
     name,
     email,
+    role,
     hash,
     confirmCode:      code,
     emailConfirmed:   false,
@@ -628,7 +656,7 @@ async function handleLogin(e) {
   }
 
   // Successful login
-  saveSession({ id: user.id, name: user.name, email: user.email, isAdmin: false });
+  saveSession({ id: user.id, name: user.name, email: user.email, role: user.role, isAdmin: false });
   updateNavForUser(user);
   closeModal();
 }
@@ -651,7 +679,14 @@ function updateNavForUser(user) {
 
   if (user) {
     if (navUser)     navUser.style.display     = 'flex';
-    if (navGreeting) navGreeting.textContent   = user.isAdmin ? '⚙️ Admin' : `Hi, ${user.name.split(' ')[0]}`;
+    if (navGreeting) {
+      if (user.isAdmin) {
+        navGreeting.textContent = '⚙️ Admin';
+      } else {
+        const roleLabel = user.role === 'handicapper' ? '🏆 Handicapper' : '🎯 Sports Bettor';
+        navGreeting.textContent = `Hi, ${user.name.split(' ')[0]} · ${roleLabel}`;
+      }
+    }
     if (loginBtn)    loginBtn.style.display    = 'none';
     if (signupBtn)   signupBtn.style.display   = 'none';
     // Show admin panel only for admin user
@@ -948,6 +983,20 @@ document.addEventListener('DOMContentLoaded', function () {
   if (tabSignupBtn) tabSignupBtn.addEventListener('click', () => switchTab('signup'));
   if (gotoSignup)   gotoSignup.addEventListener('click',   e => { e.preventDefault(); switchTab('signup'); });
   if (gotoLogin)    gotoLogin.addEventListener('click',    e => { e.preventDefault(); switchTab('login'); });
+
+  // Role card selection on signup form
+  document.querySelectorAll('.role-card').forEach(function(card) {
+    function selectCard() {
+      document.querySelectorAll('.role-card').forEach(c => {
+        c.classList.remove('selected');
+        c.setAttribute('aria-pressed', 'false');
+      });
+      card.classList.add('selected');
+      card.setAttribute('aria-pressed', 'true');
+    }
+    card.addEventListener('click', selectCard);
+    card.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); selectCard(); } });
+  });
 
   // Form submissions
   const loginForm  = document.getElementById('login-form');
