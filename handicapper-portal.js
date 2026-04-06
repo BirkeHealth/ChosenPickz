@@ -92,8 +92,13 @@ let selectedSport  = 'all';
 let selectedBook   = 'all';
 let searchQuery    = '';
 
-// Pick slip: array of { id, matchup, sport, pickType, pickDetails, note, confidence, visibility, gameTime }
+// Pick slip: array of { id, matchup, sport, pickType, pickDetails, note, confidence, lock, gameTime }
 let slipItems = [];
+let slipIdCounter = 0;
+
+function nextSlipId() {
+  return ++slipIdCounter;
+}
 
 // ── AUTH GUARD ─────────────────────────────────────────────────────────────
 
@@ -108,7 +113,12 @@ function initAuth() {
   const navUser     = document.getElementById('nav-user');
   const navGreeting = document.getElementById('nav-greeting');
   if (navUser)     navUser.style.display = 'flex';
-  if (navGreeting) navGreeting.textContent = `Hi, ${session.name.split(' ')[0]} · 🏆 Handicapper`;
+  if (navGreeting) {
+    const firstName = (session.name && typeof session.name === 'string')
+      ? session.name.split(' ')[0]
+      : 'Handicapper';
+    navGreeting.textContent = `Hi, ${firstName} · 🏆 Handicapper`;
+  }
 
   const logoutBtn = document.getElementById('logout-btn');
   if (logoutBtn) {
@@ -338,7 +348,7 @@ function addToSlip(matchup, sport, pickType, pickDetails, odds) {
     return;
   }
   slipItems.push({
-    id:          Date.now() + Math.random(),
+    id:          nextSlipId(),
     matchup,
     sport,
     pickType,
@@ -346,7 +356,7 @@ function addToSlip(matchup, sport, pickType, pickDetails, odds) {
     odds,
     note:        '',
     confidence:  3,
-    visibility:  'free',
+    lock:        'free',
   });
   renderSlip();
   // scroll right panel slip into view
@@ -392,8 +402,8 @@ function renderSlip() {
         <div class="slip-field">
           <label class="slip-label">Visibility</label>
           <select class="slip-visibility" data-idx="${idx}">
-            <option value="free"   ${item.visibility === 'free'   ? 'selected' : ''}>🆓 Free</option>
-            <option value="locked" ${item.visibility === 'locked' ? 'selected' : ''}>🔒 Subscribers</option>
+            <option value="free"   ${item.lock === 'free'   ? 'selected' : ''}>🆓 Free</option>
+            <option value="locked" ${item.lock === 'locked' ? 'selected' : ''}>🔒 Subscribers</option>
           </select>
         </div>
       </div>
@@ -421,7 +431,7 @@ function renderSlip() {
   // Wire visibility selects
   container.querySelectorAll('.slip-visibility').forEach(sel => {
     sel.addEventListener('change', () => {
-      slipItems[Number(sel.dataset.idx)].visibility = sel.value;
+      slipItems[Number(sel.dataset.idx)].lock = sel.value;
     });
   });
 
@@ -461,7 +471,7 @@ function postPick(idx) {
     pickDetails:     item.pickDetails,
     note:            item.note || '',
     confidence:      item.confidence || 3,
-    lock:            item.visibility || 'free',
+    lock:            item.lock || 'free',
     date:            new Date().toISOString().slice(0, 10),
     result:          'pending',
     postedAt:        new Date().toISOString(),
@@ -507,7 +517,7 @@ function initManualEntry() {
       const pickType   = document.getElementById('man-type')?.value || 'MoneyLine';
       const pickDetails= (document.getElementById('man-pick')?.value || '').trim();
       const confidence = Number(document.getElementById('man-confidence')?.value || 3);
-      const visibility = document.getElementById('man-visibility')?.value || 'free';
+      const lock       = document.getElementById('man-visibility')?.value || 'free';
       const note       = (document.getElementById('man-note')?.value || '').trim();
 
       if (!matchup || !pickDetails) {
@@ -516,7 +526,7 @@ function initManualEntry() {
       }
 
       slipItems.push({
-        id:         Date.now() + Math.random(),
+        id:         nextSlipId(),
         matchup,
         sport,
         pickType,
@@ -524,7 +534,7 @@ function initManualEntry() {
         odds:       '',
         note,
         confidence,
-        visibility,
+        lock,
       });
       renderSlip();
       manualForm.style.display = 'none';
