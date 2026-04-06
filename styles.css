@@ -1142,3 +1142,123 @@ footer {
   color: var(--success);
 }
 
+/* ── HANDICAPPER DASHBOARD ── */
+.handicapper-panel { margin-bottom: 2.5rem; }
+
+.hcp-stats-bar {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-bottom: 1.5rem;
+}
+.hcp-stat-card {
+  flex: 1;
+  min-width: 110px;
+  background: var(--surface);
+  border: 1px solid var(--surface2);
+  border-radius: 10px;
+  padding: 0.9rem 1.2rem;
+  text-align: center;
+}
+.hcp-stat-value {
+  font-family: 'Bebas Neue', cursive;
+  font-size: 2rem;
+  letter-spacing: 1px;
+  color: var(--orange);
+  line-height: 1;
+}
+.hcp-stat-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--muted);
+  margin-top: 0.25rem;
+}
+
+/* Result badges */
+.result-badge {
+  display: inline-block;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 0.18rem 0.6rem;
+  border-radius: 20px;
+  flex-shrink: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+.result-badge.win {
+  background: rgba(34,197,94,0.15);
+  color: #22c55e;
+  border: 1px solid rgba(34,197,94,0.35);
+}
+.result-badge.loss {
+  background: rgba(239,68,68,0.12);
+  color: #f87171;
+  border: 1px solid rgba(239,68,68,0.3);
+}
+.result-badge.pending {
+  background: rgba(212,160,23,0.1);
+  color: var(--gold);
+  border: 1px solid rgba(212,160,23,0.3);
+}
+
+/* Result selector inline in admin pick item */
+.result-select {
+  background: var(--surface2);
+  border: 1px solid var(--surface2);
+  border-radius: 6px;
+  color: var(--text);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.8rem;
+  padding: 0.3rem 0.5rem;
+  outline: none;
+  cursor: pointer;
+  transition: border-color 0.2s;
+}
+.result-select:focus { border-color: var(--orange); }
+
+/* Handicapper attribution on public today's picks */
+.pick-handicapper {
+  font-size: 0.75rem;
+  color: var(--gold);
+  font-weight: 700;
+  margin-top: 0.2rem;
+}
+
+/* Today's picks page standalone layout */
+.todays-picks-page main {
+  max-width: 860px;
+}
+.tp-filter-bar {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  margin-bottom: 1.5rem;
+  align-items: center;
+}
+.tp-filter-btn {
+  background: var(--surface);
+  border: 1px solid var(--surface2);
+  color: var(--muted);
+  border-radius: 20px;
+  padding: 0.3rem 0.9rem;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.tp-filter-btn.active,
+.tp-filter-btn:hover {
+  border-color: var(--orange);
+  color: var(--orange);
+  background: rgba(249,115,22,0.1);
+}
+.tp-empty {
+  color: var(--muted);
+  font-size: 0.95rem;
+  padding: 2rem 0;
+  text-align: center;
+}
+

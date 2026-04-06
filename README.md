@@ -139,6 +139,66 @@ For a production deployment, replace this with a secure server-side auth system 
 
 ---
 
+## Handicapper Dashboard & Today's Picks
+
+### Overview
+
+Role-based features for users who sign up as **Handicapper** (role: `handicapper`).  
+All pick data is stored in `localStorage` under the key `cp_handicapper_picks` (same pattern as other app data).
+
+### Handicapper Dashboard (`index.html#handicapper-panel`)
+
+Visible **only** to logged-in users with the `handicapper` role. Features:
+
+- **Stats bar** — Total picks, Wins, Losses, and Win % calculated from all submitted picks.
+- **Submit Pick form** — Fields: Matchup/Teams, Sport, Pick Type (MoneyLine / Spread / Over-Under / Parlay), Pick Details, Game Date, and an optional Note.
+- **Pick history** — All the handicapper's own picks with an inline result selector (`Pending` / `Win` / `Loss`) and a delete button.
+
+Navigation: a **My Dashboard** link appears in the top nav bar only when a handicapper is logged in.
+
+#### Pick Object Schema (`cp_handicapper_picks` array)
+
+```json
+{
+  "id":              1234567890,
+  "handicapperId":   123,
+  "handicapperName": "Jane Smith",
+  "sport":           "NBA",
+  "matchup":         "Lakers vs Celtics",
+  "pickType":        "Spread",
+  "pickDetails":     "Lakers -5.5 (-110)",
+  "note":            "Home court advantage",
+  "date":            "2026-04-06",
+  "result":          "pending",
+  "postedAt":        "2026-04-06T10:00:00.000Z"
+}
+```
+
+`result` is one of `"pending"` | `"win"` | `"loss"` (manual entry; automation can be added later).
+
+### Today's Picks Public Page (`todays-picks.html`)
+
+A **public page** — no login required — showing all picks for the current date:
+
+- Includes picks submitted by all handicappers whose `date` matches today.
+- Also includes admin-posted picks (existing behaviour).
+- **Sport filter bar** — filter by All Sports, NFL, NBA, MLB, NHL, NCAAF, NCAAB, MLS, MMA.
+- Result badges (Win / Loss / Pending) are displayed on each handicapper pick.
+- Navigate to it via the **Today's Picks** link in the top nav bar on any page.
+
+#### Server Route
+
+`todays-picks.html` is served statically from the project root via the Node.js HTTP server (`index.js`).  
+No new server-side API endpoint is required — the page reads directly from `localStorage`.
+
+### New Storage Key
+
+| Key | Description |
+|-----|-------------|
+| `cp_handicapper_picks` | Array of all handicapper pick objects across all users |
+
+---
+
 ## CH0SEN1PICKZ — Main App
 
 ### Features

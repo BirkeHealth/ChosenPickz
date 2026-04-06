@@ -45,6 +45,7 @@ const SESSION_KEY  = 'cp_session';
 const PICKS_KEY    = 'cp_admin_picks';
 const BETSLIP_KEY  = 'cp_betslip_legs';
 const DATA_VERSION = 'cp_data_version';
+const HCP_PICKS_KEY = 'cp_handicapper_picks';
 
 // Version 2 introduced role-based accounts (handicapper / sports_bettor).
 // Clear legacy accounts that lack a role field so users re-register.
@@ -86,6 +87,15 @@ function getAdminPicks() {
 
 function saveAdminPicks(picks) {
   localStorage.setItem(PICKS_KEY, JSON.stringify(picks));
+}
+
+function getHandicapperPicks() {
+  try { return JSON.parse(localStorage.getItem(HCP_PICKS_KEY) || '[]'); }
+  catch { return []; }
+}
+
+function saveHandicapperPicks(picks) {
+  localStorage.setItem(HCP_PICKS_KEY, JSON.stringify(picks));
 }
 
 function saveBetSlip() {
@@ -671,11 +681,13 @@ function handleLogout() {
 // ── UPDATE NAV ─────────────────────────────────────────────────────────────
 
 function updateNavForUser(user) {
-  const navUser     = document.getElementById('nav-user');
-  const navGreeting = document.getElementById('nav-greeting');
-  const loginBtn    = document.getElementById('login-btn');
-  const signupBtn   = document.getElementById('signup-btn');
-  const adminPanel  = document.getElementById('admin-panel');
+  const navUser        = document.getElementById('nav-user');
+  const navGreeting    = document.getElementById('nav-greeting');
+  const loginBtn       = document.getElementById('login-btn');
+  const signupBtn      = document.getElementById('signup-btn');
+  const adminPanel     = document.getElementById('admin-panel');
+  const hcpPanel       = document.getElementById('handicapper-panel');
+  const navDashLink    = document.getElementById('nav-dashboard-link');
 
   if (user) {
     if (navUser)     navUser.style.display     = 'flex';
@@ -690,16 +702,26 @@ function updateNavForUser(user) {
         navGreeting.textContent = `Hi, ${user.name.split(' ')[0]}`;
       }
     }
-    if (loginBtn)    loginBtn.style.display    = 'none';
-    if (signupBtn)   signupBtn.style.display   = 'none';
+    if (loginBtn)  loginBtn.style.display  = 'none';
+    if (signupBtn) signupBtn.style.display = 'none';
+
     // Show admin panel only for admin user
-    if (adminPanel)  adminPanel.style.display  = user.isAdmin ? 'block' : 'none';
+    if (adminPanel) adminPanel.style.display = user.isAdmin ? 'block' : 'none';
     if (user.isAdmin) renderAdminPicksList();
+
+    // Show handicapper panel only for handicapper role
+    if (hcpPanel) hcpPanel.style.display = user.role === 'handicapper' ? 'block' : 'none';
+    if (user.role === 'handicapper') renderHandicapperDashboard();
+
+    // Nav dashboard link — visible only to handicappers
+    if (navDashLink) navDashLink.style.display = user.role === 'handicapper' ? 'inline' : 'none';
   } else {
     if (navUser)    navUser.style.display    = 'none';
     if (loginBtn)   loginBtn.style.display   = 'inline-block';
     if (signupBtn)  signupBtn.style.display  = 'inline-block';
     if (adminPanel) adminPanel.style.display = 'none';
+    if (hcpPanel)   hcpPanel.style.display   = 'none';
+    if (navDashLink) navDashLink.style.display = 'none';
   }
 }
 
@@ -771,24 +793,163 @@ function handleAdminPickSubmit(e) {
   renderPicksSection();
 }
 
+// ── HANDICAPPER DASHBOARD ─────────────────────────────────────────────────
+
+function renderHandicapperDashboard() {
+  const session = getSession();
+  if (!session || session.role !== 'handicapper') return;
+
+  const allPicks = getHandicapperPicks();
+  const myPicks  = allPicks.filter(p => p.handicapperId === session.id);
+
+  // Stats
+  const wins   = myPicks.filter(p => p.result === 'win').length;
+  const losses = myPicks.filter(p => p.result === 'loss').length;
+  const total  = myPicks.length;
+  const winPct = (wins + losses) > 0 ? Math.round((wins / (wins + losses)) * 100) : 0;
+
+  const statsEl = document.getElementById('hcp-stats');
+  if (statsEl) {
+    statsEl.innerHTML = `
+      <div class="hcp-stat-card">
+        <div class="hcp-stat-value">${total}</div>
+        <div class="hcp-stat-label">Total Picks</div>
+      </div>
+      <div class="hcp-stat-card">
+        <div class="hcp-stat-value" style="color:var(--success);">${wins}</div>
+        <div class="hcp-stat-label">Wins</div>
+      </div>
+      <div class="hcp-stat-card">
+        <div class="hcp-stat-value" style="color:#f87171;">${losses}</div>
+        <div class="hcp-stat-label">Losses</div>
+      </div>
+      <div class="hcp-stat-card">
+        <div class="hcp-stat-value">${winPct}%</div>
+        <div class="hcp-stat-label">Win %</div>
+      </div>`;
+  }
+
+  const listEl = document.getElementById('hcp-picks-list');
+  if (!listEl) return;
+
+  if (myPicks.length === 0) {
+    listEl.innerHTML = '<p class="loading-msg">No picks submitted yet. Use the form above to add your first pick!</p>';
+    return;
+  }
+
+  listEl.innerHTML = myPicks.map(function(pick) {
+    const postedDate = pick.postedAt ? new Date(pick.postedAt).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : '';
+    const resultBadge = `<span class="result-badge ${pick.result}">${pick.result}</span>`;
+    return `
+      <div class="admin-pick-item">
+        <div class="admin-pick-info">
+          <div class="admin-pick-matchup">${escapeHtml(pick.matchup)}</div>
+          <div class="admin-pick-meta">${escapeHtml(pick.sport)} · ${escapeHtml(pick.pickType)} · ${postedDate}</div>
+          <div class="admin-pick-value">🏆 ${escapeHtml(pick.pickDetails)}</div>
+          ${pick.note ? `<div class="admin-pick-meta" style="font-style:italic;">${escapeHtml(pick.note)}</div>` : ''}
+          <div style="margin-top:0.4rem;">${resultBadge}</div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:0.4rem;align-items:flex-end;">
+          <select class="result-select" data-pick-id="${pick.id}">
+            <option value="pending" ${pick.result === 'pending' ? 'selected' : ''}>⏳ Pending</option>
+            <option value="win"     ${pick.result === 'win'     ? 'selected' : ''}>✅ Win</option>
+            <option value="loss"    ${pick.result === 'loss'    ? 'selected' : ''}>❌ Loss</option>
+          </select>
+          <button class="btn-delete-pick" data-pick-id="${pick.id}">🗑 Delete</button>
+        </div>
+      </div>`;
+  }).join('');
+
+  // Wire result selectors
+  listEl.querySelectorAll('.result-select').forEach(function(sel) {
+    sel.addEventListener('change', function() {
+      const id = Number(this.dataset.pickId);
+      const picks = getHandicapperPicks();
+      const idx = picks.findIndex(p => p.id === id);
+      if (idx !== -1) {
+        picks[idx].result = this.value;
+        saveHandicapperPicks(picks);
+        renderHandicapperDashboard();
+        renderPicksSection();
+      }
+    });
+  });
+
+  // Wire delete buttons
+  listEl.querySelectorAll('.btn-delete-pick').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      const id = Number(this.dataset.pickId);
+      const picks = getHandicapperPicks().filter(p => p.id !== id);
+      saveHandicapperPicks(picks);
+      renderHandicapperDashboard();
+      renderPicksSection();
+    });
+  });
+}
+
+function handleHandicapperPickSubmit(e) {
+  e.preventDefault();
+  const session = getSession();
+  if (!session || session.role !== 'handicapper') return;
+
+  const matchup    = document.getElementById('hcp-matchup').value.trim();
+  const sport      = document.getElementById('hcp-sport').value;
+  const pickType   = document.getElementById('hcp-pick-type').value;
+  const pickDetails= document.getElementById('hcp-pick-value').value.trim();
+  const note       = document.getElementById('hcp-note').value.trim();
+  const dateVal    = document.getElementById('hcp-date').value;
+
+  if (!matchup || !pickDetails) return;
+
+  const picks = getHandicapperPicks();
+  picks.unshift({
+    id:              Date.now(),
+    handicapperId:   session.id,
+    handicapperName: session.name,
+    sport,
+    matchup,
+    pickType,
+    pickDetails,
+    note,
+    date:    dateVal || new Date().toISOString().slice(0, 10),
+    result:  'pending',
+    postedAt: new Date().toISOString(),
+  });
+  saveHandicapperPicks(picks);
+
+  document.getElementById('hcp-pick-form').reset();
+  // Re-default date to today after reset
+  const dateEl = document.getElementById('hcp-date');
+  if (dateEl) dateEl.value = new Date().toISOString().slice(0, 10);
+
+  renderHandicapperDashboard();
+  renderPicksSection();
+}
+
 // ── RENDER PICKS SECTION (visible to all users) ──────────────────────────
 
 function renderPicksSection() {
   const container = document.getElementById('picks-display');
   if (!container) return;
 
-  const picks = getAdminPicks();
-  if (picks.length === 0) {
-    container.innerHTML = '<p class="loading-msg">No picks posted yet — check back soon!</p>';
-    return;
-  }
+  // Build today's date range for filtering handicapper picks
+  const todayStart = new Date();
+  todayStart.setHours(0, 0, 0, 0);
+  const todayEnd = new Date(todayStart);
+  todayEnd.setDate(todayStart.getDate() + 1);
+
+  const adminPicks = getAdminPicks();
+  const hcpTodayPicks = getHandicapperPicks().filter(function(p) {
+    const d = new Date(p.date + 'T00:00:00');
+    return d >= todayStart && d < todayEnd;
+  });
 
   const session = getSession();
-  const isSubscriber = session && !session.isAdmin; // in a real app, check subscription tier
 
-  container.innerHTML = picks.map(function(pick) {
-    const starsHtml = '⭐'.repeat(pick.confidence || 3);
-    const isLocked  = pick.lock === 'locked' && !session;
+  // Render admin picks (existing behavior)
+  const adminHtml = adminPicks.map(function(pick) {
+    const starsHtml  = '⭐'.repeat(pick.confidence || 3);
+    const isLocked   = pick.lock === 'locked' && !session;
     const postedDate = pick.postedAt ? new Date(pick.postedAt).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : '';
 
     if (isLocked) {
@@ -816,6 +977,30 @@ function renderPicksSection() {
         <span class="pick-lock-badge ${pick.lock === 'locked' ? 'locked' : 'free'}">${pick.lock === 'locked' ? '🔒 Members' : '🆓 Free'}</span>
       </div>`;
   }).join('');
+
+  // Render today's handicapper picks
+  const hcpHtml = hcpTodayPicks.map(function(pick) {
+    const postedDate = pick.postedAt ? new Date(pick.postedAt).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : '';
+    return `
+      <div class="pick-card-new">
+        <div class="pick-left">
+          <span class="pick-sport-badge">${escapeHtml(pick.sport)}</span>
+          <div class="pick-matchup-new">${escapeHtml(pick.matchup)}</div>
+          <div class="pick-meta-new">${escapeHtml(pick.pickType)} · ${postedDate}</div>
+          <div class="pick-value-new">🏆 ${escapeHtml(pick.pickDetails)}</div>
+          ${pick.note ? `<div class="pick-note-new">${escapeHtml(pick.note)}</div>` : ''}
+          <div class="pick-handicapper">🏆 ${escapeHtml(pick.handicapperName || 'Handicapper')}</div>
+        </div>
+        <span class="result-badge ${pick.result}">${pick.result}</span>
+      </div>`;
+  }).join('');
+
+  const combined = adminHtml + hcpHtml;
+  if (!combined) {
+    container.innerHTML = '<p class="loading-msg">No picks posted yet — check back soon!</p>';
+    return;
+  }
+  container.innerHTML = combined;
 }
 
 // ── EMAIL VERIFICATION ────────────────────────────────────────────────────
@@ -1039,6 +1224,13 @@ document.addEventListener('DOMContentLoaded', function () {
   // Admin panel pick form
   const adminPickForm = document.getElementById('admin-pick-form');
   if (adminPickForm) adminPickForm.addEventListener('submit', handleAdminPickSubmit);
+
+  const hcpPickForm = document.getElementById('hcp-pick-form');
+  if (hcpPickForm) hcpPickForm.addEventListener('submit', handleHandicapperPickSubmit);
+
+  // Default date field to today
+  const hcpDateEl = document.getElementById('hcp-date');
+  if (hcpDateEl) hcpDateEl.value = new Date().toISOString().slice(0, 10);
 
   // ── Bet Slip Calculator wiring ──
   const fab          = document.getElementById('betslip-fab');
