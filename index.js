@@ -5,6 +5,7 @@ const oddsHandler   = require('./routes/odds');
 const sportsHandler = require('./routes/sports');
 const newsHandler   = require('./routes/news');
 const emailHandler  = require('./routes/email');
+const usersHandler  = require('./routes/users');
 
 const PORT = process.env.PORT || 3000;
 
@@ -136,6 +137,14 @@ const server = http.createServer((req, res) => {
   let urlPath = req.url;
   // Strip query strings
   urlPath = urlPath.split('?')[0];
+
+  // ── User account info ──────────────────────────────────────────────────────
+  // Returns the authenticated user's profile. Currently returns mock data;
+  // TODO: connect to real auth and user database (see routes/users.js).
+  if (urlPath === '/api/users/me') {
+    usersHandler(req, res);
+    return;
+  }
 
   // ── Email confirmation ─────────────────────────────────────────────────────
   // Sends a signup-verification email via server-side SMTP so credentials
