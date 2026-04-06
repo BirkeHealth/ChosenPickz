@@ -688,7 +688,6 @@ function updateNavForUser(user) {
   const adminPanel     = document.getElementById('admin-panel');
   const hcpPanel       = document.getElementById('handicapper-panel');
   const navDashLink    = document.getElementById('nav-dashboard-link');
-  const navPicksLink   = document.getElementById('nav-todayspicks-link');
 
   if (user) {
     if (navUser)     navUser.style.display     = 'flex';
