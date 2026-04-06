@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CH0SEN1 PICKZ — Handicapper Portal</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+  <!-- ── NAV ── -->
+  <nav>
+    <a class="nav-logo" href="index.html">
+      CH<span class="ch-blue">0</span>SEN<span class="ch-blue">1</span> PICKZ
+    </a>
+    <div class="nav-links">
+      <a href="index.html">Home</a>
+      <a href="todays-picks.html">Today's Picks</a>
+      <a href="best-odds.html">Best Odds</a>
+      <span id="nav-user" class="nav-user" style="display:none;">
+        <span id="nav-greeting" class="nav-greeting"></span>
+        <button class="btn-logout" id="logout-btn">Log Out</button>
+      </span>
+    </div>
+  </nav>
+
+  <!-- ── PORTAL HEADER ── -->
+  <div class="portal-header">
+    <div class="portal-header-inner">
+      <div>
+        <h1 class="portal-title">🏆 Board Management Portal</h1>
+        <p class="portal-subtitle">Browse live odds on the left, build your pick on the right.</p>
+      </div>
+      <div id="portal-stats" class="portal-stats-bar"></div>
+    </div>
+  </div>
+
+  <!-- ── TWO-PANEL LAYOUT ── -->
+  <div class="portal-layout">
+
+    <!-- ══════ LEFT PANEL: PICKS TO POST (Odds Board) ══════ -->
+    <aside class="portal-panel portal-panel--left">
+      <div class="panel-header">
+        <h2 class="panel-title">📊 Picks to Post</h2>
+        <p class="panel-desc">Browse live odds — click any odds pill to add it to your pick slip.</p>
+      </div>
+
+      <!-- Sport filter tabs -->
+      <div class="portal-sport-tabs" id="portal-sport-tabs" role="tablist" aria-label="Sport filter">
+        <button class="portal-sport-tab active" data-sport="all" role="tab" aria-selected="true">All</button>
+        <button class="portal-sport-tab" data-sport="baseball_mlb" role="tab" aria-selected="false">⚾ MLB</button>
+        <button class="portal-sport-tab" data-sport="americanfootball_nfl" role="tab" aria-selected="false">🏈 NFL</button>
+        <button class="portal-sport-tab" data-sport="americanfootball_ncaaf" role="tab" aria-selected="false">🏈 NCAAF</button>
+        <button class="portal-sport-tab" data-sport="basketball_nba" role="tab" aria-selected="false">🏀 NBA</button>
+        <button class="portal-sport-tab" data-sport="basketball_ncaab" role="tab" aria-selected="false">🏀 NCAAB</button>
+        <button class="portal-sport-tab" data-sport="icehockey_nhl" role="tab" aria-selected="false">🏒 NHL</button>
+      </div>
+
+      <!-- Bookmaker filter -->
+      <div class="portal-book-row">
+        <span class="portal-book-label">Sportsbook:</span>
+        <div class="portal-book-tabs" id="portal-book-tabs" role="group" aria-label="Sportsbook filter">
+          <button class="portal-book-btn active" data-book="all">All</button>
+          <button class="portal-book-btn" data-book="fanduel">FanDuel</button>
+          <button class="portal-book-btn" data-book="draftkings">DraftKings</button>
+          <button class="portal-book-btn" data-book="betmgm">BetMGM</button>
+          <button class="portal-book-btn" data-book="caesars">Caesars</button>
+        </div>
+      </div>
+
+      <!-- Search filter -->
+      <div class="portal-search-row">
+        <input type="search" id="portal-search" class="portal-search-input" placeholder="🔍 Filter by team or matchup…" autocomplete="off" />
+      </div>
+
+      <!-- Odds board -->
+      <div id="portal-odds-board" class="portal-odds-board">
+        <p class="loading-msg">Loading odds…</p>
+      </div>
+    </aside>
+
+    <!-- ══════ RIGHT PANEL: PICK SLIP ══════ -->
+    <section class="portal-panel portal-panel--right">
+      <div class="panel-header">
+        <h2 class="panel-title">📋 Pick Slip</h2>
+        <p class="panel-desc">Review and post your selections.</p>
+      </div>
+
+      <!-- Slip items list -->
+      <div id="portal-slip-list" class="portal-slip-list">
+        <div class="slip-empty">
+          <p>No picks selected yet.</p>
+          <p class="slip-empty-hint">Click any odds pill from the board on the left to add a pick, or use Manual Entry below.</p>
+        </div>
+      </div>
+
+      <!-- Manual Entry Button -->
+      <button id="portal-manual-btn" class="btn-secondary portal-manual-btn">✏️ Manual Entry</button>
+
+      <!-- Manual Entry Form (hidden by default) -->
+      <div id="portal-manual-form" class="portal-manual-form" style="display:none;">
+        <h3 class="manual-form-title">Manual Pick Entry</h3>
+        <p class="manual-form-desc">Use this for games whose odds are not available in the live board.</p>
+        <div class="admin-form-row">
+          <div class="admin-field">
+            <label for="man-matchup">Matchup</label>
+            <input type="text" id="man-matchup" placeholder="e.g. Lakers vs Celtics" />
+          </div>
+          <div class="admin-field">
+            <label for="man-sport">Sport</label>
+            <select id="man-sport">
+              <option value="MLB">⚾ MLB</option>
+              <option value="NFL">🏈 NFL</option>
+              <option value="NCAAF">🏈 NCAAF</option>
+              <option value="NBA">🏀 NBA</option>
+              <option value="NCAAB">🏀 NCAAB (Men)</option>
+              <option value="NCAAW">🏀 NCAAW (Women)</option>
+              <option value="NHL">🏒 NHL</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+        </div>
+        <div class="admin-form-row">
+          <div class="admin-field">
+            <label for="man-type">Pick Type</label>
+            <select id="man-type">
+              <option value="MoneyLine">MoneyLine</option>
+              <option value="Spread">Spread</option>
+              <option value="Over/Under">Over/Under</option>
+              <option value="Parlay">Parlay</option>
+            </select>
+          </div>
+          <div class="admin-field">
+            <label for="man-pick">Pick Details</label>
+            <input type="text" id="man-pick" placeholder="e.g. Lakers -5.5 (-110)" />
+          </div>
+        </div>
+        <div class="admin-form-row">
+          <div class="admin-field">
+            <label for="man-confidence">Confidence</label>
+            <select id="man-confidence">
+              <option value="3">⭐⭐⭐ Medium</option>
+              <option value="4">⭐⭐⭐⭐ High</option>
+              <option value="5">⭐⭐⭐⭐⭐ Very High</option>
+              <option value="2">⭐⭐ Low</option>
+              <option value="1">⭐ Very Low</option>
+            </select>
+          </div>
+          <div class="admin-field">
+            <label for="man-visibility">Visibility</label>
+            <select id="man-visibility">
+              <option value="free">🆓 Free (Everyone)</option>
+              <option value="locked">🔒 Subscribers Only</option>
+            </select>
+          </div>
+        </div>
+        <div class="admin-form-row">
+          <div class="admin-field" style="flex:1;">
+            <label for="man-note">Note (optional)</label>
+            <input type="text" id="man-note" placeholder="Analysis or context…" />
+          </div>
+        </div>
+        <div style="display:flex;gap:0.5rem;margin-top:0.5rem;">
+          <button id="portal-manual-add-btn" class="btn-primary" style="flex:1;">➕ Add to Slip</button>
+          <button id="portal-manual-cancel-btn" class="btn-secondary">Cancel</button>
+        </div>
+      </div>
+
+      <!-- Post message feedback -->
+      <div id="portal-post-feedback" class="portal-post-feedback" style="display:none;"></div>
+
+      <!-- Pick History -->
+      <div class="portal-history">
+        <button id="portal-history-toggle" class="portal-history-toggle">
+          📂 My Pick History <span id="portal-history-count"></span>
+          <span class="history-chevron">▼</span>
+        </button>
+        <div id="portal-history-list" class="portal-history-list" style="display:none;"></div>
+      </div>
+    </section>
+
+  </div><!-- /.portal-layout -->
+
+  <script src="config.js"></script>
+  <script src="handicapper-portal.js"></script>
+</body>
+</html>
