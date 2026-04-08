@@ -195,7 +195,8 @@ const server = http.createServer((req, res) => {
 
   // ── SharpEdge React SPA ────────────────────────────────────────────────────
   // Serve the SharpEdge React SPA at /sharpedge/ (and /home, /app for backward compat).
-  if (urlPath === '/sharpedge' || urlPath === '/sharpedge/' || urlPath === '/home' || urlPath === '/home/' || urlPath === '/app' || urlPath === '/app/') {
+  const SHARPEDGE_ROOTS = new Set(['/sharpedge', '/sharpedge/', '/home', '/home/', '/app', '/app/']);
+  if (SHARPEDGE_ROOTS.has(urlPath)) {
     const indexPath = path.join(DIST_DIR, 'index.html');
     fs.readFile(indexPath, (err, data) => {
       if (err) {
