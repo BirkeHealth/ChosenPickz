@@ -223,8 +223,39 @@ const server = http.createServer((req, res) => {
   }
 
   // ── SharpEdge React app ────────────────────────────────────────────────────
-  // Serve the SharpEdge SPA index for any /home/* sub-path (deep links)
+  // Serve static assets (JS, CSS, images, etc.) from sharpedge/dist/ for
+  // requests under /home/*. Strip the /home/ prefix to get the asset filename,
+  // then serve it with the correct Content-Type. Only fall back to index.html
+  // for SPA router paths (i.e. when no matching file exists in dist/).
   if (urlPath.startsWith('/home/')) {
+    const assetName = urlPath.slice('/home/'.length);
+    const ext = path.extname(assetName);
+    if (ext && MIME_TYPES[ext]) {
+      // Request looks like a static asset — try to serve it from dist/
+      const assetPath = path.resolve(DIST_DIR, assetName);
+      const rel = path.relative(DIST_DIR, assetPath);
+      if (rel.startsWith('..') || path.isAbsolute(rel)) {
+        res.writeHead(403, { 'Content-Type': 'text/plain' });
+        res.end('Forbidden');
+        return;
+      }
+      fs.readFile(assetPath, (err, data) => {
+        if (err) {
+          if (err.code === 'ENOENT') {
+            res.writeHead(404, { 'Content-Type': 'text/plain' });
+            res.end('Not Found');
+          } else {
+            res.writeHead(500, { 'Content-Type': 'text/plain' });
+            res.end('Internal Server Error');
+          }
+          return;
+        }
+        res.writeHead(200, { 'Content-Type': MIME_TYPES[ext] });
+        res.end(data);
+      });
+      return;
+    }
+    // No file extension — treat as an SPA route and serve index.html
     const indexPath = path.join(DIST_DIR, 'index.html');
     fs.readFile(indexPath, (err, data) => {
       if (err) {
