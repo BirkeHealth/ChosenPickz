@@ -289,4 +289,49 @@ The compiled output is placed in `sharpedge/dist/`. Deploy the contents of that 
 
 - **React** (Vite) — functional components + hooks
 - **Tailwind CSS** — all styling
+
+---
+
+## Admin Role-Switcher (Developer / QA Tool)
+
+The landing page and associated pages (`todays-picks.html`, `handicapper-portal.html`) include a
+built-in role-simulation widget that is **only visible to the admin account**.
+
+### Purpose
+
+The admin (who logs in with the `admin` shortcut credential) can use this widget to instantly
+preview exactly what a **Handicapper** or **Sports Bettor** user would see in the frontend —
+without creating separate test accounts. This is useful for:
+
+- Evaluating the UX for each user role before launch.
+- Verifying that role-gated panels (Handicapper Dashboard, Board Portal link, etc.) appear and
+  hide as expected.
+- Confirming that regular users cannot see admin-only UI elements.
+
+### How It Works
+
+| What | Where |
+|------|-------|
+| UI widget | Top-right of the nav bar (visible only when `isAdmin === true`) |
+| localStorage key | `adminRoleOverride` |
+| Valid values | `'handicapper'` · `'sports_bettor'` · absent/empty (admin-only view) |
+| Clears on | Logout (or manually via "⚙️ Admin" reset button) |
+
+When the override is set, **`getEffectiveRole(session)`** (defined in `app.js` and mirrored in
+`handicapper-portal.js`) returns the override value instead of the admin's actual role. All
+role-conditional logic in `updateNavForUser()`, `renderHandicapperDashboard()`, and related
+functions call `getEffectiveRole()` rather than reading `session.role` directly.
+
+### Using the Switcher
+
+1. Log in with the admin shortcut (`admin` / `123456`).
+2. Click **🏆 Handicapper** to see the page as a Handicapper user
+   (Handicapper Dashboard and Board Portal link appear; greeting shows `⚙️ Admin [as 🏆 Handicapper]`).
+3. Click **🎯 Bettor** to see the page as a Sports Bettor
+   (Handicapper-only panels are hidden).
+4. Click **⚙️ Admin** to reset to the default admin view.
+5. Log out — the override is cleared automatically.
+
+> **Note:** The role-switcher is a **client-only, evaluation tool**. It does not affect any
+> server-side logic or other users' sessions. Non-admin users never see the widget.
 - **Google Fonts** — Bebas Neue (headings) + DM Sans (body)

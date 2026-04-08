@@ -714,6 +714,41 @@ footer {
 }
 .btn-logout:hover { border-color: var(--orange); color: var(--orange); }
 
+/* ── ADMIN ROLE-SWITCHER ──────────────────────────────────────────────────── */
+/* Only visible to admin users. Allows simulating Handicapper or Sports Bettor */
+/* views for evaluation/QA without changing the admin's actual account.         */
+.admin-role-switcher {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid var(--surface2);
+  border-radius: 8px;
+  padding: 0.2rem 0.4rem;
+}
+.role-sw-btn {
+  background: transparent;
+  color: var(--muted);
+  border: 1px solid transparent;
+  border-radius: 6px;
+  padding: 0.25rem 0.55rem;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.72rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+.role-sw-btn:hover {
+  background: var(--surface2);
+  color: var(--text);
+}
+.role-sw-btn.role-sw-active {
+  background: var(--gold);
+  color: #000;
+  border-color: var(--gold);
+}
+
 /* ── ROLE SELECTION CARDS ── */
 .role-selection {
   margin-bottom: 1.25rem;
