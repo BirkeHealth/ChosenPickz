@@ -30,6 +30,8 @@ function getSession() {
 
 function clearSession() {
   localStorage.removeItem(SESSION_KEY);
+  // Also clear any admin role override so the next session starts without a stale override.
+  localStorage.removeItem(ADMIN_ROLE_OVERRIDE_KEY);
 }
 
 /**
