@@ -1015,10 +1015,12 @@
   }
 
   /* ── NAVIGATION ── */
+  // Admin is always treated as handicapper for all features.
   function showView(name) {
-    // If trying to show landing while logged in, redirect to appropriate view
+    // If trying to show landing while logged in, redirect to bettor view.
+    // Admin accounts always go to the bettor dashboard (treated as handicapper).
     if (name === 'landing' && currentUser()) {
-      name = isAdmin() ? 'admin' : 'bettor';
+      name = 'bettor';
     }
     if (name === 'admin' && !isAdmin()) {
       showLoginModal('login');
@@ -1362,8 +1364,10 @@
       logoutBtn.style.display  = 'block';
       userLabel.style.display  = 'inline';
       userLabel.textContent    = user.username;
+      // Admin is always treated as handicapper for all features:
+      // show both bettor and admin nav buttons for admin users.
       adminBtn.style.display   = user.isAdmin ? 'block' : 'none';
-      bettorBtn.style.display  = user.isAdmin ? 'none' : 'block';
+      bettorBtn.style.display  = 'block';
       landingBtn.style.display = 'none';
     } else {
       loginBtn.style.display   = 'block';
@@ -1420,7 +1424,8 @@
         hideLoginModal();
         updateNavAuth();
         render();
-        const dest = pendingView || (isAdmin() ? 'admin' : 'bettor');
+        // Admin is always treated as handicapper for all features — route to bettor dashboard.
+        const dest = pendingView || 'bettor';
         pendingView = null;
         showView(dest);
       } else {
@@ -1646,11 +1651,12 @@
   initUsers();
   updateNavAuth();
   render();
-  // If already logged in, redirect away from landing page
+  // If already logged in, redirect away from landing page.
+  // Admin is always treated as handicapper for all features — always go to bettor dashboard.
   (function() {
     const user = currentUser();
     if (user) {
-      showView(user.isAdmin ? 'admin' : 'bettor');
+      showView('bettor');
     }
   }());
 </script>

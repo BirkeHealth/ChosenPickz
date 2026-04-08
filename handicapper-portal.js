@@ -2,7 +2,8 @@
  * handicapper-portal.js — CH0SEN1 PICKZ Handicapper Board Management Portal
  *
  * Provides:
- *  - Auth guard: redirects non-handicapper users back to the landing page
+ *  - Auth guard: redirects non-handicapper/non-admin users back to the landing page.
+ *    Admin is always treated as handicapper for all features.
  *  - Left panel: live odds board fetched from /api/odds, filterable by sport,
  *    sportsbook, and team/matchup text. Clicking any odds pill adds it to the
  *    pick slip.
@@ -101,11 +102,16 @@ function nextSlipId() {
 }
 
 // ── AUTH GUARD ─────────────────────────────────────────────────────────────
+// Admin is always treated as handicapper for all features.
+
+function isHandicapperOrAdmin(session) {
+  return session && (session.role === 'handicapper' || session.isAdmin);
+}
 
 function initAuth() {
   const session = getSession();
-  if (!session || session.role !== 'handicapper') {
-    // Not a handicapper — redirect to home
+  if (!isHandicapperOrAdmin(session)) {
+    // Not a handicapper or admin — redirect to home
     window.location.replace('index.html');
     return null;
   }
@@ -452,7 +458,8 @@ function renderSlip() {
 
 function postPick(idx) {
   const session = getSession();
-  if (!session || session.role !== 'handicapper') {
+  // Admin is always treated as handicapper for all features.
+  if (!isHandicapperOrAdmin(session)) {
     window.location.replace('index.html');
     return;
   }
