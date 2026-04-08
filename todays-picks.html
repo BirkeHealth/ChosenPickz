@@ -21,18 +21,6 @@
       <a href="best-odds.html">Best Odds</a>
       <a href="todays-picks.html" class="active">ChosenPickz</a>
       <a href="index.html#pricing">Pricing</a>
-      <!-- shown only to handicapper users when logged in -->
-      <a href="index.html#handicapper-panel" id="nav-dashboard-link" style="display:none;">My Dashboard</a>
-      <!-- Admin role-switcher: only visible to admin users for evaluation/testing -->
-      <span id="admin-role-switcher" class="admin-role-switcher" style="display:none;" aria-label="Admin role simulation"></span>
-      <!-- shown when logged in -->
-      <span id="nav-user" class="nav-user" style="display:none;">
-        <span id="nav-greeting" class="nav-greeting"></span>
-        <button class="btn-logout" id="logout-btn">Log Out</button>
-      </span>
-      <!-- shown when logged out -->
-      <button class="btn-login" id="login-btn" style="display:none;">Login</button>
-      <button class="btn-login" id="signup-btn" style="display:none; background:var(--gold); margin-left:-0.5rem;">Sign Up</button>
     </div>
   </nav>
 
@@ -61,94 +49,6 @@
   <footer>
     <p>&copy; 2026 CH0SEN1 PICKZ &mdash; For entertainment purposes only.</p>
   </footer>
-
-  <!-- ── LOGIN / SIGNUP MODAL ── -->
-  <div id="auth-modal" class="modal-overlay" aria-hidden="true">
-    <div class="modal-box" role="dialog" aria-modal="true" aria-labelledby="modal-title">
-      <button class="modal-close" id="modal-close" aria-label="Close">&times;</button>
-
-      <!-- Tabs -->
-      <div class="modal-tabs" role="tablist">
-        <button class="modal-tab active" id="tab-login" role="tab" aria-selected="true"
-                aria-controls="panel-login">Log In</button>
-        <button class="modal-tab" id="tab-signup" role="tab" aria-selected="false"
-                aria-controls="panel-signup">Sign Up</button>
-      </div>
-
-      <!-- ── LOGIN PANEL ── -->
-      <div class="form-panel active" id="panel-login" role="tabpanel">
-        <div class="form-alert" id="login-alert"></div>
-        <form class="modal-form" id="login-form">
-          <label for="login-email">Email or Username</label>
-          <input type="text" id="login-email" placeholder="you@example.com or admin"
-                 autocomplete="email" required />
-          <label for="login-password">Password</label>
-          <input type="password" id="login-password" placeholder="••••••••"
-                 autocomplete="current-password" required />
-          <button type="submit" class="btn-primary btn-full" id="login-submit">Log In</button>
-          <p class="modal-footer-text">
-            No account? <a href="#" id="goto-signup">Sign up free</a>
-          </p>
-        </form>
-      </div>
-
-      <!-- ── SIGNUP PANEL ── -->
-      <div class="form-panel" id="panel-signup" role="tabpanel">
-        <div class="form-alert" id="signup-alert"></div>
-        <form class="modal-form" id="signup-form">
-          <div class="role-selection">
-            <p class="role-selection-label">I am signing up as a:</p>
-            <div class="role-cards">
-              <div class="role-card" id="role-handicapper" data-role="handicapper" role="button" tabindex="0" aria-pressed="false">
-                <span class="role-icon">🏆</span>
-                <span class="role-name">Handicapper</span>
-                <span class="role-desc">I provide picks &amp; analysis</span>
-              </div>
-              <div class="role-card" id="role-sports-bettor" data-role="sports_bettor" role="button" tabindex="0" aria-pressed="false">
-                <span class="role-icon">🎯</span>
-                <span class="role-name">Sports Bettor</span>
-                <span class="role-desc">I follow picks &amp; bet on sports</span>
-              </div>
-            </div>
-          </div>
-          <label for="signup-name">Full Name</label>
-          <input type="text" id="signup-name" placeholder="Jane Doe"
-                 autocomplete="name" required />
-          <label for="signup-email">Email</label>
-          <input type="email" id="signup-email" placeholder="you@example.com"
-                 autocomplete="email" required />
-          <label for="signup-password">Password</label>
-          <input type="password" id="signup-password" placeholder="Min 8 characters"
-                 autocomplete="new-password" required minlength="8" />
-          <label for="signup-confirm">Confirm Password</label>
-          <input type="password" id="signup-confirm" placeholder="Repeat password"
-                 autocomplete="new-password" required minlength="8" />
-          <button type="submit" class="btn-primary btn-full" id="signup-submit"
-                  style="background:var(--gold);">Create Account</button>
-          <p class="modal-footer-text">
-            Already a member? <a href="#" id="goto-login">Log in</a>
-          </p>
-        </form>
-
-        <!-- Confirmation-code box — shown after successful signup -->
-        <div id="confirm-box" class="confirm-code-box" style="display:none;">
-          <div class="code-label">Your Verification Code</div>
-          <div class="code-value" id="confirm-code-display"></div>
-          <p style="font-size:0.8rem;color:var(--muted);margin-top:0.5rem;">
-            Enter this code below to verify your email address.
-          </p>
-          <form class="modal-form" id="verify-form" style="margin-top:0.75rem;">
-            <input type="text" id="verify-code-input" placeholder="Enter 6-digit code"
-                   maxlength="6" style="text-align:center;letter-spacing:4px;font-size:1.1rem;" />
-            <button type="submit" class="btn-primary btn-full"
-                    style="background:var(--gold);">Verify Email ✓</button>
-          </form>
-          <div class="form-alert" id="verify-alert" style="margin-top:0.5rem;"></div>
-        </div>
-      </div>
-
-    </div>
-  </div>
 
   <script src="config.js"></script>
   <script src="app.js"></script>
@@ -180,7 +80,6 @@
       function buildPicks(sportFilter) {
         const hcpAll    = safeJson(HCP_PICKS_KEY);
         const adminAll  = safeJson(ADMIN_PICKS_KEY);
-        const session   = (function() { try { return JSON.parse(localStorage.getItem('cp_session') || 'null'); } catch { return null; } })();
 
         // Handicapper picks for today
         const hcpToday = hcpAll.filter(function(p) { return p.date === todayStr; });
@@ -209,7 +108,6 @@
         const container = document.getElementById('tp-picks-container');
         if (!container) return;
 
-        const session = (function() { try { return JSON.parse(localStorage.getItem('cp_session') || 'null'); } catch { return null; } })();
         const picks = buildPicks(sportFilter);
 
         if (picks.length === 0) {
@@ -220,21 +118,8 @@
         container.innerHTML = picks.map(function(pick) {
           if (pick._type === 'admin') {
             const starsHtml  = '⭐'.repeat(pick.confidence || 3);
-            const isLocked   = pick.lock === 'locked' && !session;
             const postedDate = pick.postedAt ? new Date(pick.postedAt).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : '';
 
-            if (isLocked) {
-              return `
-                <div class="pick-card-new">
-                  <div class="pick-left">
-                    <span class="pick-sport-badge">${escHtml(pick.sport)}</span>
-                    <div class="pick-matchup-new">${escHtml(pick.matchup)}</div>
-                    <div class="pick-meta-new">${escHtml(pick.type)} · ${postedDate}</div>
-                    <div class="pick-value-new" style="filter:blur(5px);user-select:none;">🔒🔒🔒🔒🔒🔒</div>
-                  </div>
-                  <span class="pick-lock-badge locked">🔒 Members Only</span>
-                </div>`;
-            }
             return `
               <div class="pick-card-new">
                 <div class="pick-left">
@@ -244,7 +129,6 @@
                   <div class="pick-value-new">🏆 ${escHtml(pick.value)}</div>
                   ${pick.note ? `<div class="pick-note-new">${escHtml(pick.note)}</div>` : ''}
                 </div>
-                <span class="pick-lock-badge ${pick.lock === 'locked' ? 'locked' : 'free'}">${pick.lock === 'locked' ? '🔒 Members' : '🆓 Free'}</span>
               </div>`;
           }
 
