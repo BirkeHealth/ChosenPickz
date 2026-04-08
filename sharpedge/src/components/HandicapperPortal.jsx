@@ -162,6 +162,14 @@ export default function HandicapperPortal({ session, onLogout }) {
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <a
+            href="/"
+            style={{ fontSize: '0.875rem', fontFamily: 'DM Sans, sans-serif', fontWeight: 600, color: '#8888a0', textDecoration: 'none' }}
+            onMouseEnter={e => (e.currentTarget.style.color = '#e8e8f0')}
+            onMouseLeave={e => (e.currentTarget.style.color = '#8888a0')}
+          >
+            ← CH0SEN1 PICKZ
+          </a>
           <span style={{ fontSize: '0.875rem', fontFamily: 'DM Sans, sans-serif', color: '#8888a0' }}>
             {session?.name || session?.email || 'Handicapper'}
           </span>

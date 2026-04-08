@@ -371,6 +371,16 @@ export default function App() {
           >
             🏆 Best Odds
           </button>
+          {/* Back to CHOSEN1 PICKZ */}
+          <a
+            href="/"
+            className="text-sm font-dm font-semibold transition-colors duration-200 px-3 py-1 rounded-lg"
+            style={{ color: '#8888a0', border: '1px solid transparent', textDecoration: 'none' }}
+            onMouseEnter={e => { e.currentTarget.style.color = '#e8e8f0'; }}
+            onMouseLeave={e => { e.currentTarget.style.color = '#8888a0'; }}
+          >
+            ← CH0SEN1 PICKZ
+          </a>
         </div>
 
         {/* Right Buttons — shown to unauthenticated users */}

@@ -177,17 +177,26 @@ const server = http.createServer((req, res) => {
     return;
   }
 
-  // ── Root redirect ──────────────────────────────────────────────────────────
-  // Redirect "/" and "/index.html" to the React SPA landing page at /home
+  // ── Root — static CHOSEN1 PICKZ homepage ──────────────────────────────────
+  // Serve the original static landing page at "/" (the primary entry point).
   if (urlPath === '/' || urlPath === '/index.html') {
-    res.writeHead(302, { Location: '/home' });
-    res.end();
+    const indexPath = path.join(ROOT_DIR, 'index.html');
+    fs.readFile(indexPath, (err, data) => {
+      if (err) {
+        res.writeHead(404, { 'Content-Type': 'text/html' });
+        res.end(HTML_404);
+        return;
+      }
+      res.writeHead(200, { 'Content-Type': 'text/html' });
+      res.end(data);
+    });
     return;
   }
 
-  // ── React SPA landing page ─────────────────────────────────────────────────
-  // Serve the SharpEdge React SPA at /home (and /app for backward compat)
-  if (urlPath === '/home' || urlPath === '/home/' || urlPath === '/app' || urlPath === '/app/') {
+  // ── SharpEdge React SPA ────────────────────────────────────────────────────
+  // Serve the SharpEdge React SPA at /sharpedge/ (and /home, /app for backward compat).
+  const SHARPEDGE_ROOTS = new Set(['/sharpedge', '/sharpedge/', '/home', '/home/', '/app', '/app/']);
+  if (SHARPEDGE_ROOTS.has(urlPath)) {
     const indexPath = path.join(DIST_DIR, 'index.html');
     fs.readFile(indexPath, (err, data) => {
       if (err) {
@@ -222,13 +231,15 @@ const server = http.createServer((req, res) => {
     return;
   }
 
-  // ── SharpEdge React app ────────────────────────────────────────────────────
+  // ── SharpEdge React app assets ────────────────────────────────────────────
   // Serve static assets (JS, CSS, images, etc.) from sharpedge/dist/ for
-  // requests under /home/*. Strip the /home/ prefix to get the asset filename,
-  // then serve it with the correct Content-Type. Only fall back to index.html
-  // for SPA router paths (i.e. when no matching file exists in dist/).
-  if (urlPath.startsWith('/home/')) {
-    const assetName = urlPath.slice('/home/'.length);
+  // requests under /sharpedge/*. Strip the /sharpedge/ prefix to get the asset
+  // filename, then serve it with the correct Content-Type. Only fall back to
+  // index.html for SPA router paths (i.e. when no matching file exists in dist/).
+  // Also handle legacy /home/* paths for backward compatibility.
+  if (urlPath.startsWith('/sharpedge/') || urlPath.startsWith('/home/')) {
+    const prefix = urlPath.startsWith('/sharpedge/') ? '/sharpedge/' : '/home/';
+    const assetName = urlPath.slice(prefix.length);
     const ext = path.extname(assetName);
     if (ext && MIME_TYPES[ext]) {
       // Request looks like a static asset — try to serve it from dist/
@@ -269,38 +280,9 @@ const server = http.createServer((req, res) => {
     return;
   }
 
-  // ── SharpEdge compiled assets ──────────────────────────────────────────────
-  // Serve JS/CSS bundles, favicon, icons, etc. from sharpedge/dist/.
-  // The path.relative check below guards against directory traversal.
-  const assetFileName = urlPath.replace(/^\/+/, '');
-  const filePath = path.resolve(DIST_DIR, assetFileName);
-  const rel = path.relative(DIST_DIR, filePath);
-  if (rel.startsWith('..') || path.isAbsolute(rel)) {
-    res.writeHead(403, { 'Content-Type': 'text/plain' });
-    res.end('Forbidden');
-    return;
-  }
-
-  fs.readFile(filePath, (err, data) => {
-    if (err) {
-      // For SPA deep-link routing under /app/*: serve SharpEdge index.html
-      const indexPath = path.join(DIST_DIR, 'index.html');
-      fs.readFile(indexPath, (indexErr, indexData) => {
-        if (indexErr) {
-          res.writeHead(404, { 'Content-Type': 'text/html' });
-          res.end(HTML_404);
-          return;
-        }
-        res.writeHead(200, { 'Content-Type': 'text/html' });
-        res.end(indexData);
-      });
-      return;
-    }
-    const ext = path.extname(filePath);
-    const contentType = MIME_TYPES[ext] || 'application/octet-stream';
-    res.writeHead(200, { 'Content-Type': contentType });
-    res.end(data);
-  });
+  // ── Fallback: 404 ──────────────────────────────────────────────────────────
+  res.writeHead(404, { 'Content-Type': 'text/html' });
+  res.end(HTML_404);
 });
 
 server.listen(PORT, () => {
