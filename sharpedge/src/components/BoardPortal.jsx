@@ -253,7 +253,7 @@ export default function BoardPortal({ session, onLogout }) {
             className="text-xs font-dm px-2 py-0.5 rounded-full"
             style={{ background: 'rgba(212,168,67,0.1)', color: '#d4a843', border: '1px solid rgba(212,168,67,0.3)' }}
           >
-            Board Portal
+            Sports Bettor Portal
           </span>
         </div>
 
