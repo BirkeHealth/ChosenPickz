@@ -645,6 +645,30 @@
     }
     .sharpedge-promo-btn:hover { opacity: 0.85; }
 
+    /* ── BOARD PORTAL BANNER ── */
+    .board-portal-banner {
+      background: linear-gradient(135deg, #0f1a2e 0%, #1a1428 100%);
+      border: 1px solid var(--orange);
+      border-radius: 12px;
+      padding: 1.5rem 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 1rem;
+      margin: 1.5rem 0 2rem;
+    }
+    .board-portal-title {
+      font-family: 'Bebas Neue', cursive;
+      font-size: 1.4rem;
+      color: var(--orange);
+      letter-spacing: 2px;
+    }
+    .board-portal-desc {
+      color: var(--muted);
+      font-size: 0.9rem;
+      margin-top: 0.25rem;
+    }
     /* ── DIVIDER ── */
     .divider {
       border: none;
@@ -668,6 +692,7 @@
   <div class="nav-logo">CH<span class="ch-blue">0</span>SEN<span class="ch-blue">1</span>PICKZ</div>
   <div class="nav-links">
     <button onclick="showView('landing')" id="nav-landing" class="active">Home</button>
+    <button onclick="showView('bettor')" id="nav-bettor" style="display:none;">My Account</button>
     <button onclick="showView('admin')" id="nav-admin" style="display:none;">Admin</button>
     <a href="sharpedge/index.html" class="btn-sharpedge-nav" title="Try SharpEdge — Premium Sports Lines UI">⚡ SharpEdge</a>
     <span id="nav-user" class="nav-user-label"></span>
@@ -836,6 +861,111 @@
   <div class="admin-picks" id="admin-picks"></div>
 </div>
 
+<!-- ── BETTOR ACCOUNT ── -->
+<div id="view-bettor" class="view">
+  <h2 class="section-title">🏆 My Account — <span id="bettor-username"></span></h2>
+
+  <!-- Win/Loss Dashboard -->
+  <div class="kpi-section">
+    <div class="kpi-heading">MY PERFORMANCE DASHBOARD</div>
+    <div class="stats-row" id="bettor-stats"></div>
+  </div>
+
+  <!-- Board Portal Banner -->
+  <div class="board-portal-banner">
+    <div>
+      <div class="board-portal-title">📋 BOARD PORTAL</div>
+      <p class="board-portal-desc">Plan and organize your picks in the Board Management Portal</p>
+    </div>
+    <a href="handicapper-portal.html" class="btn-primary" style="white-space:nowrap; text-decoration:none;">Open Board Portal →</a>
+  </div>
+
+  <!-- Bettor Portal Tabs -->
+  <div class="portal-tabs">
+    <button class="portal-tab active" onclick="switchBettorTab('post-pick', this)">➕ Post Pick</button>
+    <button class="portal-tab" onclick="switchBettorTab('post-analysis', this)">📝 Post Analysis</button>
+    <button class="portal-tab" onclick="switchBettorTab('my-picks', this)">🏆 My Record</button>
+  </div>
+
+  <!-- Tab: Post Pick -->
+  <div id="bettor-tab-post-pick" class="portal-section active">
+    <div class="form-card">
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Sport</label>
+          <select id="bp-sport">
+            <option value="NFL">NFL</option>
+            <option value="NBA">NBA</option>
+            <option value="MLB">MLB</option>
+            <option value="UFC">UFC</option>
+            <option value="Soccer">Soccer</option>
+            <option value="NHL">NHL</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Game / Matchup</label>
+          <input id="bp-game" type="text" placeholder="e.g. Chiefs vs Raiders" />
+        </div>
+        <div class="form-group">
+          <label>Pick / Selection</label>
+          <input id="bp-pick" type="text" placeholder="e.g. Chiefs -6.5" />
+        </div>
+        <div class="form-group">
+          <label>Odds</label>
+          <input id="bp-odds" type="text" placeholder="e.g. -110" />
+        </div>
+        <div class="form-group">
+          <label>Confidence (1–4)</label>
+          <select id="bp-conf">
+            <option value="1">1 – Low</option>
+            <option value="2">2 – Medium</option>
+            <option value="3" selected>3 – High</option>
+            <option value="4">4 – Lock</option>
+          </select>
+        </div>
+        <div class="form-group full">
+          <label>Analysis</label>
+          <textarea id="bp-analysis" placeholder="Explain your reasoning…"></textarea>
+        </div>
+      </div>
+      <button class="btn-gold" onclick="addBettorPick()">Post Pick</button>
+    </div>
+  </div>
+
+  <!-- Tab: Post Analysis -->
+  <div id="bettor-tab-post-analysis" class="portal-section">
+    <div class="form-card">
+      <div class="form-group" style="margin-bottom:1rem;">
+        <label>Title / Game Reference</label>
+        <input id="ba-title" type="text" placeholder="e.g. Lakers vs Celtics — Pre-Game Analysis" />
+      </div>
+      <div class="form-group" style="margin-bottom:1rem;">
+        <label>Sport</label>
+        <select id="ba-sport">
+          <option value="NFL">NFL</option>
+          <option value="NBA">NBA</option>
+          <option value="MLB">MLB</option>
+          <option value="UFC">UFC</option>
+          <option value="Soccer">Soccer</option>
+          <option value="NHL">NHL</option>
+        </select>
+      </div>
+      <div class="form-group" style="margin-bottom:1rem;">
+        <label>Analysis</label>
+        <textarea id="ba-body" placeholder="Write your full analysis here…" style="min-height:120px;"></textarea>
+      </div>
+      <button class="btn-gold" onclick="addBettorAnalysis()">Post Analysis</button>
+    </div>
+    <div id="bettor-analysis-list"></div>
+  </div>
+
+  <!-- Tab: My Record -->
+  <div id="bettor-tab-my-picks" class="portal-section">
+    <div class="filter-bar" id="bettor-filter-bar"></div>
+    <div class="picks-grid" id="bettor-picks-grid"></div>
+  </div>
+</div>
+
 <!-- ── AUTH MODAL ── -->
 <div id="auth-modal" class="auth-overlay">
   <div class="auth-box">
@@ -886,6 +1016,10 @@
 
   /* ── NAVIGATION ── */
   function showView(name) {
+    // If trying to show landing while logged in, redirect to appropriate view
+    if (name === 'landing' && currentUser()) {
+      name = isAdmin() ? 'admin' : 'bettor';
+    }
     if (name === 'admin' && !isAdmin()) {
       showLoginModal('login');
       return;
@@ -895,6 +1029,7 @@
     document.getElementById('view-' + name).classList.add('active');
     const navBtn = document.getElementById('nav-' + name);
     if (navBtn) navBtn.classList.add('active');
+    if (name === 'bettor') renderBettorView();
     render();
   }
 
@@ -1215,22 +1350,28 @@
   }
 
   function updateNavAuth() {
-    const user      = currentUser();
-    const adminBtn  = document.getElementById('nav-admin');
-    const loginBtn  = document.getElementById('nav-login');
-    const logoutBtn = document.getElementById('nav-logout');
-    const userLabel = document.getElementById('nav-user');
+    const user       = currentUser();
+    const adminBtn   = document.getElementById('nav-admin');
+    const bettorBtn  = document.getElementById('nav-bettor');
+    const landingBtn = document.getElementById('nav-landing');
+    const loginBtn   = document.getElementById('nav-login');
+    const logoutBtn  = document.getElementById('nav-logout');
+    const userLabel  = document.getElementById('nav-user');
     if (user) {
-      loginBtn.style.display  = 'none';
-      logoutBtn.style.display = 'block';
-      userLabel.style.display = 'inline';
-      userLabel.textContent   = user.username;
-      adminBtn.style.display  = user.isAdmin ? 'block' : 'none';
+      loginBtn.style.display   = 'none';
+      logoutBtn.style.display  = 'block';
+      userLabel.style.display  = 'inline';
+      userLabel.textContent    = user.username;
+      adminBtn.style.display   = user.isAdmin ? 'block' : 'none';
+      bettorBtn.style.display  = user.isAdmin ? 'none' : 'block';
+      landingBtn.style.display = 'none';
     } else {
-      loginBtn.style.display  = 'block';
-      logoutBtn.style.display = 'none';
-      userLabel.style.display = 'none';
-      adminBtn.style.display  = 'none';
+      loginBtn.style.display   = 'block';
+      logoutBtn.style.display  = 'none';
+      userLabel.style.display  = 'none';
+      adminBtn.style.display   = 'none';
+      bettorBtn.style.display  = 'none';
+      landingBtn.style.display = 'block';
     }
   }
 
@@ -1279,7 +1420,7 @@
         hideLoginModal();
         updateNavAuth();
         render();
-        const dest = pendingView || (isAdmin() ? 'admin' : 'dashboard');
+        const dest = pendingView || (isAdmin() ? 'admin' : 'bettor');
         pendingView = null;
         showView(dest);
       } else {
@@ -1294,17 +1435,224 @@
         hideLoginModal();
         updateNavAuth();
         render();
-        showView('dashboard');
+        showView('bettor');
       } else {
         errorEl.textContent = result.msg;
       }
     }
   }
 
+  /* ── BETTOR STORAGE ── */
+  const BETTOR_PICKS_KEY_PREFIX    = 'cp_bettor_picks_';
+  const BETTOR_ANALYSES_KEY_PREFIX = 'cp_bettor_analyses_';
+
+  function getBettorPicks(username) {
+    try { return JSON.parse(localStorage.getItem(BETTOR_PICKS_KEY_PREFIX + username)) || []; }
+    catch (e) { console.error('Failed to load bettor picks from storage:', e); return []; }
+  }
+  function saveBettorPicks(username, picks) {
+    localStorage.setItem(BETTOR_PICKS_KEY_PREFIX + username, JSON.stringify(picks));
+  }
+  function getBettorAnalyses(username) {
+    try { return JSON.parse(localStorage.getItem(BETTOR_ANALYSES_KEY_PREFIX + username)) || []; }
+    catch (e) { console.error('Failed to load bettor analyses from storage:', e); return []; }
+  }
+  function saveBettorAnalyses(username, analyses) {
+    localStorage.setItem(BETTOR_ANALYSES_KEY_PREFIX + username, JSON.stringify(analyses));
+  }
+
+  /* ── BETTOR TAB SWITCHING ── */
+  function switchBettorTab(tabId, btn) {
+    document.querySelectorAll('#view-bettor .portal-section').forEach(s => s.classList.remove('active'));
+    document.querySelectorAll('#view-bettor .portal-tab').forEach(b => b.classList.remove('active'));
+    document.getElementById('bettor-tab-' + tabId).classList.add('active');
+    btn.classList.add('active');
+  }
+
+  /* ── BETTOR PICK ACTIONS ── */
+  function addBettorPick() {
+    const user = currentUser();
+    if (!user) return;
+    const game     = document.getElementById('bp-game').value.trim();
+    const pick     = document.getElementById('bp-pick').value.trim();
+    const odds     = document.getElementById('bp-odds').value.trim();
+    const analysis = document.getElementById('bp-analysis').value.trim();
+    if (!game || !pick) { alert('Game and Pick fields are required.'); return; }
+    const picks = getBettorPicks(user.username);
+    picks.push({
+      sport:      document.getElementById('bp-sport').value,
+      game, pick,
+      odds:       odds || 'N/A',
+      analysis:   analysis || '',
+      confidence: parseInt(document.getElementById('bp-conf').value, 10),
+      result:     'pending',
+      date:       new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+    });
+    saveBettorPicks(user.username, picks);
+    document.getElementById('bp-game').value     = '';
+    document.getElementById('bp-pick').value     = '';
+    document.getElementById('bp-odds').value     = '';
+    document.getElementById('bp-analysis').value = '';
+    renderBettorView();
+  }
+
+  function gradeBettorPick(idx, result) {
+    const user = currentUser();
+    if (!user) return;
+    const picks = getBettorPicks(user.username);
+    if (picks[idx]) { picks[idx].result = result; saveBettorPicks(user.username, picks); renderBettorView(); }
+  }
+
+  function deleteBettorPick(idx) {
+    const user = currentUser();
+    if (!user) return;
+    const picks = getBettorPicks(user.username);
+    picks.splice(idx, 1);
+    saveBettorPicks(user.username, picks);
+    renderBettorView();
+  }
+
+  /* ── BETTOR ANALYSIS ACTIONS ── */
+  function addBettorAnalysis() {
+    const user = currentUser();
+    if (!user) return;
+    const title = document.getElementById('ba-title').value.trim();
+    const body  = document.getElementById('ba-body').value.trim();
+    if (!title || !body) { alert('Title and Analysis are required.'); return; }
+    const analyses = getBettorAnalyses(user.username);
+    analyses.push({
+      title,
+      sport: document.getElementById('ba-sport').value,
+      body,
+      date:  new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+    });
+    saveBettorAnalyses(user.username, analyses);
+    document.getElementById('ba-title').value = '';
+    document.getElementById('ba-body').value  = '';
+    renderBettorView();
+  }
+
+  function deleteBettorAnalysis(idx) {
+    const user = currentUser();
+    if (!user) return;
+    const analyses = getBettorAnalyses(user.username);
+    analyses.splice(idx, 1);
+    saveBettorAnalyses(user.username, analyses);
+    renderBettorView();
+  }
+
+  /* ── BETTOR FILTER ── */
+  let bettorActiveFilter = 'all';
+
+  function setBettorFilter(key) {
+    bettorActiveFilter = key;
+    renderBettorView();
+  }
+
+  /* ── BETTOR RENDER ── */
+  function bettorPickCard(p, idx) {
+    const dots = Array.from({ length: 4 }, (_, i) =>
+      `<span class="dot${i < p.confidence ? ' filled' : ''}"></span>`
+    ).join('');
+    const liveDot = p.result === 'live' ? '<span class="live-dot"></span>' : '';
+    return `
+      <div class="pick-card${p.result === 'live' ? ' live-card' : ''}">
+        <div class="pick-header">
+          <span class="pick-sport">${escHtml(p.sport)}</span>
+          <span class="result-badge ${p.result}">${liveDot}${p.result}</span>
+        </div>
+        <div class="pick-game">${escHtml(p.game)}</div>
+        <div class="pick-selection">▶ ${escHtml(p.pick)}</div>
+        <div class="pick-odds">Odds: ${escHtml(p.odds)}</div>
+        ${p.analysis ? `<div class="pick-analysis">${escHtml(p.analysis)}</div>` : ''}
+        <div class="pick-footer">
+          <span class="pick-date">${escHtml(p.date)}</span>
+          <div class="confidence">${dots}</div>
+        </div>
+        <div class="admin-actions" style="margin-top:0.5rem;">
+          <button class="btn-live" onclick="gradeBettorPick(${idx},'live')">Live</button>
+          <button class="btn-win"  onclick="gradeBettorPick(${idx},'win')">Win</button>
+          <button class="btn-loss" onclick="gradeBettorPick(${idx},'loss')">Loss</button>
+          <button class="btn-del"  onclick="deleteBettorPick(${idx})">Delete</button>
+        </div>
+      </div>`;
+  }
+
+  function bettorAnalysisCard(a, idx) {
+    return `
+      <div class="analysis-card">
+        <div class="analysis-card-header">
+          <div class="game-title">${escHtml(a.title)}</div>
+          <span class="pick-sport">${escHtml(a.sport)}</span>
+        </div>
+        <div class="analysis-body">${escHtml(a.body)}</div>
+        <div class="analysis-meta" style="margin-top:0.75rem; justify-content:space-between; align-items:center;">
+          <span>Date: <span class="meta-val">${escHtml(a.date)}</span></span>
+          <button class="btn-del" onclick="deleteBettorAnalysis(${idx})" style="margin-top:0;">Delete</button>
+        </div>
+      </div>`;
+  }
+
+  function renderBettorView() {
+    const user = currentUser();
+    if (!user) return;
+    document.getElementById('bettor-username').textContent = user.username;
+
+    const picks = getBettorPicks(user.username);
+
+    // Stats
+    renderStats('bettor-stats', picks);
+
+    // Filter bar
+    const sports  = [...new Set(picks.map(p => p.sport))];
+    const bar     = document.getElementById('bettor-filter-bar');
+    const filters = [
+      { key: 'all',     label: 'All' },
+      { key: 'live',    label: '🔴 Live' },
+      { key: 'win',     label: 'Win' },
+      { key: 'loss',    label: 'Loss' },
+      { key: 'pending', label: 'Pending' },
+      ...sports.map(s => ({ key: 'sport:' + s, label: s })),
+    ];
+    bar.innerHTML = filters.map(f =>
+      `<button class="filter-btn${bettorActiveFilter === f.key ? ' active' : ''}"
+               onclick="setBettorFilter('${escHtml(f.key)}')">${escHtml(f.label)}</button>`
+    ).join('');
+
+    // Picks grid
+    let filtered = picks;
+    if (bettorActiveFilter !== 'all') {
+      if (bettorActiveFilter.startsWith('sport:')) {
+        const sport = bettorActiveFilter.slice(6);
+        filtered = picks.filter(p => p.sport === sport);
+      } else {
+        filtered = picks.filter(p => p.result === bettorActiveFilter);
+      }
+    }
+    const grid = document.getElementById('bettor-picks-grid');
+    grid.innerHTML = filtered.length
+      ? [...filtered].reverse().map(p => bettorPickCard(p, picks.indexOf(p))).join('')
+      : '<p class="empty">No picks yet — post your first pick above!</p>';
+
+    // Analysis list
+    const analyses     = getBettorAnalyses(user.username);
+    const analysisList = document.getElementById('bettor-analysis-list');
+    analysisList.innerHTML = analyses.length
+      ? [...analyses].reverse().map(a => bettorAnalysisCard(a, analyses.indexOf(a))).join('')
+      : '<p class="empty">No analysis posted yet.</p>';
+  }
+
   /* ── INIT ── */
   initUsers();
   updateNavAuth();
   render();
+  // If already logged in, redirect away from landing page
+  (function() {
+    const user = currentUser();
+    if (user) {
+      showView(user.isAdmin ? 'admin' : 'bettor');
+    }
+  }());
 </script>
 </body>
 </html>
