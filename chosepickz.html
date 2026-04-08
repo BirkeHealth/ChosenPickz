@@ -586,65 +586,6 @@
       font-weight: 600;
     }
 
-    /* ── SHARPEDGE NAV LINK ── */
-    .btn-sharpedge-nav {
-      background: linear-gradient(135deg, #d4a843, #b8892f);
-      color: #0a0a0a;
-      font-family: 'DM Sans', sans-serif;
-      font-size: 0.85rem;
-      font-weight: 700;
-      padding: 0.4rem 0.9rem;
-      border-radius: 6px;
-      text-decoration: none;
-      letter-spacing: 0.5px;
-      white-space: nowrap;
-      transition: opacity 0.2s;
-    }
-    .btn-sharpedge-nav:hover { opacity: 0.85; }
-
-    /* ── SHARPEDGE PROMO BANNER ── */
-    .sharpedge-promo {
-      margin: 1.5rem auto 0;
-      max-width: 900px;
-      padding: 0 1rem;
-    }
-    .sharpedge-promo-inner {
-      background: linear-gradient(135deg, #1a1a28 0%, #111118 100%);
-      border: 1px solid #d4a843;
-      border-radius: 12px;
-      padding: 1.25rem 1.75rem;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      flex-wrap: wrap;
-      gap: 1rem;
-    }
-    .sharpedge-promo-title {
-      font-family: 'Bebas Neue', cursive;
-      font-size: 1.4rem;
-      color: #d4a843;
-      letter-spacing: 2px;
-    }
-    .sharpedge-promo-desc {
-      color: #b0b0c8;
-      font-size: 0.9rem;
-      margin-top: 0.25rem;
-    }
-    .sharpedge-promo-btn {
-      background: linear-gradient(135deg, #d4a843, #b8892f);
-      color: #0a0a0a;
-      font-family: 'DM Sans', sans-serif;
-      font-size: 0.9rem;
-      font-weight: 700;
-      padding: 0.6rem 1.4rem;
-      border-radius: 8px;
-      text-decoration: none;
-      white-space: nowrap;
-      flex-shrink: 0;
-      transition: opacity 0.2s;
-    }
-    .sharpedge-promo-btn:hover { opacity: 0.85; }
-
     /* ── BOARD PORTAL BANNER ── */
     .board-portal-banner {
       background: linear-gradient(135deg, #0f1a2e 0%, #1a1428 100%);
@@ -694,7 +635,6 @@
     <button onclick="showView('landing')" id="nav-landing" class="active">Home</button>
     <button onclick="showView('bettor')" id="nav-bettor" style="display:none;">My Account</button>
     <button onclick="showView('admin')" id="nav-admin" style="display:none;">Admin</button>
-    <a href="sharpedge/index.html" class="btn-sharpedge-nav" title="Try SharpEdge — Premium Sports Lines UI">⚡ SharpEdge</a>
     <span id="nav-user" class="nav-user-label"></span>
     <button onclick="showLoginModal()" id="nav-login" class="btn-login-nav">Log In</button>
     <button onclick="logout()" id="nav-logout" style="display:none;">Log Out</button>
@@ -718,17 +658,6 @@
   <div class="kpi-section">
     <div class="kpi-heading">PERFORMANCE DASHBOARD</div>
     <div class="stats-row" id="landing-stats"></div>
-  </div>
-
-  <!-- SharpEdge promo banner -->
-  <div class="sharpedge-promo">
-    <div class="sharpedge-promo-inner">
-      <div>
-        <div class="sharpedge-promo-title">⚡ SharpEdge UI</div>
-        <p class="sharpedge-promo-desc">Try our premium sports-lines interface — sharp picks, live odds &amp; more.</p>
-      </div>
-      <a href="sharpedge/index.html" class="sharpedge-promo-btn">View SharpEdge →</a>
-    </div>
   </div>
 
   <div class="features">
