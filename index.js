@@ -27,8 +27,6 @@ if (!process.env.SMTP_HOST || !process.env.SMTP_USER || !process.env.SMTP_PASS) 
 }
 
 const ROOT_DIR = __dirname;
-const DIST_DIR = path.join(__dirname, 'sharpedge', 'dist');
-
 // Root-level static files served directly from the project root (the landing page app)
 const ROOT_STATIC_FILES = new Set([
   // ── HTML pages ──
@@ -64,7 +62,7 @@ const HTML_404 = `<!DOCTYPE html>
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>404 – Not Found | SharpEdge</title>
+  <title>404 – Not Found | CH0SEN1 PICKZ</title>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     body {
@@ -192,24 +190,6 @@ const server = http.createServer((req, res) => {
     });
     return;
   }
-
-  // ── SharpEdge React SPA ────────────────────────────────────────────────────
-  // Serve the SharpEdge React SPA at /sharpedge/ (and /home, /app for backward compat).
-  const SHARPEDGE_ROOTS = new Set(['/sharpedge', '/sharpedge/', '/home', '/home/', '/app', '/app/']);
-  if (SHARPEDGE_ROOTS.has(urlPath)) {
-    const indexPath = path.join(DIST_DIR, 'index.html');
-    fs.readFile(indexPath, (err, data) => {
-      if (err) {
-        res.writeHead(404, { 'Content-Type': 'text/html' });
-        res.end(HTML_404);
-        return;
-      }
-      res.writeHead(200, { 'Content-Type': 'text/html' });
-      res.end(data);
-    });
-    return;
-  }
-
   // ── Root-level static assets ───────────────────────────────────────────────
   // Serve landing page app files (CSS, JS, other HTML pages) from the project root.
   // Uses an explicit allowlist — only files in ROOT_STATIC_FILES are served from root,
@@ -230,61 +210,11 @@ const server = http.createServer((req, res) => {
     });
     return;
   }
-
-  // ── SharpEdge React app assets ────────────────────────────────────────────
-  // Serve static assets (JS, CSS, images, etc.) from sharpedge/dist/ for
-  // requests under /sharpedge/*. Strip the /sharpedge/ prefix to get the asset
-  // filename, then serve it with the correct Content-Type. Only fall back to
-  // index.html for SPA router paths (i.e. when no matching file exists in dist/).
-  // Also handle legacy /home/* paths for backward compatibility.
-  if (urlPath.startsWith('/sharpedge/') || urlPath.startsWith('/home/')) {
-    const prefix = urlPath.startsWith('/sharpedge/') ? '/sharpedge/' : '/home/';
-    const assetName = urlPath.slice(prefix.length);
-    const ext = path.extname(assetName);
-    if (ext && MIME_TYPES[ext]) {
-      // Request looks like a static asset — try to serve it from dist/
-      const assetPath = path.resolve(DIST_DIR, assetName);
-      const rel = path.relative(DIST_DIR, assetPath);
-      if (rel.startsWith('..') || path.isAbsolute(rel)) {
-        res.writeHead(403, { 'Content-Type': 'text/plain' });
-        res.end('Forbidden');
-        return;
-      }
-      fs.readFile(assetPath, (err, data) => {
-        if (err) {
-          if (err.code === 'ENOENT') {
-            res.writeHead(404, { 'Content-Type': 'text/plain' });
-            res.end('Not Found');
-          } else {
-            res.writeHead(500, { 'Content-Type': 'text/plain' });
-            res.end('Internal Server Error');
-          }
-          return;
-        }
-        res.writeHead(200, { 'Content-Type': MIME_TYPES[ext] });
-        res.end(data);
-      });
-      return;
-    }
-    // No file extension — treat as an SPA route and serve index.html
-    const indexPath = path.join(DIST_DIR, 'index.html');
-    fs.readFile(indexPath, (err, data) => {
-      if (err) {
-        res.writeHead(404, { 'Content-Type': 'text/html' });
-        res.end(HTML_404);
-        return;
-      }
-      res.writeHead(200, { 'Content-Type': 'text/html' });
-      res.end(data);
-    });
-    return;
-  }
-
   // ── Fallback: 404 ──────────────────────────────────────────────────────────
   res.writeHead(404, { 'Content-Type': 'text/html' });
   res.end(HTML_404);
 });
 
 server.listen(PORT, () => {
-  console.log(`SharpEdge server running on port ${PORT}`);
+  console.log(`CH0SEN1 PICKZ server running on port ${PORT}`);
 });

@@ -5,10 +5,7 @@
   "license": "MIT",
   "main": "index.js",
   "scripts": {
-    "install:ui": "cd sharpedge && npm install",
-    "build": "cd sharpedge && npm run build",
-    "start": "node index.js",
-    "setup": "npm run install:ui && npm run build"
+    "start": "node index.js"
   },
   "engines": {
     "node": ">=14"
