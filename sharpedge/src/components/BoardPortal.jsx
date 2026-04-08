@@ -259,6 +259,15 @@ export default function BoardPortal({ session, onLogout }) {
 
         {/* User info + logout */}
         <div className="flex items-center gap-3">
+          <a
+            href="/"
+            className="text-sm font-dm font-semibold"
+            style={{ color: '#8888a0', textDecoration: 'none' }}
+            onMouseEnter={e => (e.currentTarget.style.color = '#e8e8f0')}
+            onMouseLeave={e => (e.currentTarget.style.color = '#8888a0')}
+          >
+            ← CH0SEN1 PICKZ
+          </a>
           <span className="text-sm font-dm" style={{ color: '#8888a0' }}>
             {session?.name || session?.email || 'Member'}
           </span>
