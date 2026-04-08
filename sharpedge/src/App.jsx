@@ -1,10 +1,15 @@
 import { useState, useEffect } from 'react';
 import { mockPicks, sportColors } from './data/mockPicks';
 import SportsLinesPreview from './components/SportsLinesPreview';
+import SportsNewsSection from './components/SportsNewsSection';
 import BestOddsPage from './components/BestOddsPage';
 import BoardPortal from './components/BoardPortal';
+import HandicapperPortal from './components/HandicapperPortal';
+import AdminPortal from './components/AdminPortal';
 import LoginPage from './components/LoginPage';
 import { SESSION_KEY } from './utils/auth';
+
+const ADMIN_EMAIL = 'admin@birkehealth.net';
 
 // TODO: Uncomment to use live The Odds API data
 // import { useOddsApi } from './hooks/useOddsApi';
@@ -287,14 +292,16 @@ export default function App() {
     }
   });
 
-  // If a session already exists on mount, go straight to the Board Portal.
+  // If a session already exists on mount, go straight to the portal.
+  // Session is loaded synchronously from localStorage above, so this effect
+  // only needs to run once on mount — not on every session change.
   useEffect(() => {
-    if (session) setCurrentPage('board-portal');
+    if (session) setCurrentPage('portal');
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleLoginSuccess = userData => {
     setSession(userData);
-    setCurrentPage('board-portal');
+    setCurrentPage('portal');
   };
 
   const handleLogout = () => {
@@ -310,14 +317,16 @@ export default function App() {
   const filteredPicks =
     activeTab === 'ALL' ? mockPicks : mockPicks.filter(p => p.sport === activeTab);
 
-  // ── Authenticated view: Board Portal ────────────────────────────────────────
-  if (session || currentPage === 'board-portal') {
-    return (
-      <BoardPortal
-        session={session}
-        onLogout={handleLogout}
-      />
-    );
+  // ── Authenticated view: route by account type ────────────────────────────────
+  if (session || currentPage === 'portal') {
+    if (session?.email === ADMIN_EMAIL || session?.role === 'admin') {
+      return <AdminPortal session={session} onLogout={handleLogout} />;
+    }
+    if (session?.role === 'handicapper') {
+      return <HandicapperPortal session={session} onLogout={handleLogout} />;
+    }
+    // Default: sports bettor portal
+    return <BoardPortal session={session} onLogout={handleLogout} />;
   }
 
   // ── Login page ───────────────────────────────────────────────────────────────
@@ -346,21 +355,8 @@ export default function App() {
           SharpEdge
         </button>
 
-        {/* Center Links */}
+        {/* Center Links — Best Odds */}
         <div className="hidden md:flex items-center gap-6">
-          {['Picks', 'Odds', 'Record', 'Discord'].map(link => (
-            <a
-              key={link}
-              href={`#${link.toLowerCase()}`}
-              onClick={() => setCurrentPage('home')}
-              className="text-sm font-dm transition-colors duration-200"
-              style={{ color: '#8888a0' }}
-              onMouseEnter={e => (e.currentTarget.style.color = '#e8e8f0')}
-              onMouseLeave={e => (e.currentTarget.style.color = '#8888a0')}
-            >
-              {link}
-            </a>
-          ))}
           {/* Best Odds page link */}
           <button
             onClick={() => setCurrentPage('best-odds')}
@@ -377,7 +373,7 @@ export default function App() {
           </button>
         </div>
 
-        {/* Right Buttons — only shown to unauthenticated users */}
+        {/* Right Buttons — shown to unauthenticated users */}
         <div className="flex items-center gap-3">
           <button
             className="px-4 py-2 rounded-lg text-sm font-dm font-semibold transition-all duration-200"
@@ -398,7 +394,7 @@ export default function App() {
               setTimeout(() => document.getElementById('pricing')?.scrollIntoView({ behavior: 'smooth' }), 50);
             }}
           >
-            Get Access
+            Join Us
           </button>
         </div>
       </nav>
@@ -530,6 +526,23 @@ export default function App() {
           Real-time head-to-head odds from top US sportsbooks.
         </p>
         <SportsLinesPreview />
+      </section>
+
+      {/* ─── SPORTS NEWS ─── */}
+      <section
+        id="news"
+        className="px-6 py-16 max-w-6xl mx-auto"
+      >
+        <h2
+          className="text-4xl md:text-5xl font-bebas tracking-wider text-center mb-4"
+          style={{ color: '#e8e8f0' }}
+        >
+          Sports <span style={{ color: '#d4a843' }}>News</span>
+        </h2>
+        <p className="text-center font-dm mb-10" style={{ color: '#8888a0' }}>
+          Latest headlines from the sports world.
+        </p>
+        <SportsNewsSection />
       </section>
 
       {/* ─── PRICING ─── */}

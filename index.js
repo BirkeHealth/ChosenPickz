@@ -177,11 +177,19 @@ const server = http.createServer((req, res) => {
     return;
   }
 
-  // ── Root landing page ──────────────────────────────────────────────────────
-  // Serve the landing page (root index.html) for "/" and "/index.html"
+  // ── Root redirect ──────────────────────────────────────────────────────────
+  // Redirect "/" and "/index.html" to the React SPA landing page at /home
   if (urlPath === '/' || urlPath === '/index.html') {
-    const landingPath = path.join(ROOT_DIR, 'index.html');
-    fs.readFile(landingPath, (err, data) => {
+    res.writeHead(302, { Location: '/home' });
+    res.end();
+    return;
+  }
+
+  // ── React SPA landing page ─────────────────────────────────────────────────
+  // Serve the SharpEdge React SPA at /home (and /app for backward compat)
+  if (urlPath === '/home' || urlPath === '/home/' || urlPath === '/app' || urlPath === '/app/') {
+    const indexPath = path.join(DIST_DIR, 'index.html');
+    fs.readFile(indexPath, (err, data) => {
       if (err) {
         res.writeHead(404, { 'Content-Type': 'text/html' });
         res.end(HTML_404);
@@ -215,8 +223,8 @@ const server = http.createServer((req, res) => {
   }
 
   // ── SharpEdge React app ────────────────────────────────────────────────────
-  // Serve the SharpEdge SPA at /app (and /app/*)
-  if (urlPath === '/app' || urlPath === '/app/') {
+  // Serve the SharpEdge SPA index for any /home/* sub-path (deep links)
+  if (urlPath.startsWith('/home/')) {
     const indexPath = path.join(DIST_DIR, 'index.html');
     fs.readFile(indexPath, (err, data) => {
       if (err) {

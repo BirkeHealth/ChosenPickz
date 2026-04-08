@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { SESSION_KEY, USERS_KEY, hashPassword } from '../utils/auth';
 
+const ADMIN_EMAIL = 'admin@birkehealth.net';
+
 export default function LoginPage({ onLoginSuccess, onBack }) {
   const [email, setEmail]       = useState('');
   const [password, setPassword] = useState('');
@@ -27,22 +29,27 @@ export default function LoginPage({ onLoginSuccess, onBack }) {
       const user  = users.find(u => u.email === email && u.passwordHash === hash);
 
       if (!user) {
-        // Demo fallback: allow any login so the Board Portal can be explored
+        // Demo fallback: allow any login so the portals can be explored
+        // Admin email gets admin role; otherwise defaults to sports_bettor.
         // TODO: Remove this fallback once real auth is wired up.
         const demoSession = {
-          id:    'demo-1',
-          email: email,
-          name:  'Demo User',
-          role:  'sports_bettor',
-          isAdmin: false,
+          id:      'demo-1',
+          email:   email,
+          name:    'Demo User',
+          role:    email === ADMIN_EMAIL ? 'admin' : 'sports_bettor',
+          isAdmin: email === ADMIN_EMAIL,
         };
         localStorage.setItem(SESSION_KEY, JSON.stringify(demoSession));
         onLoginSuccess(demoSession);
         return;
       }
 
-      // Build session object (omit password hash)
+      // Build session object (omit password hash); ensure admin email always gets admin role
       const { passwordHash: _h, ...sessionData } = user;
+      if (sessionData.email === ADMIN_EMAIL) {
+        sessionData.role = 'admin';
+        sessionData.isAdmin = true;
+      }
       localStorage.setItem(SESSION_KEY, JSON.stringify(sessionData));
       onLoginSuccess(sessionData);
     } catch (err) {
@@ -165,12 +172,6 @@ export default function LoginPage({ onLoginSuccess, onBack }) {
             ← Back to Home
           </button>
         </div>
-
-        {/* Demo notice */}
-        <p className="text-xs font-dm text-center mt-4" style={{ color: '#555570' }}>
-          {/* TODO: Remove demo notice once real authentication is implemented */}
-          Demo mode — any email/password will sign you in.
-        </p>
       </div>
     </div>
   );
