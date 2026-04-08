@@ -47,6 +47,13 @@ const BETSLIP_KEY  = 'cp_betslip_legs';
 const DATA_VERSION = 'cp_data_version';
 const HCP_PICKS_KEY = 'cp_handicapper_picks';
 
+// ── ADMIN ROLE OVERRIDE ────────────────────────────────────────────────────
+// Purpose: lets the admin user (admin@birkehealth.net) simulate the UI as
+// either a "Handicapper" or a "Sportsbettor" for evaluation / QA purposes.
+// The override is stored in localStorage and is cleared on logout.
+// Only users whose session has isAdmin=true will ever see the switcher.
+const ADMIN_ROLE_OVERRIDE_KEY = 'adminRoleOverride';
+
 // Version 2 introduced role-based accounts (handicapper / sports_bettor).
 // Clear legacy accounts that lack a role field so users re-register.
 (function migrateStorage() {
@@ -674,11 +681,64 @@ async function handleLogin(e) {
 // ── LOGOUT ────────────────────────────────────────────────────────────────
 
 function handleLogout() {
+  // Clear any admin role override so the next login starts fresh.
+  localStorage.removeItem(ADMIN_ROLE_OVERRIDE_KEY);
   clearSession();
   updateNavForUser(null);
 }
 
 // ── UPDATE NAV ─────────────────────────────────────────────────────────────
+
+/**
+ * Returns the role the current session should be treated as for UI rendering.
+ * For admin users: checks localStorage['adminRoleOverride'] first.
+ * For regular users: returns their actual role.
+ * Falls back to null when no role applies.
+ */
+function getEffectiveRole(session) {
+  if (!session) return null;
+  if (session.isAdmin) {
+    const override = localStorage.getItem(ADMIN_ROLE_OVERRIDE_KEY);
+    if (override === 'handicapper' || override === 'sports_bettor') return override;
+    // Admin with no override — no simulated role, only admin panel is shown.
+    return null;
+  }
+  return session.role || null;
+}
+
+/**
+ * Injects and wires the admin role-switcher UI into #admin-role-switcher.
+ * Only visible to sessions where isAdmin === true.
+ * Buttons persist their selection in localStorage[ADMIN_ROLE_OVERRIDE_KEY].
+ * Calling updateNavForUser() again after a switch re-renders the whole nav.
+ */
+function renderAdminRoleSwitcher(user) {
+  const switcher = document.getElementById('admin-role-switcher');
+  if (!switcher) return;
+
+  if (!user || !user.isAdmin) {
+    switcher.style.display = 'none';
+    return;
+  }
+
+  const current = localStorage.getItem(ADMIN_ROLE_OVERRIDE_KEY) || '';
+  switcher.style.display = 'inline-flex';
+  switcher.innerHTML =
+    '<span style="font-size:0.72rem;color:var(--muted);margin-right:0.3rem;white-space:nowrap;align-self:center;">View as:</span>' +
+    '<button id="role-sw-hcp"  class="role-sw-btn' + (current === 'handicapper'   ? ' role-sw-active' : '') + '" title="Simulate Handicapper view">🏆 Handicapper</button>' +
+    '<button id="role-sw-sb"   class="role-sw-btn' + (current === 'sports_bettor' ? ' role-sw-active' : '') + '" title="Simulate Sports Bettor view">🎯 Bettor</button>' +
+    '<button id="role-sw-none" class="role-sw-btn' + (!current                    ? ' role-sw-active' : '') + '" title="Reset to admin-only view">⚙️ Admin</button>';
+
+  // Use event delegation on the container so re-renders don't accumulate listeners.
+  switcher.onclick = function (e) {
+    const btn = e.target.closest('.role-sw-btn');
+    if (!btn) return;
+    if (btn.id === 'role-sw-hcp')       localStorage.setItem(ADMIN_ROLE_OVERRIDE_KEY, 'handicapper');
+    else if (btn.id === 'role-sw-sb')   localStorage.setItem(ADMIN_ROLE_OVERRIDE_KEY, 'sports_bettor');
+    else if (btn.id === 'role-sw-none') localStorage.removeItem(ADMIN_ROLE_OVERRIDE_KEY);
+    updateNavForUser(user);
+  };
+}
 
 function updateNavForUser(user) {
   const navUser        = document.getElementById('nav-user');
@@ -691,12 +751,20 @@ function updateNavForUser(user) {
 
   if (user) {
     if (navUser)     navUser.style.display     = 'flex';
+
+    // Use effective role: for admin, the override in localStorage takes precedence.
+    const effectiveRole = getEffectiveRole(user);
+
     if (navGreeting) {
-      if (user.isAdmin) {
+      if (user.isAdmin && effectiveRole === 'handicapper') {
+        navGreeting.textContent = '⚙️ Admin [as 🏆 Handicapper]';
+      } else if (user.isAdmin && effectiveRole === 'sports_bettor') {
+        navGreeting.textContent = '⚙️ Admin [as 🎯 Sports Bettor]';
+      } else if (user.isAdmin) {
         navGreeting.textContent = '⚙️ Admin';
-      } else if (user.role === 'handicapper') {
+      } else if (effectiveRole === 'handicapper') {
         navGreeting.textContent = `Hi, ${user.name.split(' ')[0]} · 🏆 Handicapper`;
-      } else if (user.role === 'sports_bettor') {
+      } else if (effectiveRole === 'sports_bettor') {
         navGreeting.textContent = `Hi, ${user.name.split(' ')[0]} · 🎯 Sports Bettor`;
       } else {
         navGreeting.textContent = `Hi, ${user.name.split(' ')[0]}`;
@@ -705,16 +773,19 @@ function updateNavForUser(user) {
     if (loginBtn)  loginBtn.style.display  = 'none';
     if (signupBtn) signupBtn.style.display = 'none';
 
-    // Show admin panel only for admin user
+    // Admin panel: always visible for admin, regardless of role override.
     if (adminPanel) adminPanel.style.display = user.isAdmin ? 'block' : 'none';
     if (user.isAdmin) renderAdminPicksList();
 
-    // Show handicapper panel only for handicapper role
-    if (hcpPanel) hcpPanel.style.display = user.role === 'handicapper' ? 'block' : 'none';
-    if (user.role === 'handicapper') renderHandicapperDashboard();
+    // Handicapper panel: visible for handicapper role OR admin simulating handicapper.
+    if (hcpPanel) hcpPanel.style.display = effectiveRole === 'handicapper' ? 'block' : 'none';
+    if (effectiveRole === 'handicapper') renderHandicapperDashboard();
 
-    // Nav dashboard link — visible only to handicappers
-    if (navDashLink) navDashLink.style.display = user.role === 'handicapper' ? 'inline' : 'none';
+    // Nav dashboard link — visible for handicapper role OR admin simulating handicapper.
+    if (navDashLink) navDashLink.style.display = effectiveRole === 'handicapper' ? 'inline' : 'none';
+
+    // Render the role-switcher widget (only visible to admin).
+    renderAdminRoleSwitcher(user);
   } else {
     if (navUser)    navUser.style.display    = 'none';
     if (loginBtn)   loginBtn.style.display   = 'inline-block';
@@ -722,6 +793,9 @@ function updateNavForUser(user) {
     if (adminPanel) adminPanel.style.display = 'none';
     if (hcpPanel)   hcpPanel.style.display   = 'none';
     if (navDashLink) navDashLink.style.display = 'none';
+    // Hide the role-switcher when logged out.
+    const switcher = document.getElementById('admin-role-switcher');
+    if (switcher) switcher.style.display = 'none';
   }
 }
 
@@ -797,7 +871,8 @@ function handleAdminPickSubmit(e) {
 
 function renderHandicapperDashboard() {
   const session = getSession();
-  if (!session || session.role !== 'handicapper') return;
+  // Allow admin viewing as handicapper to see the dashboard too.
+  if (!session || getEffectiveRole(session) !== 'handicapper') return;
 
   const allPicks = getHandicapperPicks();
   const myPicks  = allPicks.filter(p => p.handicapperId === session.id);
@@ -890,7 +965,8 @@ function renderHandicapperDashboard() {
 function handleHandicapperPickSubmit(e) {
   e.preventDefault();
   const session = getSession();
-  if (!session || session.role !== 'handicapper') return;
+  // Allow admin viewing as handicapper to submit picks too.
+  if (!session || getEffectiveRole(session) !== 'handicapper') return;
 
   const matchup    = document.getElementById('hcp-matchup').value.trim();
   const sport      = document.getElementById('hcp-sport').value;

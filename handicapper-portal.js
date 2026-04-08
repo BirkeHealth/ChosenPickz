@@ -19,6 +19,10 @@
 const SESSION_KEY  = 'cp_session';
 const HCP_PICKS_KEY = 'cp_handicapper_picks';
 
+// ── ADMIN ROLE OVERRIDE ────────────────────────────────────────────────────
+// Mirrors the key used in app.js. When set, the admin simulates a given role.
+const ADMIN_ROLE_OVERRIDE_KEY = 'adminRoleOverride';
+
 function getSession() {
   try { return JSON.parse(localStorage.getItem(SESSION_KEY) || 'null'); }
   catch { return null; }
@@ -26,6 +30,20 @@ function getSession() {
 
 function clearSession() {
   localStorage.removeItem(SESSION_KEY);
+}
+
+/**
+ * Returns the role the session should be treated as for access/display decisions.
+ * For admin users, checks localStorage[ADMIN_ROLE_OVERRIDE_KEY] first.
+ */
+function getEffectiveRole(session) {
+  if (!session) return null;
+  if (session.isAdmin) {
+    const override = localStorage.getItem(ADMIN_ROLE_OVERRIDE_KEY);
+    if (override === 'handicapper' || override === 'sports_bettor') return override;
+    return null;
+  }
+  return session.role || null;
 }
 
 function getHandicapperPicks() {
@@ -102,10 +120,14 @@ function nextSlipId() {
 }
 
 // ── AUTH GUARD ─────────────────────────────────────────────────────────────
-// Admin is always treated as handicapper for all features.
+// Admin is always treated as handicapper for all portal features.
+// When an admin has set the override to 'sports_bettor', they can still
+// access the portal (they are still admin) but their greeting reflects the override.
 
 function isHandicapperOrAdmin(session) {
-  return session && (session.role === 'handicapper' || session.isAdmin);
+  if (!session) return false;
+  if (session.isAdmin) return true;
+  return session.role === 'handicapper';
 }
 
 function initAuth() {
@@ -116,25 +138,79 @@ function initAuth() {
     return null;
   }
 
-  const navUser     = document.getElementById('nav-user');
-  const navGreeting = document.getElementById('nav-greeting');
-  if (navUser)     navUser.style.display = 'flex';
-  if (navGreeting) {
-    const firstName = (session.name && typeof session.name === 'string')
-      ? session.name.split(' ')[0]
-      : 'Handicapper';
-    navGreeting.textContent = `Hi, ${firstName} · 🏆 Handicapper`;
-  }
+  const navUser = document.getElementById('nav-user');
+  if (navUser) navUser.style.display = 'flex';
+  updatePortalGreeting(session);
 
   const logoutBtn = document.getElementById('logout-btn');
   if (logoutBtn) {
     logoutBtn.addEventListener('click', () => {
+      // Clear role override on logout so next session starts fresh.
+      localStorage.removeItem(ADMIN_ROLE_OVERRIDE_KEY);
       clearSession();
       window.location.replace('index.html');
     });
   }
 
+  // Render the admin role-switcher in the portal nav (admin-only).
+  renderPortalRoleSwitcher(session);
+
   return session;
+}
+
+/**
+ * Updates the nav greeting text to reflect the current override (for admin)
+ * or the user's role (for regular handicappers).
+ */
+function updatePortalGreeting(session) {
+  const navGreeting = document.getElementById('nav-greeting');
+  if (!navGreeting) return;
+  if (session.isAdmin) {
+    const override = localStorage.getItem(ADMIN_ROLE_OVERRIDE_KEY);
+    navGreeting.textContent = override === 'handicapper'
+      ? '⚙️ Admin [as 🏆 Handicapper]'
+      : override === 'sports_bettor'
+        ? '⚙️ Admin [as 🎯 Sports Bettor]'
+        : '⚙️ Admin';
+  } else {
+    const firstName = (session.name && typeof session.name === 'string')
+      ? session.name.split(' ')[0]
+      : 'Handicapper';
+    navGreeting.textContent = `Hi, ${firstName} · 🏆 Handicapper`;
+  }
+}
+
+/**
+ * Injects the admin role-switcher buttons into #admin-role-switcher inside the
+ * handicapper portal nav.  Only visible when session.isAdmin === true.
+ * Switching roles updates the greeting and persists the choice in localStorage.
+ * Uses event delegation on the container to avoid duplicate listeners on re-renders.
+ */
+function renderPortalRoleSwitcher(session) {
+  const switcher = document.getElementById('admin-role-switcher');
+  if (!switcher || !session || !session.isAdmin) {
+    if (switcher) switcher.style.display = 'none';
+    return;
+  }
+
+  const current = localStorage.getItem(ADMIN_ROLE_OVERRIDE_KEY) || '';
+  switcher.style.display = 'inline-flex';
+  switcher.innerHTML =
+    '<span style="font-size:0.72rem;color:var(--muted);margin-right:0.3rem;white-space:nowrap;align-self:center;">View as:</span>' +
+    '<button id="role-sw-hcp"  class="role-sw-btn' + (current === 'handicapper'   ? ' role-sw-active' : '') + '" title="Simulate Handicapper view">🏆 Handicapper</button>' +
+    '<button id="role-sw-sb"   class="role-sw-btn' + (current === 'sports_bettor' ? ' role-sw-active' : '') + '" title="Simulate Sports Bettor view">🎯 Bettor</button>' +
+    '<button id="role-sw-none" class="role-sw-btn' + (!current                    ? ' role-sw-active' : '') + '" title="Reset to admin-only view">⚙️ Admin</button>';
+
+  // Use event delegation so re-renders don't accumulate listeners.
+  switcher.onclick = function (e) {
+    const btn = e.target.closest('.role-sw-btn');
+    if (!btn) return;
+    if (btn.id === 'role-sw-hcp')       localStorage.setItem(ADMIN_ROLE_OVERRIDE_KEY, 'handicapper');
+    else if (btn.id === 'role-sw-sb')   localStorage.setItem(ADMIN_ROLE_OVERRIDE_KEY, 'sports_bettor');
+    else if (btn.id === 'role-sw-none') localStorage.removeItem(ADMIN_ROLE_OVERRIDE_KEY);
+    renderPortalRoleSwitcher(session);
+    updatePortalGreeting(session);
+  };
 }
 
 // ── STATS BAR ──────────────────────────────────────────────────────────────
