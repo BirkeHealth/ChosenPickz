@@ -88,9 +88,9 @@ export default function SportsNewsSection() {
         gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
       }}
     >
-      {articles.map((article, idx) => (
+      {articles.map((article) => (
         <a
-          key={idx}
+          key={article.url || article.title}
           href={article.url}
           target="_blank"
           rel="noopener noreferrer"

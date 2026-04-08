@@ -71,7 +71,7 @@ export default function HandicapperPortal({ session, onLogout }) {
       return;
     }
     const newPick = {
-      id: Date.now(),
+      id: typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random()}`,
       matchup: matchup.trim(),
       sport,
       pickType,

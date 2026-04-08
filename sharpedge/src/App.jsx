@@ -293,6 +293,8 @@ export default function App() {
   });
 
   // If a session already exists on mount, go straight to the portal.
+  // Session is loaded synchronously from localStorage above, so this effect
+  // only needs to run once on mount — not on every session change.
   useEffect(() => {
     if (session) setCurrentPage('portal');
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
