@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ChosenPickz — Handicapper Login</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="login-body">
+
+  <div class="login-container">
+
+    <div class="login-brand">
+      <div class="brand-logo">
+        <span class="brand-icon">⚡</span>
+        <h1>ChosenPickz</h1>
+      </div>
+      <p class="brand-tagline">Handicapper Portal</p>
+    </div>
+
+    <div class="login-card">
+      <h2>Sign In</h2>
+      <p class="login-subtitle">Access your picks dashboard</p>
+
+      <div id="login-error" class="alert alert-error hidden"></div>
+
+      <form id="login-form" autocomplete="on" novalidate>
+        <div class="form-group">
+          <label for="username">Username or Email</label>
+          <input
+            type="text"
+            id="username"
+            name="username"
+            placeholder="Enter your username or email"
+            autocomplete="username"
+            required
+          >
+        </div>
+
+        <div class="form-group">
+          <label for="password">Password</label>
+          <div class="password-wrapper">
+            <input
+              type="password"
+              id="password"
+              name="password"
+              placeholder="Enter your password"
+              autocomplete="current-password"
+              required
+            >
+            <button type="button" class="toggle-password" id="toggle-pw" aria-label="Toggle password visibility">👁</button>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <label class="checkbox-label">
+            <input type="checkbox" id="remember-me">
+            <span>Remember me</span>
+          </label>
+          <a href="#" class="forgot-link" onclick="return false;">Forgot password?</a>
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-full" id="login-btn">
+          Sign In
+        </button>
+      </form>
+
+      <div class="login-demo">
+        <p>Demo credentials:</p>
+        <code>admin / Picks2024!</code>
+        &nbsp;·&nbsp;
+        <code>admin@chosenpickz.com / Picks2024!</code>
+      </div>
+    </div>
+
+    <div class="login-footer">
+      <p>&copy; 2024 ChosenPickz. All rights reserved.</p>
+    </div>
+
+  </div>
+
+  <script src="js/auth.js"></script>
+  <script>
+    // Redirect if already logged in
+    if (AuthManager.isLoggedIn()) {
+      window.location.replace('dashboard.html');
+    }
+
+    document.getElementById('toggle-pw').addEventListener('click', function () {
+      const pw = document.getElementById('password');
+      pw.type = pw.type === 'password' ? 'text' : 'password';
+      this.textContent = pw.type === 'password' ? '👁' : '🙈';
+    });
+
+    document.getElementById('login-form').addEventListener('submit', function (e) {
+      e.preventDefault();
+
+      const identifier = document.getElementById('username').value.trim();
+      const password   = document.getElementById('password').value;
+      const remember   = document.getElementById('remember-me').checked;
+      const btn        = document.getElementById('login-btn');
+      const errEl      = document.getElementById('login-error');
+
+      if (!identifier || !password) {
+        errEl.textContent = 'Please enter your username and password.';
+        errEl.classList.remove('hidden');
+        return;
+      }
+
+      btn.textContent = 'Signing in…';
+      btn.disabled = true;
+
+      // Short delay for UX feel
+      setTimeout(() => {
+        const result = AuthManager.login(identifier, password, remember);
+        if (result.success) {
+          window.location.href = 'dashboard.html';
+        } else {
+          errEl.textContent = result.message;
+          errEl.classList.remove('hidden');
+          btn.textContent = 'Sign In';
+          btn.disabled = false;
+          setTimeout(() => errEl.classList.add('hidden'), 5000);
+        }
+      }, 400);
+    });
+  </script>
+
+</body>
+</html>
