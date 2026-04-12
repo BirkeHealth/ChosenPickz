@@ -51,8 +51,17 @@ function setCache(key, data) {
 // Fallback key (same value as config.js — already public to the browser)
 const FALLBACK_API_KEY = '378d22c76a76769fa0078d2d9e88fb60';
 
+function resolveApiKey() {
+  const env = process.env.ODDS_API_KEY;
+  // Treat missing, empty, or placeholder values as unset
+  if (!env || env === 'YOUR_ODDS_API_KEY_HERE' || env.startsWith('YOUR_')) {
+    return FALLBACK_API_KEY;
+  }
+  return env;
+}
+
 async function oddsHandler(req, res) {
-  const apiKey = process.env.ODDS_API_KEY || FALLBACK_API_KEY;
+  const apiKey = resolveApiKey();
 
   if (!apiKey) {
     console.error('[odds] ODDS_API_KEY environment variable is not set');

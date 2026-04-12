@@ -16,15 +16,18 @@ const CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
 let cachedSports = null;
 let cacheExpires = 0;
 
-async function sportsHandler(req, res) {
-  const apiKey = process.env.ODDS_API_KEY;
+const FALLBACK_API_KEY = '378d22c76a76769fa0078d2d9e88fb60';
 
-  if (!apiKey) {
-    console.error('[sports] ODDS_API_KEY environment variable is not set');
-    res.writeHead(500, { 'Content-Type': 'application/json' });
-    res.end(JSON.stringify({ error: 'Odds API key is not configured on the server' }));
-    return;
+function resolveApiKey() {
+  const env = process.env.ODDS_API_KEY;
+  if (!env || env === 'YOUR_ODDS_API_KEY_HERE' || env.startsWith('YOUR_')) {
+    return FALLBACK_API_KEY;
   }
+  return env;
+}
+
+async function sportsHandler(req, res) {
+  const apiKey = resolveApiKey();
 
   // Serve from cache while still valid
   if (cachedSports && Date.now() < cacheExpires) {
