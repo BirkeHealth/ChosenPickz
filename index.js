@@ -25,7 +25,7 @@ const ROOT_STATIC_FILES = new Set([
   'index.html',
   'chosepickz.html',
   'live-bets.html',
-  'best-odds.html',
+  'all-odds.html',
   'news.html',
   'analysis.html',
   'pick.html',
@@ -49,6 +49,7 @@ const ROOT_STATIC_FILES = new Set([
   // ── Handicapper portal ──
   'login.html',
   'dashboard.html',
+  'all-odds.html',
   'css/style.css',
   'css/dashboard.css',
   'js/auth.js',

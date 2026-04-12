@@ -44,50 +44,13 @@ nav {
   z-index: 200;
 }
 
-/* ── SECONDARY SUB-NAV ── */
-.sub-nav {
-  background: var(--surface2);
-  border-bottom: 1px solid var(--surface3);
-  position: sticky;
-  top: 62px; /* height of primary nav */
-  z-index: 190;
-  overflow-x: auto;
-  scrollbar-width: none;
+/* ── NAV TELEGRAM LINK ── */
+.nav-telegram {
+  color: #38bdf8 !important;
 }
-.sub-nav::-webkit-scrollbar { display: none; }
-
-.sub-nav-inner {
-  display: flex;
-  align-items: center;
-  gap: 0;
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 0 1.5rem;
-}
-
-.sub-nav-link {
-  color: var(--muted);
-  font-size: 0.82rem;
-  font-weight: 600;
-  text-decoration: none;
-  padding: 0.65rem 1rem;
-  white-space: nowrap;
-  border-bottom: 2px solid transparent;
-  transition: color 0.2s, border-color 0.2s;
-  letter-spacing: 0.3px;
-}
-.sub-nav-link:hover,
-.sub-nav-link.active {
-  color: var(--orange);
-  border-bottom-color: var(--orange);
-}
-.sub-nav-telegram {
-  margin-left: auto;
-  color: #0ea5e9;
-}
-.sub-nav-telegram:hover {
-  color: #38bdf8;
-  border-bottom-color: #38bdf8;
+.nav-telegram:hover {
+  color: #7dd3fc !important;
+  background: rgba(14,165,233,0.1) !important;
 }
 
 .nav-logo {
@@ -310,7 +273,6 @@ main {
   main { padding: 1.5rem 1rem; }
   .pick-card { flex-direction: column; align-items: flex-start; }
   .pick-card-new { flex-direction: column; align-items: flex-start; }
-  .sub-nav { top: 54px; }
 }
 
 /* ── LANDING — NAV ADDITIONS ── */

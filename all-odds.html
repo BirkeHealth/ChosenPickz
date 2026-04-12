@@ -1,0 +1,899 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>All Odds — CH0SEN1 PICKZ</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    /* ── All Odds page styles ── */
+
+    .ao-hero {
+      text-align: center;
+      padding: 3rem 1.5rem 1.75rem;
+      background: radial-gradient(ellipse at 50% 0%, rgba(29,78,216,0.12) 0%, transparent 70%);
+    }
+    .ao-hero h1 {
+      font-family: 'Bebas Neue', cursive;
+      font-size: clamp(2.6rem, 7vw, 5rem);
+      letter-spacing: 4px;
+      line-height: 1;
+      color: var(--text);
+    }
+    .ao-hero h1 span { color: var(--gold); }
+    .ao-hero p { color: var(--muted); font-size: 1rem; margin-top: 0.6rem; }
+
+    /* ── Sport tab strip (Covers-style) ── */
+    .ao-sport-tabs {
+      background: var(--surface);
+      border-bottom: 1px solid var(--surface2);
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+    .ao-sport-tabs::-webkit-scrollbar { display: none; }
+    .ao-sport-tabs-inner {
+      display: flex;
+      align-items: center;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 1.5rem;
+      gap: 0;
+    }
+    .ao-sport-tab {
+      background: none;
+      border: none;
+      border-bottom: 3px solid transparent;
+      color: var(--muted);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.82rem;
+      font-weight: 700;
+      padding: 0.75rem 1rem;
+      cursor: pointer;
+      white-space: nowrap;
+      letter-spacing: 0.3px;
+      transition: color 0.15s, border-color 0.15s;
+    }
+    .ao-sport-tab:hover { color: var(--text); }
+    .ao-sport-tab.active {
+      color: var(--orange);
+      border-bottom-color: var(--orange);
+    }
+
+    /* ── Time filter tabs ── */
+    .ao-controls {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 1rem 1.5rem;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.75rem;
+    }
+    .ao-time-tabs {
+      display: flex;
+      gap: 0.4rem;
+      flex-wrap: wrap;
+    }
+    .ao-tab-btn {
+      background: var(--surface);
+      border: 1px solid var(--surface2);
+      color: var(--muted);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.78rem;
+      font-weight: 600;
+      padding: 0.35rem 0.85rem;
+      border-radius: 20px;
+      cursor: pointer;
+      transition: all 0.15s;
+      white-space: nowrap;
+    }
+    .ao-tab-btn:hover { border-color: var(--orange); color: var(--text); }
+    .ao-tab-btn.active { background: var(--orange); border-color: var(--orange); color: #fff; }
+    .ao-tab-btn.live-tab.active { background: #ef4444; border-color: #ef4444; }
+
+    .ao-date-row {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .ao-date-input {
+      background: var(--surface2);
+      border: 1px solid var(--surface3);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.88rem;
+      padding: 0.35rem 0.75rem;
+      border-radius: 7px;
+      outline: none;
+      color-scheme: dark;
+    }
+    .ao-date-input:focus { border-color: var(--gold); }
+    .ao-search-btn {
+      background: var(--gold);
+      color: #0a0a0a;
+      border: none;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.82rem;
+      font-weight: 700;
+      padding: 0.38rem 1rem;
+      border-radius: 7px;
+      cursor: pointer;
+      transition: background 0.15s;
+      white-space: nowrap;
+    }
+    .ao-search-btn:hover { background: var(--gold-dim); }
+    .ao-search-btn:disabled { background: var(--surface2); color: var(--muted); cursor: not-allowed; }
+
+    /* ── Results area ── */
+    .ao-results {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 1.5rem 3rem;
+    }
+
+    /* ── Column header row ── */
+    .ao-table-header {
+      display: grid;
+      grid-template-columns: 2fr 1.1fr 1.1fr 1.1fr;
+      gap: 0;
+      padding: 0.45rem 1rem;
+      background: var(--surface2);
+      border: 1px solid var(--surface2);
+      border-radius: 8px 8px 0 0;
+      margin-bottom: 0;
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      color: var(--muted);
+    }
+    .ao-table-header span:not(:first-child) { text-align: center; }
+
+    /* ── Game row (Covers-style) ── */
+    .ao-game-block {
+      background: var(--surface);
+      border: 1px solid var(--surface2);
+      border-top: none;
+      transition: background 0.15s;
+    }
+    .ao-game-block:last-child { border-radius: 0 0 8px 8px; }
+    .ao-game-block + .ao-game-block { border-top: none; }
+    .ao-game-block:hover { background: rgba(255,255,255,0.015); }
+
+    .ao-game-row {
+      display: grid;
+      grid-template-columns: 2fr 1.1fr 1.1fr 1.1fr;
+      gap: 0;
+      border-bottom: 1px solid var(--surface2);
+    }
+    .ao-game-row:last-of-type { border-bottom: none; }
+
+    /* Game info cell */
+    .ao-cell-game {
+      padding: 0.6rem 1rem;
+      border-right: 1px solid var(--surface2);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 0.25rem;
+    }
+    .ao-sport-badge {
+      font-size: 0.65rem;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--blue);
+      margin-bottom: 0.1rem;
+    }
+    .ao-team {
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: var(--text);
+      line-height: 1.2;
+    }
+    .ao-team.away { }
+    .ao-team.home { color: var(--muted); font-weight: 600; }
+    .ao-game-time {
+      font-size: 0.72rem;
+      color: var(--muted);
+      margin-top: 0.15rem;
+    }
+    .ao-live-dot {
+      display: inline-block;
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: #ef4444;
+      margin-right: 4px;
+      animation: livePulse 1.2s ease-in-out infinite;
+      vertical-align: middle;
+    }
+    @keyframes livePulse {
+      0%, 100% { opacity: 1; }
+      50%       { opacity: 0.3; }
+    }
+
+    /* Odds cells (spread / ML / total) */
+    .ao-cell-odds {
+      padding: 0.5rem 0.75rem;
+      border-right: 1px solid var(--surface2);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 0.35rem;
+      text-align: center;
+    }
+    .ao-cell-odds:last-child { border-right: none; }
+    .ao-odds-pair {
+      display: flex;
+      flex-direction: column;
+      gap: 0.3rem;
+    }
+    .ao-odds-line {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: var(--surface2);
+      border: 1px solid var(--surface3);
+      border-radius: 5px;
+      padding: 0.3rem 0.6rem;
+      font-size: 0.82rem;
+      cursor: pointer;
+      transition: border-color 0.15s, background 0.15s;
+    }
+    .ao-odds-line:hover { border-color: var(--orange); background: rgba(249,115,22,0.06); }
+    .ao-odds-line--added { border-color: var(--success) !important; background: rgba(34,197,94,0.07) !important; }
+    .ao-odds-point { color: var(--text); font-weight: 600; font-size: 0.8rem; }
+    .ao-odds-price { font-weight: 700; }
+    .ao-odds-price.pos { color: var(--success); }
+    .ao-odds-price.neg { color: #f87171; }
+    .ao-odds-price.even { color: var(--muted); }
+    .ao-no-odds { font-size: 0.75rem; color: var(--muted); text-align: center; padding: 0.4rem 0; }
+
+    /* Book attribution */
+    .ao-book-source {
+      font-size: 0.62rem;
+      color: var(--muted);
+      text-align: center;
+      padding-bottom: 0.4rem;
+      opacity: 0.7;
+    }
+
+    /* All books expand row */
+    .ao-expand-row {
+      padding: 0.4rem 1rem;
+      border-top: 1px dashed var(--surface2);
+    }
+    .ao-expand-row details summary {
+      font-size: 0.74rem;
+      font-weight: 600;
+      color: var(--orange);
+      cursor: pointer;
+      user-select: none;
+      list-style: none;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+    .ao-expand-row details summary::before { content: '▶'; font-size: 0.6rem; }
+    .ao-expand-row details[open] summary::before { content: '▼'; }
+    .ao-book-table {
+      margin-top: 0.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.3rem;
+    }
+    .ao-book-row {
+      display: grid;
+      grid-template-columns: 120px 1fr 1fr 1fr;
+      gap: 0.5rem 1rem;
+      padding: 0.35rem 0.5rem;
+      background: rgba(255,255,255,0.02);
+      border: 1px solid var(--surface2);
+      border-radius: 5px;
+      font-size: 0.76rem;
+      align-items: center;
+    }
+    .ao-bk-name { font-weight: 700; color: var(--gold); font-size: 0.74rem; }
+    .ao-bk-cell { text-align: center; color: var(--text); }
+    .ao-bk-cell .pos { color: var(--success); font-weight: 700; }
+    .ao-bk-cell .neg { color: #f87171; font-weight: 700; }
+    .ao-bk-label { font-size: 0.62rem; text-transform: uppercase; color: var(--muted); letter-spacing: 0.5px; display: block; margin-bottom: 0.1rem; }
+
+    /* Group spacer between sport groups */
+    .ao-group-spacer { height: 1.5rem; }
+    .ao-group-label {
+      font-family: 'Bebas Neue', cursive;
+      font-size: 1.15rem;
+      letter-spacing: 2px;
+      color: var(--orange);
+      padding: 0.4rem 0 0.3rem;
+      border-bottom: 1px solid var(--surface2);
+      margin-bottom: 0;
+    }
+
+    @media (max-width: 700px) {
+      .ao-table-header { display: none; }
+      .ao-game-row { grid-template-columns: 1fr; }
+      .ao-cell-game { border-right: none; border-bottom: 1px solid var(--surface2); }
+      .ao-cell-odds { border-right: none; border-bottom: 1px solid var(--surface2); text-align: left; }
+      .ao-cell-odds:last-child { border-bottom: none; }
+      .ao-book-row { grid-template-columns: 100px 1fr 1fr; }
+    }
+
+    /* Live badge */
+    .ao-live-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.25rem;
+      font-size: 0.65rem;
+      font-weight: 700;
+      letter-spacing: 1px;
+      padding: 0.12rem 0.45rem;
+      border-radius: 20px;
+      background: rgba(239,68,68,0.15);
+      color: #ef4444;
+      border: 1px solid rgba(239,68,68,0.35);
+      text-transform: uppercase;
+      vertical-align: middle;
+      margin-left: 0.35rem;
+    }
+
+    /* Bet slip FAB styles (shared) */
+    .betslip-fab {
+      position: fixed;
+      bottom: 1.5rem;
+      right: 1.5rem;
+      background: var(--orange);
+      color: #fff;
+      border: none;
+      border-radius: 50px;
+      padding: 0.65rem 1.25rem;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.9rem;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 4px 20px rgba(249,115,22,0.4);
+      z-index: 300;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      transition: background 0.2s, transform 0.15s;
+    }
+    .betslip-fab:hover { background: var(--orange-dim); transform: translateY(-2px); }
+    .betslip-fab-label { font-size: 0.85rem; }
+  </style>
+</head>
+<body>
+
+  <!-- ── NAV ── -->
+  <nav>
+    <a class="nav-logo" href="index.html">
+      CH<span class="ch-blue">0</span>SEN<span class="ch-blue">1</span> PICKZ
+    </a>
+    <div class="nav-links">
+      <a href="index.html#picks-section">Today's Picks</a>
+      <a href="all-odds.html" class="active">All Odds</a>
+      <a href="todays-picks.html">ChosenPickz</a>
+      <a href="index.html#pricing">Pricing</a>
+      <a href="https://t.me/chosen1pickz" target="_blank" rel="noopener noreferrer" class="nav-telegram">✈️ Telegram</a>
+      <a href="login.html" class="btn-login">Handicapper Login</a>
+    </div>
+  </nav>
+
+  <!-- ── HERO ── -->
+  <div class="ao-hero">
+    <h1>All <span>Odds</span></h1>
+    <p>Compare Spread, Moneyline &amp; Total (O/U) across all sportsbooks — live &amp; upcoming</p>
+  </div>
+
+  <!-- ── SPORT TABS ── -->
+  <div class="ao-sport-tabs">
+    <div class="ao-sport-tabs-inner" id="sport-tabs">
+      <button class="ao-sport-tab active" data-sport="upcoming">🌟 All</button>
+      <button class="ao-sport-tab" data-sport="baseball_mlb">⚾ MLB</button>
+      <button class="ao-sport-tab" data-sport="basketball_nba">🏀 NBA</button>
+      <button class="ao-sport-tab" data-sport="icehockey_nhl">🏒 NHL</button>
+      <button class="ao-sport-tab" data-sport="americanfootball_nfl">🏈 NFL</button>
+      <button class="ao-sport-tab" data-sport="basketball_ncaab">🏀 NCAAB</button>
+      <button class="ao-sport-tab" data-sport="americanfootball_ncaaf">🏈 NCAAF</button>
+    </div>
+  </div>
+
+  <!-- ── TIME FILTER + DATE ── -->
+  <div class="ao-controls">
+    <div class="ao-time-tabs" id="time-tabs">
+      <button class="ao-tab-btn live-tab" data-mode="live">🔴 Live</button>
+      <button class="ao-tab-btn active"   data-mode="today">📅 Today</button>
+      <button class="ao-tab-btn"          data-mode="upcoming">📆 Next 7 Days</button>
+      <button class="ao-tab-btn"          data-mode="date">📆 Date</button>
+    </div>
+    <div class="ao-date-row" id="date-controls" style="display:none;">
+      <input type="date" id="date-input" class="ao-date-input" />
+      <button class="ao-search-btn" id="search-btn">🔍 Search</button>
+    </div>
+  </div>
+
+  <!-- ── RESULTS ── -->
+  <div class="ao-results" id="bo-results">
+    <p class="loading-msg">Loading odds…</p>
+  </div>
+
+  <!-- ── FOOTER ── -->
+  <footer>
+    <p>&copy; 2026 CH0SEN1 PICKZ &mdash; For entertainment purposes only.</p>
+  </footer>
+
+  <!-- ── BET SLIP CALCULATOR MODAL ── -->
+  <div id="betslip-modal" class="modal-overlay" aria-hidden="true">
+    <div class="modal-box betslip-box" role="dialog" aria-modal="true" aria-label="Bet Slip Calculator">
+      <button class="modal-close" id="betslip-close" aria-label="Close">&times;</button>
+      <h2 class="modal-title">📋 Bet Slip Calculator</h2>
+      <p class="modal-subtitle">Plan your bets before placing them</p>
+      <div class="betslip-add-row">
+        <input type="text"   id="bs-matchup"  placeholder="Game / Matchup" class="bs-input" />
+        <input type="text"   id="bs-pick"     placeholder="Your pick (e.g. Lakers -5.5)" class="bs-input" />
+        <input type="number" id="bs-odds"     placeholder="Odds (e.g. -110 or +150)" class="bs-input bs-odds" />
+        <input type="number" id="bs-wager"    placeholder="Wager ($)" class="bs-input bs-wager" min="0" step="0.01" />
+        <button id="bs-add-btn" class="btn-primary bs-add-btn">+ Add</button>
+      </div>
+      <div id="bs-legs" class="bs-legs"></div>
+      <div class="bs-parlay-row">
+        <label class="bs-toggle-label">
+          <input type="checkbox" id="bs-parlay-toggle" />
+          <span>Calculate as Parlay</span>
+        </label>
+        <div id="bs-parlay-wager-row" style="display:none;">
+          <label style="font-size:0.82rem;color:var(--muted);">Parlay Wager ($)</label>
+          <input type="number" id="bs-parlay-wager" class="bs-input bs-wager" placeholder="$" min="0" step="0.01" style="margin-top:0.25rem;" />
+        </div>
+      </div>
+      <div class="bs-summary" id="bs-summary">
+        <div class="bs-summary-row"><span>Total Risk</span><span id="bs-total-risk">$0.00</span></div>
+        <div class="bs-summary-row highlight"><span>Potential Payout</span><span id="bs-total-payout">$0.00</span></div>
+        <div class="bs-summary-row"><span>Potential Profit</span><span id="bs-total-profit">$0.00</span></div>
+      </div>
+      <button id="bs-clear-btn" class="btn-secondary" style="width:100%;margin-top:0.75rem;">🗑 Clear Slip</button>
+    </div>
+  </div>
+
+  <!-- ── FLOATING BET SLIP BUTTON ── -->
+  <button id="betslip-fab" class="betslip-fab" title="Open Bet Slip Calculator" aria-label="Bet Slip Calculator">
+    📋<span class="betslip-fab-label"> Bet Slip</span>
+  </button>
+
+  <script src="config.js"></script>
+  <script>
+    // ── STATE ────────────────────────────────────────────────────────────────
+    let currentMode  = 'today';
+    let currentSport = 'upcoming';
+    let searchDebounceTimer = null;
+
+    // ── HELPERS ──────────────────────────────────────────────────────────────
+    function escHtml(str) {
+      return String(str)
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+    }
+
+    function fmtOdds(price) {
+      if (typeof price !== 'number') return 'N/A';
+      return price >= 0 ? '+' + price : String(price);
+    }
+
+    function fmtTime(isoString) {
+      return new Date(isoString).toLocaleString('en-US', {
+        weekday: 'short', month: 'short', day: 'numeric',
+        hour: 'numeric', minute: '2-digit',
+      });
+    }
+
+    function sportLabel(key) {
+      const labels = {
+        baseball_mlb: 'MLB', americanfootball_ncaaf: 'NCAAF',
+        basketball_ncaab: 'NCAAB', basketball_ncaaw: 'NCAAW',
+        americanfootball_nfl: 'NFL', icehockey_nhl: 'NHL', basketball_nba: 'NBA',
+      };
+      return labels[key] || key.replace(/_/g, ' ').toUpperCase();
+    }
+
+    function oddsClass(price) {
+      if (typeof price !== 'number') return 'even';
+      return price > 0 ? 'pos' : price < 0 ? 'neg' : 'even';
+    }
+
+    function apiErrorMessage(status, rawMsg) {
+      if (status === 422) return 'No events found for these parameters (HTTP 422). Try a different sport or time range.';
+      if (status === 429) return 'Rate limit reached (HTTP 429). Wait a moment and try again.';
+      if (status === 401 || status === 403) return 'API authentication error (HTTP ' + status + '). Check server config.';
+      if (status >= 500) return 'Odds server unavailable (HTTP ' + status + '). Try again later.';
+      return rawMsg || 'Failed to load odds (HTTP ' + status + ').';
+    }
+
+    // ── BEST ODDS ACROSS BOOKS ────────────────────────────────────────────────
+    function getBestByMarket(bookmakers, marketKey) {
+      const best = {};
+      for (const bm of bookmakers) {
+        const mkt = (bm.markets || []).find(m => m.key === marketKey);
+        if (!mkt) continue;
+        for (const o of mkt.outcomes) {
+          if (!best[o.name] || o.price > best[o.name].price) {
+            best[o.name] = { ...o, bookTitle: bm.title || bm.key };
+          }
+        }
+      }
+      return Object.values(best);
+    }
+
+    // ── RENDER ONE ODDS CELL (away line + home line) ──────────────────────────
+    function renderOddsCell(bookmakers, marketKey, awayTeam, homeTeam, matchupText) {
+      const best = getBestByMarket(bookmakers, marketKey);
+      if (best.length === 0) return '<div class="ao-no-odds">—</div>';
+
+      const away = best.find(o => o.name === awayTeam);
+      const home = best.find(o => o.name === homeTeam);
+      const other = best.filter(o => o.name !== awayTeam && o.name !== homeTeam);
+
+      function lineHtml(o, teamLabel) {
+        if (!o) return '<div class="ao-odds-line" style="opacity:0.35"><span class="ao-odds-point">—</span><span class="ao-odds-price even">N/A</span></div>';
+        const ptStr = (o.point !== undefined && o.point !== null)
+          ? ' ' + (o.point > 0 ? '+' : '') + o.point : '';
+        const price = fmtOdds(o.price);
+        const cls   = oddsClass(o.price);
+        const label = escHtml((teamLabel || o.name) + ptStr);
+        return '<div class="ao-odds-line" ' +
+          'data-matchup="' + escHtml(matchupText) + '" ' +
+          'data-pick="' + escHtml((teamLabel || o.name) + ptStr) + '" ' +
+          'data-odds="' + o.price + '" ' +
+          'data-market="' + escHtml(marketKey) + '">' +
+          '<span class="ao-odds-point">' + label + '</span>' +
+          '<span class="ao-odds-price ' + cls + '">' + escHtml(price) + '</span>' +
+          '</div>';
+      }
+
+      let html = lineHtml(away, awayTeam) + lineHtml(home, homeTeam);
+      for (const o of other) html += lineHtml(o, o.name);
+
+      const via = (away || home);
+      const bookNote = via ? '<div class="ao-book-source">via ' + escHtml(via.bookTitle) + '</div>' : '';
+      return html + bookNote;
+    }
+
+    // ── ALL BOOKS TABLE ROW ───────────────────────────────────────────────────
+    function renderAllBooks(bookmakers) {
+      if (!bookmakers.length) return '';
+      const rows = bookmakers.map(bm => {
+        const h2h     = (bm.markets || []).find(m => m.key === 'h2h');
+        const spreads = (bm.markets || []).find(m => m.key === 'spreads');
+        const totals  = (bm.markets || []).find(m => m.key === 'totals');
+
+        function mktHtml(mkt) {
+          if (!mkt || !mkt.outcomes.length) return '<span style="color:var(--muted)">—</span>';
+          return mkt.outcomes.map(o => {
+            const pt  = (o.point !== undefined && o.point !== null) ? ' ' + (o.point > 0 ? '+' : '') + o.point : '';
+            const pr  = fmtOdds(o.price);
+            const cls = oddsClass(o.price);
+            return '<span class="' + cls + '">' + escHtml(o.name + pt) + ' ' + escHtml(pr) + '</span>';
+          }).join(' <span style="color:var(--muted)">·</span> ');
+        }
+
+        return '<div class="ao-book-row">' +
+          '<span class="ao-bk-name">' + escHtml(bm.title || bm.key) + '</span>' +
+          '<div class="ao-bk-cell"><span class="ao-bk-label">Spread</span>' + mktHtml(spreads) + '</div>' +
+          '<div class="ao-bk-cell"><span class="ao-bk-label">Moneyline</span>' + mktHtml(h2h) + '</div>' +
+          '<div class="ao-bk-cell"><span class="ao-bk-label">Total</span>' + mktHtml(totals) + '</div>' +
+          '</div>';
+      }).join('');
+
+      return '<div class="ao-expand-row"><details><summary>' + bookmakers.length +
+        ' sportsbook' + (bookmakers.length !== 1 ? 's' : '') + '</summary>' +
+        '<div class="ao-book-table">' + rows + '</div></details></div>';
+    }
+
+    // ── RENDER ONE GAME BLOCK ─────────────────────────────────────────────────
+    function renderGame(event, now) {
+      const away   = event.away_team || 'Away';
+      const home   = event.home_team || 'Home';
+      const isLive = new Date(event.commence_time) <= now;
+      const sport  = sportLabel(event.sport_key);
+      const matchupText = away + ' @ ' + home;
+      const bks    = event.bookmakers || [];
+
+      const liveBadge = isLive
+        ? '<span class="ao-live-badge">Live</span>' : '';
+
+      const gameCell =
+        '<div class="ao-cell-game">' +
+          '<div class="ao-sport-badge">' + escHtml(sport) + '</div>' +
+          '<div class="ao-team away">' + escHtml(away) + '</div>' +
+          '<div class="ao-team home">' + escHtml(home) + '</div>' +
+          '<div class="ao-game-time">🕐 ' + escHtml(fmtTime(event.commence_time)) + liveBadge + '</div>' +
+        '</div>';
+
+      const spreadCell = '<div class="ao-cell-odds">' +
+        renderOddsCell(bks, 'spreads', away, home, matchupText) + '</div>';
+
+      const mlCell = '<div class="ao-cell-odds">' +
+        renderOddsCell(bks, 'h2h', away, home, matchupText) + '</div>';
+
+      const ouCell = '<div class="ao-cell-odds">' +
+        renderOddsCell(bks, 'totals', 'Over', 'Under', matchupText) + '</div>';
+
+      return '<div class="ao-game-block">' +
+        '<div class="ao-game-row">' + gameCell + spreadCell + mlCell + ouCell + '</div>' +
+        renderAllBooks(bks) +
+        '</div>';
+    }
+
+    // ── MAIN RENDER ───────────────────────────────────────────────────────────
+    function renderResults(events) {
+      if (!events.length) {
+        const labels = { live: 'live right now', today: 'today', upcoming: 'the next 7 days', date: 'the selected date' };
+        return '<p class="loading-msg">No events found for ' + (labels[currentMode] || 'that window') + '. Try a different sport or time range.</p>';
+      }
+
+      // Group by sport_key when "All" is selected
+      const groups = {};
+      for (const e of events) {
+        const k = e.sport_key || 'other';
+        if (!groups[k]) groups[k] = [];
+        groups[k].push(e);
+      }
+
+      const now = new Date();
+      let html = '';
+      for (const [key, evts] of Object.entries(groups)) {
+        if (Object.keys(groups).length > 1) {
+          html += '<div class="ao-group-spacer"></div>' +
+            '<div class="ao-group-label">' + escHtml(sportLabel(key)) + '</div>';
+        }
+        html += '<div class="ao-table-header">' +
+          '<span>Game</span><span>Spread</span><span>Moneyline</span><span>Total (O/U)</span>' +
+          '</div>';
+        html += evts.map(e => renderGame(e, now)).join('');
+      }
+      return html;
+    }
+
+    // ── SEARCH ────────────────────────────────────────────────────────────────
+    async function searchOdds() {
+      const results = document.getElementById('bo-results');
+      const btn     = document.getElementById('search-btn');
+      if (btn) { btn.disabled = true; btn.textContent = 'Loading…'; }
+      results.innerHTML = '<p class="loading-msg">Fetching odds…</p>';
+
+      const now    = new Date();
+      const params = new URLSearchParams({ sport: currentSport, mode: currentMode });
+
+      if (currentMode === 'today') {
+        const d = now.toISOString().slice(0, 10);
+        params.set('from', d + 'T00:00:00Z');
+        params.set('to',   d + 'T23:59:59Z');
+      } else if (currentMode === 'date') {
+        const date = document.getElementById('date-input').value;
+        if (!date) {
+          results.innerHTML = '<p class="error-msg">Please select a date.</p>';
+          if (btn) { btn.disabled = false; btn.textContent = '🔍 Search'; }
+          return;
+        }
+        params.set('from', date + 'T00:00:00Z');
+        params.set('to',   date + 'T23:59:59Z');
+      }
+
+      try {
+        const res  = await fetch('/api/odds?' + params.toString());
+        const data = await res.json();
+        if (!res.ok) {
+          results.innerHTML = '<p class="error-msg">' + escHtml(apiErrorMessage(res.status, data && data.error)) + '</p>';
+          return;
+        }
+        results.innerHTML = Array.isArray(data) ? renderResults(data) : '<p class="error-msg">Unexpected response from server.</p>';
+
+        // Wire click-to-add on odds lines
+        results.addEventListener('click', handleOddsClick, { once: true });
+      } catch (err) {
+        results.innerHTML = '<p class="error-msg">Failed to load odds: ' + escHtml(err.message) + '</p>';
+      } finally {
+        if (btn) { btn.disabled = false; btn.textContent = '🔍 Search'; }
+      }
+    }
+
+    // ── CLICK TO ADD TO BET SLIP ──────────────────────────────────────────────
+    function handleOddsClick(e) {
+      const line = e.target.closest('.ao-odds-line');
+      if (!line) {
+        // re-attach listener for next click if it wasn't on a line
+        document.getElementById('bo-results').addEventListener('click', handleOddsClick, { once: true });
+        return;
+      }
+      const matchup = line.dataset.matchup || '';
+      const pick    = line.dataset.pick    || '';
+      const odds    = Number(line.dataset.odds);
+      if (!odds || isNaN(odds)) return;
+
+      betSlipLegs.push({ matchup, pick, odds, wager: 50 });
+      openBetSlip();
+      line.classList.add('ao-odds-line--added');
+      setTimeout(() => line.classList.remove('ao-odds-line--added'), 1200);
+
+      // re-attach for next click
+      document.getElementById('bo-results').addEventListener('click', handleOddsClick, { once: true });
+    }
+
+    // ── INIT ─────────────────────────────────────────────────────────────────
+    (function init() {
+      const today = new Date().toISOString().slice(0, 10);
+      document.getElementById('date-input').value = today;
+
+      // Sport tabs
+      document.getElementById('sport-tabs').addEventListener('click', function(e) {
+        const btn = e.target.closest('.ao-sport-tab');
+        if (!btn) return;
+        document.querySelectorAll('.ao-sport-tab').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        currentSport = btn.dataset.sport;
+        searchOdds();
+      });
+
+      // Time tabs
+      document.getElementById('time-tabs').addEventListener('click', function(e) {
+        const btn = e.target.closest('.ao-tab-btn');
+        if (!btn) return;
+        const mode = btn.dataset.mode;
+        document.querySelectorAll('.ao-tab-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        currentMode = mode;
+        document.getElementById('date-controls').style.display = mode === 'date' ? 'flex' : 'none';
+        if (mode !== 'date') searchOdds();
+      });
+
+      // Date search button
+      document.getElementById('search-btn').addEventListener('click', searchOdds);
+
+      // Auto-load
+      searchOdds();
+    })();
+
+    // ── BET SLIP ─────────────────────────────────────────────────────────────
+    const BETSLIP_KEY = 'cp_betslip_legs';
+    let betSlipLegs = (function() {
+      try { return JSON.parse(localStorage.getItem(BETSLIP_KEY) || '[]'); } catch { return []; }
+    }());
+
+    function saveBetSlip() { localStorage.setItem(BETSLIP_KEY, JSON.stringify(betSlipLegs)); }
+
+    function americanToDecimal(american) {
+      const n = Number(american);
+      if (isNaN(n)) return null;
+      if (n >= 100)  return 1 + n / 100;
+      if (n <= -100) return 1 + 100 / Math.abs(n);
+      return null;
+    }
+
+    function updateBetSlipUI() {
+      const legsEl        = document.getElementById('bs-legs');
+      const isParlay      = document.getElementById('bs-parlay-toggle')?.checked;
+      const parlayWagerEl = document.getElementById('bs-parlay-wager');
+      const riskEl        = document.getElementById('bs-total-risk');
+      const payoutEl      = document.getElementById('bs-total-payout');
+      const profitEl      = document.getElementById('bs-total-profit');
+      if (!legsEl) return;
+      saveBetSlip();
+
+      if (betSlipLegs.length === 0) {
+        legsEl.innerHTML = '<p class="loading-msg" style="font-size:0.8rem;padding:0.5rem 0;">No bets added yet. Tap any odds line above to add.</p>';
+        if (riskEl)   riskEl.textContent   = '$0.00';
+        if (payoutEl) payoutEl.textContent = '$0.00';
+        if (profitEl) profitEl.textContent = '$0.00';
+        return;
+      }
+
+      legsEl.innerHTML = betSlipLegs.map(function(leg, idx) {
+        const dec    = americanToDecimal(leg.odds);
+        const winAmt = dec && leg.wager > 0 ? ((dec - 1) * leg.wager).toFixed(2) : '—';
+        const total  = dec && leg.wager > 0 ? (dec * leg.wager).toFixed(2) : '—';
+        return '<div class="bs-leg">' +
+          '<div class="bs-leg-info">' +
+            '<div class="bs-leg-matchup">' + escHtml(leg.matchup || 'Game') + '</div>' +
+            '<div class="bs-leg-pick">' + escHtml(leg.pick || '') + ' · Odds: <strong>' +
+              (leg.odds >= 0 ? '+' : '') + leg.odds + '</strong></div>' +
+            (!isParlay ?
+              '<div class="bs-leg-stake-row"><span class="bs-stake-label">Stake ($):</span>' +
+              '<input type="number" class="bs-input bs-wager bs-leg-stake" data-idx="' + idx +
+              '" value="' + Number(leg.wager).toFixed(2) + '" min="0" step="0.01" /></div>' +
+              '<div class="bs-leg-calc" id="bs-leg-calc-' + idx + '">Payout: $' + total + ' (Win: $' + winAmt + ')</div>'
+              : '') +
+          '</div>' +
+          '<button class="bs-leg-remove" data-idx="' + idx + '" title="Remove">\u2715</button>' +
+          '</div>';
+      }).join('');
+
+      legsEl.querySelectorAll('.bs-leg-remove').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+          betSlipLegs.splice(Number(this.dataset.idx), 1);
+          updateBetSlipUI();
+        });
+      });
+
+      if (isParlay) {
+        const pw = parseFloat(parlayWagerEl?.value || 0) || 0;
+        const pd = betSlipLegs.reduce((a, l) => { const d = americanToDecimal(l.odds); return d ? a * d : a; }, 1);
+        if (riskEl)   riskEl.textContent   = '$' + pw.toFixed(2);
+        if (payoutEl) payoutEl.textContent = '$' + (pd * pw).toFixed(2);
+        if (profitEl) profitEl.textContent = '$' + ((pd * pw) - pw).toFixed(2);
+      } else {
+        const totalRisk   = betSlipLegs.reduce((s, l) => s + (parseFloat(l.wager) || 0), 0);
+        const totalPayout = betSlipLegs.reduce((s, l) => { const d = americanToDecimal(l.odds); return s + (d && l.wager > 0 ? d * l.wager : 0); }, 0);
+        if (riskEl)   riskEl.textContent   = '$' + totalRisk.toFixed(2);
+        if (payoutEl) payoutEl.textContent = '$' + totalPayout.toFixed(2);
+        if (profitEl) profitEl.textContent = '$' + (totalPayout - totalRisk).toFixed(2);
+      }
+    }
+
+    function openBetSlip() {
+      const m = document.getElementById('betslip-modal');
+      if (m) { m.classList.add('open'); m.setAttribute('aria-hidden', 'false'); }
+      updateBetSlipUI();
+    }
+    function closeBetSlip() {
+      const m = document.getElementById('betslip-modal');
+      if (m) { m.classList.remove('open'); m.setAttribute('aria-hidden', 'true'); }
+    }
+
+    (function wireBetSlip() {
+      const fab        = document.getElementById('betslip-fab');
+      const closeBtn   = document.getElementById('betslip-close');
+      const addBtn     = document.getElementById('bs-add-btn');
+      const clearBtn   = document.getElementById('bs-clear-btn');
+      const parlayChk  = document.getElementById('bs-parlay-toggle');
+      const parlayWRow = document.getElementById('bs-parlay-wager-row');
+      const parlayW    = document.getElementById('bs-parlay-wager');
+      const modal      = document.getElementById('betslip-modal');
+
+      if (fab)      fab.addEventListener('click', openBetSlip);
+      if (closeBtn) closeBtn.addEventListener('click', closeBetSlip);
+      if (modal)    modal.addEventListener('click', e => { if (e.target === modal) closeBetSlip(); });
+      document.addEventListener('keydown', e => { if (e.key === 'Escape') closeBetSlip(); });
+
+      if (addBtn) {
+        addBtn.addEventListener('click', function() {
+          const matchup = (document.getElementById('bs-matchup')?.value || '').trim();
+          const pick    = (document.getElementById('bs-pick')?.value    || '').trim();
+          const odds    = Number(document.getElementById('bs-odds')?.value  || 0);
+          const wager   = parseFloat(document.getElementById('bs-wager')?.value || 0);
+          if (!odds || wager <= 0) { alert('Please enter valid odds and a wager.'); return; }
+          betSlipLegs.push({ matchup, pick, odds, wager });
+          ['bs-matchup','bs-pick','bs-odds','bs-wager'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+          updateBetSlipUI();
+        });
+      }
+      if (clearBtn)  clearBtn.addEventListener('click',  () => { betSlipLegs = []; updateBetSlipUI(); });
+      if (parlayChk) parlayChk.addEventListener('change', function() { if (parlayWRow) parlayWRow.style.display = this.checked ? 'block' : 'none'; updateBetSlipUI(); });
+      if (parlayW)   parlayW.addEventListener('input', updateBetSlipUI);
+
+      const legsEl = document.getElementById('bs-legs');
+      if (legsEl) {
+        legsEl.addEventListener('input', function(e) {
+          const input = e.target.closest('.bs-leg-stake');
+          if (!input) return;
+          const idx = Number(input.dataset.idx);
+          if (isNaN(idx) || idx < 0 || idx >= betSlipLegs.length) return;
+          betSlipLegs[idx].wager = parseFloat(input.value) || 0;
+          saveBetSlip();
+          const d = americanToDecimal(betSlipLegs[idx].odds), w = betSlipLegs[idx].wager;
+          const calcEl = document.getElementById('bs-leg-calc-' + idx);
+          if (calcEl) calcEl.textContent = 'Payout: $' + (d && w > 0 ? (d * w).toFixed(2) : '—') + ' (Win: $' + (d && w > 0 ? ((d-1)*w).toFixed(2) : '—') + ')';
+          const tr = betSlipLegs.reduce((s,l) => s+(parseFloat(l.wager)||0), 0);
+          const tp = betSlipLegs.reduce((s,l) => { const dd=americanToDecimal(l.odds); return s+(dd&&l.wager>0?dd*l.wager:0); }, 0);
+          const rEl = document.getElementById('bs-total-risk'), pEl = document.getElementById('bs-total-payout'), prEl = document.getElementById('bs-total-profit');
+          if (rEl) rEl.textContent='$'+tr.toFixed(2); if (pEl) pEl.textContent='$'+tp.toFixed(2); if (prEl) prEl.textContent='$'+(tp-tr).toFixed(2);
+        });
+      }
+
+      updateBetSlipUI();
+    })();
+  </script>
+</body>
+</html>
