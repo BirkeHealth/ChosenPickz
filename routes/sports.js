@@ -16,18 +16,10 @@ const CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
 let cachedSports = null;
 let cacheExpires = 0;
 
-const FALLBACK_API_KEY = '378d22c76a76769fa0078d2d9e88fb60';
-
-function resolveApiKey() {
-  const env = process.env.ODDS_API_KEY;
-  if (!env || env === 'YOUR_ODDS_API_KEY_HERE' || env.startsWith('YOUR_')) {
-    return FALLBACK_API_KEY;
-  }
-  return env;
-}
+const ODDS_API_KEY = '378d22c76a76769fa0078d2d9e88fb60';
 
 async function sportsHandler(req, res) {
-  const apiKey = resolveApiKey();
+  const apiKey = ODDS_API_KEY;
 
   // Serve from cache while still valid
   if (cachedSports && Date.now() < cacheExpires) {

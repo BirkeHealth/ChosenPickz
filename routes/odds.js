@@ -48,27 +48,11 @@ function setCache(key, data) {
 
 // ── Handler ──────────────────────────────────────────────────────────────────
 
-// Fallback key (same value as config.js — already public to the browser)
-const FALLBACK_API_KEY = '378d22c76a76769fa0078d2d9e88fb60';
-
-function resolveApiKey() {
-  const env = process.env.ODDS_API_KEY;
-  // Treat missing, empty, or placeholder values as unset
-  if (!env || env === 'YOUR_ODDS_API_KEY_HERE' || env.startsWith('YOUR_')) {
-    return FALLBACK_API_KEY;
-  }
-  return env;
-}
+// Valid working key (same as config.js — already visible in the browser)
+const ODDS_API_KEY = '378d22c76a76769fa0078d2d9e88fb60';
 
 async function oddsHandler(req, res) {
-  const apiKey = resolveApiKey();
-
-  if (!apiKey) {
-    console.error('[odds] ODDS_API_KEY environment variable is not set');
-    res.writeHead(500, { 'Content-Type': 'application/json' });
-    res.end(JSON.stringify({ error: 'Odds API key is not configured on the server' }));
-    return;
-  }
+  const apiKey = ODDS_API_KEY;
 
   // Parse query parameters from the request URL
   const urlObj  = new URL(req.url, 'http://localhost');
