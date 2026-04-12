@@ -11,7 +11,7 @@
 </head>
 <body>
 
-  <!-- ── NAV ── -->
+  <!-- ── PRIMARY NAV ── -->
   <nav>
     <a class="nav-logo" href="index.html">
       CH<span class="ch-blue">0</span>SEN<span class="ch-blue">1</span> PICKZ
@@ -24,6 +24,18 @@
     </div>
   </nav>
 
+  <!-- ── SECONDARY SUB-NAV ── -->
+  <div class="sub-nav">
+    <div class="sub-nav-inner">
+      <a href="#picks-section" class="sub-nav-link active">🏆 Today's Picks</a>
+      <a href="#live-bets" class="sub-nav-link">📊 Live Odds</a>
+      <a href="#sports-news" class="sub-nav-link">📰 News</a>
+      <a href="#pricing" class="sub-nav-link">⭐ Pricing</a>
+      <a href="best-odds.html" class="sub-nav-link">💰 Best Odds</a>
+      <a href="https://t.me/chosen1pickz" target="_blank" rel="noopener noreferrer" class="sub-nav-link sub-nav-telegram">✈️ Free Telegram</a>
+    </div>
+  </div>
+
   <!-- ── HERO ── -->
   <section class="hero">
     <h1>
@@ -32,48 +44,56 @@
     <p>Expert MoneyLine, Spread &amp; O/U picks — powered by real-time odds.</p>
     <div class="hero-cta">
       <a href="#pricing" class="btn-primary">Join Now</a>
-    </div>
-    <div class="hero-cta" style="margin-top:0.75rem;">
-      <a href="https://t.me/chosen1pickz" target="_blank" rel="noopener noreferrer" class="btn-telegram">
-        ✈️ Join Our Free Telegram
-      </a>
+      <a href="https://t.me/chosen1pickz" target="_blank" rel="noopener noreferrer" class="btn-telegram">✈️ Free Telegram</a>
     </div>
   </section>
 
   <main>
 
-    <!-- ── PICKS SECTION (visible to all) ── -->
-    <section id="picks-section">
-      <h2 class="section-heading">&#127942; ChosenPickz</h2>
-      <div id="picks-display" class="picks-list">
-        <p class="loading-msg">No picks posted yet — check back soon!</p>
-      </div>
-    </section>
+    <!-- ── TWO-COLUMN LAYOUT WRAPPER ── -->
+    <div class="home-grid">
 
-    <!-- ── LIVE BETS ── -->
-    <section id="live-bets">
-      <h2 class="section-heading">&#9679; Live Bet Previews</h2>
-      <!-- Sportsbook toggle: switch which bookmaker's odds are displayed -->
-      <div class="bookmaker-toggle" aria-label="Select sportsbook">
-        <button class="bookmaker-toggle-btn active" data-bookmaker="all">All Books</button>
-        <button class="bookmaker-toggle-btn" data-bookmaker="fanduel">FanDuel</button>
-        <button class="bookmaker-toggle-btn" data-bookmaker="draftkings">DraftKings</button>
-        <button class="bookmaker-toggle-btn" data-bookmaker="betmgm">BetMGM</button>
-        <button class="bookmaker-toggle-btn" data-bookmaker="caesars">Caesars</button>
-        <button class="bookmaker-toggle-btn" data-bookmaker="hardrock">Hard Rock</button>
-      </div>
-      <div id="bets-container" class="bets-grid">
-        <p class="loading-msg">Loading upcoming games…</p>
-      </div>
-    </section>
+      <!-- ── LEFT COLUMN: Picks + Odds ── -->
+      <div class="home-main">
 
-    <!-- ── SPORTS NEWS ── -->
-    <section id="sports-news">
-      <h2 class="section-heading">&#9660; Sports News</h2>
-      <ul id="news-list" class="news-list">
-        <li class="loading-msg">Loading headlines…</li>
-      </ul>
-    </section>
+        <!-- ── PICKS SECTION (visible to all) ── -->
+        <section id="picks-section">
+          <h2 class="section-heading">&#127942; Today's Picks</h2>
+          <div id="picks-display" class="picks-list">
+            <p class="loading-msg">No picks posted yet — check back soon!</p>
+          </div>
+        </section>
+
+        <!-- ── LIVE BETS ── -->
+        <section id="live-bets">
+          <h2 class="section-heading">&#9679; Live Odds</h2>
+          <!-- Sportsbook toggle: switch which bookmaker's odds are displayed -->
+          <div class="bookmaker-toggle" aria-label="Select sportsbook">
+            <button class="bookmaker-toggle-btn active" data-bookmaker="all">All Books</button>
+            <button class="bookmaker-toggle-btn" data-bookmaker="fanduel">FanDuel</button>
+            <button class="bookmaker-toggle-btn" data-bookmaker="draftkings">DraftKings</button>
+            <button class="bookmaker-toggle-btn" data-bookmaker="betmgm">BetMGM</button>
+            <button class="bookmaker-toggle-btn" data-bookmaker="caesars">Caesars</button>
+            <button class="bookmaker-toggle-btn" data-bookmaker="hardrock">Hard Rock</button>
+          </div>
+          <div id="bets-container" class="bets-grid">
+            <p class="loading-msg">Loading upcoming games…</p>
+          </div>
+        </section>
+
+      </div><!-- end .home-main -->
+
+      <!-- ── RIGHT SIDEBAR: News ── -->
+      <aside class="home-sidebar">
+        <section id="sports-news">
+          <h2 class="section-heading">&#9660; Sports News</h2>
+          <ul id="news-list" class="news-list">
+            <li class="loading-msg">Loading headlines…</li>
+          </ul>
+        </section>
+      </aside>
+
+    </div><!-- end .home-grid -->
 
     <!-- ── PRICING ── -->
     <section id="pricing">
