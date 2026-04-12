@@ -46,6 +46,15 @@ const ROOT_STATIC_FILES = new Set([
   'scripts/sportsNews.js',
   'scripts/analysis.js',
   'scripts/pick.js',
+  // ── Handicapper portal ──
+  'login.html',
+  'dashboard.html',
+  'css/style.css',
+  'css/dashboard.css',
+  'js/auth.js',
+  'js/picks.js',
+  'js/blog.js',
+  'js/dashboard.js',
 ]);
 
 const HTML_404 = `<!DOCTYPE html>
