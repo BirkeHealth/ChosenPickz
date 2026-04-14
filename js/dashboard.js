@@ -504,7 +504,7 @@ const App = (() => {
             <div class="form-group">
               <label>Category</label>
               <select id="b-category">
-                ${categories.map(c => `<option ${v('category', 'NFL') === c ? 'selected' : ''}>${c}</option>`).join('')}
+                ${categories.map(c => `<option ${v('category') === c ? 'selected' : ''}>${c}</option>`).join('')}
               </select>
             </div>
             <div class="form-group">
