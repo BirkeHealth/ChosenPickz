@@ -187,8 +187,8 @@ const App = (() => {
                     <div class="mini-pick-left">
                       ${sportBadge(p.sport)}
                       <div>
-                        <div class="mini-pick-name">${escHtml(p.pick)}</div>
-                        <div class="mini-pick-game">${escHtml(p.game)}</div>
+                        <div class="mini-pick-name">${escHtml(p.pickDetails)}</div>
+                        <div class="mini-pick-game">${escHtml(p.matchup)}</div>
                       </div>
                     </div>
                     <div class="mini-pick-right">
@@ -268,9 +268,9 @@ const App = (() => {
                   <tr>
                     <td class="td-date">${p.date || '—'}</td>
                     <td>${sportBadge(p.sport)}</td>
-                    <td class="td-game"><span class="game-text">${escHtml(p.game)}</span></td>
-                    <td class="td-pick"><strong>${escHtml(p.pick)}</strong></td>
-                    <td class="td-type">${escHtml(p.betType)}</td>
+                    <td class="td-game"><span class="game-text">${escHtml(p.matchup)}</span></td>
+                    <td class="td-pick"><strong>${escHtml(p.pickDetails)}</strong></td>
+                    <td class="td-type">${escHtml(p.pickType)}</td>
                     <td class="td-odds">${escHtml(p.odds)}</td>
                     <td class="td-units">${p.units}u</td>
                     <td class="td-conf">${stars(parseInt(p.confidence) || 1)}</td>
@@ -327,16 +327,16 @@ const App = (() => {
           <div class="form-group">
             <label>Bet Type *</label>
             <select id="f-betType">
-              ${betTypes.map(t => `<option ${v('betType') === t ? 'selected' : ''}>${t}</option>`).join('')}
+              ${betTypes.map(t => `<option ${v('pickType') === t ? 'selected' : ''}>${t}</option>`).join('')}
             </select>
           </div>
           <div class="form-group span-2">
             <label>Game / Matchup *</label>
-            <input type="text" id="f-game" value="${v('game')}" placeholder="e.g., Kansas City Chiefs vs Baltimore Ravens">
+            <input type="text" id="f-game" value="${v('matchup')}" placeholder="e.g., Kansas City Chiefs vs Baltimore Ravens">
           </div>
           <div class="form-group">
             <label>Pick *</label>
-            <input type="text" id="f-pick" value="${v('pick')}" placeholder="e.g., Chiefs -3, Over 47.5">
+            <input type="text" id="f-pick" value="${v('pickDetails')}" placeholder="e.g., Chiefs -3, Over 47.5">
           </div>
           <div class="form-group">
             <label>Odds *</label>
@@ -362,7 +362,7 @@ const App = (() => {
           </div>
           <div class="form-group span-2">
             <label>Analysis / Notes</label>
-            <textarea id="f-notes" rows="4" placeholder="Reasoning behind this pick...">${pick ? (pick.notes || '') : ''}</textarea>
+            <textarea id="f-notes" rows="4" placeholder="Reasoning behind this pick...">${pick ? (pick.note || '') : ''}</textarea>
           </div>
         </div>
         <div class="form-actions">
@@ -375,19 +375,20 @@ const App = (() => {
 
   function savePick() {
     const data = {
-      sport:      document.getElementById('f-sport').value,
-      betType:    document.getElementById('f-betType').value,
-      game:       document.getElementById('f-game').value.trim(),
-      pick:       document.getElementById('f-pick').value.trim(),
-      odds:       document.getElementById('f-odds').value.trim(),
-      units:      parseFloat(document.getElementById('f-units').value) || 1,
-      confidence: parseInt(document.getElementById('f-confidence').value) || 3,
-      status:     document.getElementById('f-status').value,
-      date:       document.getElementById('f-date').value,
-      notes:      document.getElementById('f-notes').value.trim()
+      sport:           document.getElementById('f-sport').value,
+      pickType:        document.getElementById('f-betType').value,
+      matchup:         document.getElementById('f-game').value.trim(),
+      pickDetails:     document.getElementById('f-pick').value.trim(),
+      odds:            document.getElementById('f-odds').value.trim(),
+      units:           parseFloat(document.getElementById('f-units').value) || 1,
+      confidence:      parseInt(document.getElementById('f-confidence').value) || 3,
+      status:          document.getElementById('f-status').value,
+      date:            document.getElementById('f-date').value,
+      note:            document.getElementById('f-notes').value.trim(),
+      handicapperName: session.name || ''
     };
 
-    if (!data.game || !data.pick || !data.odds) {
+    if (!data.matchup || !data.pickDetails || !data.odds) {
       toast('Please fill in Game, Pick, and Odds.', 'error'); return;
     }
 
@@ -404,7 +405,7 @@ const App = (() => {
 
   function deletePick(id) {
     const pick = PicksManager.getById(id);
-    confirm(`Delete pick "${pick ? pick.pick : ''}"? This cannot be undone.`, () => {
+    confirm(`Delete pick "${pick ? pick.pickDetails : ''}"? This cannot be undone.`, () => {
       PicksManager.remove(id);
       toast('Pick deleted.', 'info');
       renderPicks();

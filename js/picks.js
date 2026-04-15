@@ -1,5 +1,5 @@
 const PicksManager = (() => {
-  const KEY = 'cpz_picks';
+  const KEY = 'cp_handicapper_picks';
 
   function getAll() {
     return JSON.parse(localStorage.getItem(KEY) || '[]');
@@ -21,6 +21,7 @@ const PicksManager = (() => {
       id: 'pick_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5),
       userId,
       ...data,
+      postedAt:  Date.now(),
       createdAt: Date.now(),
       updatedAt: Date.now()
     };
