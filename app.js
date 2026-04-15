@@ -35,26 +35,12 @@ const SPORTS = [
 
 // ── STORAGE HELPERS ────────────────────────────────────────────────────────
 
-const PICKS_KEY    = 'cp_admin_picks';
-const BETSLIP_KEY  = 'cp_betslip_legs';
+const BETSLIP_KEY   = 'cp_betslip_legs';
 const HCP_PICKS_KEY = 'cp_handicapper_picks';
-
-function getAdminPicks() {
-  try { return JSON.parse(localStorage.getItem(PICKS_KEY) || '[]'); }
-  catch { return []; }
-}
-
-function saveAdminPicks(picks) {
-  localStorage.setItem(PICKS_KEY, JSON.stringify(picks));
-}
 
 function getHandicapperPicks() {
   try { return JSON.parse(localStorage.getItem(HCP_PICKS_KEY) || '[]'); }
   catch { return []; }
-}
-
-function saveHandicapperPicks(picks) {
-  localStorage.setItem(HCP_PICKS_KEY, JSON.stringify(picks));
 }
 
 function saveBetSlip() {
@@ -367,58 +353,36 @@ function renderPicksSection() {
   const container = document.getElementById('picks-display');
   if (!container) return;
 
-  // Build today's date range for filtering handicapper picks
-  const todayStart = new Date();
-  todayStart.setHours(0, 0, 0, 0);
-  const todayEnd = new Date(todayStart);
-  todayEnd.setDate(todayStart.getDate() + 1);
+  // Filter picks to today's date only
+  const todayStr = new Date().toISOString().slice(0, 10);
 
-  const adminPicks = getAdminPicks();
-  const hcpTodayPicks = getHandicapperPicks().filter(function(p) {
-    const d = new Date(p.date + 'T00:00:00');
-    return d >= todayStart && d < todayEnd;
+  const todayPicks = getHandicapperPicks().filter(function(p) {
+    return p.date === todayStr;
   });
 
-  // Render admin picks
-  const adminHtml = adminPicks.map(function(pick) {
+  if (!todayPicks.length) {
+    container.innerHTML = '<p class="loading-msg">No picks posted yet — check back soon!</p>';
+    return;
+  }
+
+  container.innerHTML = todayPicks.map(function(pick) {
     const starsHtml  = '⭐'.repeat(pick.confidence || 3);
     const postedDate = pick.postedAt ? new Date(pick.postedAt).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : '';
-
+    const allowed    = ['win', 'loss', 'pending', 'push', 'void'];
+    const resultCls  = allowed.includes((pick.status || '').toLowerCase()) ? pick.status.toLowerCase() : 'pending';
     return `
       <div class="pick-card-new">
         <div class="pick-left">
           <span class="pick-sport-badge">${escapeHtml(pick.sport)}</span>
           <div class="pick-matchup-new">${escapeHtml(pick.matchup)}</div>
-          <div class="pick-meta-new">${escapeHtml(pick.type)} · ${starsHtml} · ${postedDate}</div>
-          <div class="pick-value-new">🏆 ${escapeHtml(pick.value)}</div>
-          ${pick.note ? `<div class="pick-note-new">${escapeHtml(pick.note)}</div>` : ''}
-        </div>
-      </div>`;
-  }).join('');
-
-  // Render today's handicapper picks
-  const hcpHtml = hcpTodayPicks.map(function(pick) {
-    const postedDate = pick.postedAt ? new Date(pick.postedAt).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : '';
-    return `
-      <div class="pick-card-new">
-        <div class="pick-left">
-          <span class="pick-sport-badge">${escapeHtml(pick.sport)}</span>
-          <div class="pick-matchup-new">${escapeHtml(pick.matchup)}</div>
-          <div class="pick-meta-new">${escapeHtml(pick.pickType)} · ${postedDate}</div>
+          <div class="pick-meta-new">${escapeHtml(pick.pickType)} · ${starsHtml} · ${postedDate}</div>
           <div class="pick-value-new">🏆 ${escapeHtml(pick.pickDetails)}</div>
           ${pick.note ? `<div class="pick-note-new">${escapeHtml(pick.note)}</div>` : ''}
           <div class="pick-handicapper">🏆 ${escapeHtml(pick.handicapperName || 'Handicapper')}</div>
         </div>
-        <span class="result-badge ${pick.result}">${pick.result}</span>
+        <span class="result-badge ${resultCls}">${escapeHtml(pick.status || 'Pending')}</span>
       </div>`;
   }).join('');
-
-  const combined = adminHtml + hcpHtml;
-  if (!combined) {
-    container.innerHTML = '<p class="loading-msg">No picks posted yet — check back soon!</p>';
-    return;
-  }
-  container.innerHTML = combined;
 }
 
 // ── BET SLIP CALCULATOR ───────────────────────────────────────────────────
