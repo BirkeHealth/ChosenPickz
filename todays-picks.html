@@ -67,20 +67,16 @@
           .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
       }
 
-      // Show today's date in heading
+      // Clarify that this page now shows all posted picks
       const dateLabel = document.getElementById('tp-date-label');
       if (dateLabel) {
-        dateLabel.textContent = new Date().toLocaleDateString([], { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+        dateLabel.textContent = 'Showing all posted picks';
       }
-
-      const todayStr = new Date().toISOString().slice(0, 10);
 
       function buildPicks(sportFilter) {
         const hcpAll = safeJson(HCP_PICKS_KEY);
-        const hcpToday = hcpAll.filter(function(p) { return p.date === todayStr; });
-
-        if (sportFilter === 'all') return hcpToday;
-        return hcpToday.filter(function(p) { return p.sport === sportFilter; });
+        if (sportFilter === 'all') return hcpAll;
+        return hcpAll.filter(function(p) { return p.sport === sportFilter; });
       }
 
       function renderPicks(sportFilter) {
@@ -90,7 +86,7 @@
         const picks = buildPicks(sportFilter);
 
         if (picks.length === 0) {
-          container.innerHTML = '<p class="tp-empty">No picks posted for today yet — check back soon!</p>';
+          container.innerHTML = '<p class="tp-empty">No picks posted yet — check back soon!</p>';
           return;
         }
 
