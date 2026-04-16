@@ -361,14 +361,21 @@ function renderPicksSection() {
     now.getUTCMonth(),
     now.getUTCDate() - now.getUTCDay()
   );
-  const endOfWeekUtcMs = startOfWeekUtcMs + (7 * MS_PER_DAY) - 1;
+  const endOfWeekExclusiveUtcMs = startOfWeekUtcMs + (7 * MS_PER_DAY);
 
   const weeklyPicks = getHandicapperPicks().filter(function(p) {
     let pickDayStartUtcMs = null;
     if (p.date) {
       const parts = String(p.date).split('-').map(Number);
       if (parts.length === 3 && parts.every(n => Number.isFinite(n))) {
-        pickDayStartUtcMs = Date.UTC(parts[0], parts[1] - 1, parts[2]);
+        const [year, month, day] = parts;
+        const candidateUtcMs = Date.UTC(year, month - 1, day);
+        const candidateDate = new Date(candidateUtcMs);
+        const isValidDate =
+          candidateDate.getUTCFullYear() === year &&
+          (candidateDate.getUTCMonth() + 1) === month &&
+          candidateDate.getUTCDate() === day;
+        if (isValidDate) pickDayStartUtcMs = candidateUtcMs;
       }
     }
     if (pickDayStartUtcMs === null && p.postedAt) {
@@ -378,7 +385,7 @@ function renderPicksSection() {
       }
     }
     if (pickDayStartUtcMs === null) return false;
-    return pickDayStartUtcMs >= startOfWeekUtcMs && pickDayStartUtcMs <= endOfWeekUtcMs;
+    return pickDayStartUtcMs >= startOfWeekUtcMs && pickDayStartUtcMs < endOfWeekExclusiveUtcMs;
   });
 
   if (!weeklyPicks.length) {
