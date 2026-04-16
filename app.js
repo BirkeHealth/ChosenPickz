@@ -354,19 +354,20 @@ function renderPicksSection() {
   if (!container) return;
 
   // Filter picks to the current week (Sunday through Saturday, UTC)
+  const MS_PER_DAY = 24 * 60 * 60 * 1000;
   const now = new Date();
   const startOfWeekUtcMs = Date.UTC(
     now.getUTCFullYear(),
     now.getUTCMonth(),
     now.getUTCDate() - now.getUTCDay()
   );
-  const endOfWeekUtcMs = startOfWeekUtcMs + (6 * 24 * 60 * 60 * 1000);
+  const endOfWeekUtcMs = startOfWeekUtcMs + (6 * MS_PER_DAY);
 
   const weeklyPicks = getHandicapperPicks().filter(function(p) {
     let pickUtcDayMs = null;
     if (p.date) {
       const parts = String(p.date).split('-').map(Number);
-      if (parts.length === 3 && parts.every(Number.isFinite)) {
+      if (parts.length === 3 && parts.every(n => Number.isFinite(n))) {
         pickUtcDayMs = Date.UTC(parts[0], parts[1] - 1, parts[2]);
       }
     }
