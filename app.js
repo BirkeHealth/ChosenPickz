@@ -353,25 +353,31 @@ function renderPicksSection() {
   const container = document.getElementById('picks-display');
   if (!container) return;
 
-  // Filter picks to the current week (Sunday through Saturday)
+  // Filter picks to the current week (Sunday through Saturday, UTC)
   const now = new Date();
-  const startOfWeek = new Date(now.getFullYear(), now.getMonth(), now.getDate() - now.getDay());
-  startOfWeek.setHours(0, 0, 0, 0);
-  const endOfWeek = new Date(startOfWeek);
-  endOfWeek.setDate(startOfWeek.getDate() + 6);
-  endOfWeek.setHours(23, 59, 59, 999);
+  const startOfWeekUtcMs = Date.UTC(
+    now.getUTCFullYear(),
+    now.getUTCMonth(),
+    now.getUTCDate() - now.getUTCDay()
+  );
+  const endOfWeekUtcMs = startOfWeekUtcMs + (6 * 24 * 60 * 60 * 1000);
 
   const weeklyPicks = getHandicapperPicks().filter(function(p) {
-    let pickDate = null;
+    let pickUtcDayMs = null;
     if (p.date) {
       const parts = String(p.date).split('-').map(Number);
       if (parts.length === 3 && parts.every(Number.isFinite)) {
-        pickDate = new Date(parts[0], parts[1] - 1, parts[2]);
+        pickUtcDayMs = Date.UTC(parts[0], parts[1] - 1, parts[2]);
       }
     }
-    if (!pickDate && p.postedAt) pickDate = new Date(p.postedAt);
-    if (!(pickDate instanceof Date) || isNaN(pickDate.getTime())) return false;
-    return pickDate >= startOfWeek && pickDate <= endOfWeek;
+    if (pickUtcDayMs === null && p.postedAt) {
+      const postedAt = new Date(p.postedAt);
+      if (!isNaN(postedAt.getTime())) {
+        pickUtcDayMs = Date.UTC(postedAt.getUTCFullYear(), postedAt.getUTCMonth(), postedAt.getUTCDate());
+      }
+    }
+    if (pickUtcDayMs === null) return false;
+    return pickUtcDayMs >= startOfWeekUtcMs && pickUtcDayMs <= endOfWeekUtcMs;
   });
 
   if (!weeklyPicks.length) {
