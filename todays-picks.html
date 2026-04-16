@@ -67,10 +67,10 @@
           .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
       }
 
-      // Show today's date in heading
+      // Clarify that this page now shows all posted picks
       const dateLabel = document.getElementById('tp-date-label');
       if (dateLabel) {
-        dateLabel.textContent = new Date().toLocaleDateString([], { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+        dateLabel.textContent = 'Showing all posted picks';
       }
 
       function buildPicks(sportFilter) {
