@@ -361,24 +361,24 @@ function renderPicksSection() {
     now.getUTCMonth(),
     now.getUTCDate() - now.getUTCDay()
   );
-  const endOfWeekUtcMs = startOfWeekUtcMs + (6 * MS_PER_DAY);
+  const endOfWeekUtcMs = startOfWeekUtcMs + (7 * MS_PER_DAY) - 1;
 
   const weeklyPicks = getHandicapperPicks().filter(function(p) {
-    let pickUtcDayMs = null;
+    let pickDayStartUtcMs = null;
     if (p.date) {
       const parts = String(p.date).split('-').map(Number);
       if (parts.length === 3 && parts.every(n => Number.isFinite(n))) {
-        pickUtcDayMs = Date.UTC(parts[0], parts[1] - 1, parts[2]);
+        pickDayStartUtcMs = Date.UTC(parts[0], parts[1] - 1, parts[2]);
       }
     }
-    if (pickUtcDayMs === null && p.postedAt) {
+    if (pickDayStartUtcMs === null && p.postedAt) {
       const postedAt = new Date(p.postedAt);
       if (!isNaN(postedAt.getTime())) {
-        pickUtcDayMs = Date.UTC(postedAt.getUTCFullYear(), postedAt.getUTCMonth(), postedAt.getUTCDate());
+        pickDayStartUtcMs = Date.UTC(postedAt.getUTCFullYear(), postedAt.getUTCMonth(), postedAt.getUTCDate());
       }
     }
-    if (pickUtcDayMs === null) return false;
-    return pickUtcDayMs >= startOfWeekUtcMs && pickUtcDayMs <= endOfWeekUtcMs;
+    if (pickDayStartUtcMs === null) return false;
+    return pickDayStartUtcMs >= startOfWeekUtcMs && pickDayStartUtcMs <= endOfWeekUtcMs;
   });
 
   if (!weeklyPicks.length) {
