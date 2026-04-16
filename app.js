@@ -353,19 +353,33 @@ function renderPicksSection() {
   const container = document.getElementById('picks-display');
   if (!container) return;
 
-  // Filter picks to today's date only
-  const todayStr = new Date().toISOString().slice(0, 10);
+  // Filter picks to the current week (Sunday through Saturday)
+  const now = new Date();
+  const startOfWeek = new Date(now.getFullYear(), now.getMonth(), now.getDate() - now.getDay());
+  startOfWeek.setHours(0, 0, 0, 0);
+  const endOfWeek = new Date(startOfWeek);
+  endOfWeek.setDate(startOfWeek.getDate() + 6);
+  endOfWeek.setHours(23, 59, 59, 999);
 
-  const todayPicks = getHandicapperPicks().filter(function(p) {
-    return p.date === todayStr;
+  const weeklyPicks = getHandicapperPicks().filter(function(p) {
+    let pickDate = null;
+    if (p.date) {
+      const parts = String(p.date).split('-').map(Number);
+      if (parts.length === 3 && parts.every(Number.isFinite)) {
+        pickDate = new Date(parts[0], parts[1] - 1, parts[2]);
+      }
+    }
+    if (!pickDate && p.postedAt) pickDate = new Date(p.postedAt);
+    if (!(pickDate instanceof Date) || isNaN(pickDate.getTime())) return false;
+    return pickDate >= startOfWeek && pickDate <= endOfWeek;
   });
 
-  if (!todayPicks.length) {
+  if (!weeklyPicks.length) {
     container.innerHTML = '<p class="loading-msg">No picks posted yet — check back soon!</p>';
     return;
   }
 
-  container.innerHTML = todayPicks.map(function(pick) {
+  container.innerHTML = weeklyPicks.map(function(pick) {
     const starsHtml  = '⭐'.repeat(pick.confidence || 3);
     const postedDate = pick.postedAt ? new Date(pick.postedAt).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : '';
     const allowed    = ['win', 'loss', 'pending', 'push', 'void'];
