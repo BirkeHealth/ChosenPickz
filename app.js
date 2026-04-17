@@ -36,11 +36,16 @@ const SPORTS = [
 // ── STORAGE HELPERS ────────────────────────────────────────────────────────
 
 const BETSLIP_KEY   = 'cp_betslip_legs';
-const HCP_PICKS_KEY = 'cp_handicapper_picks';
-
-function getHandicapperPicks() {
-  try { return JSON.parse(localStorage.getItem(HCP_PICKS_KEY) || '[]'); }
-  catch { return []; }
+async function getHandicapperPicks() {
+  try {
+    const res = await fetch('/api/picks');
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+    return Array.isArray(data) ? data : [];
+  } catch (err) {
+    console.error('Unable to load handicapper picks:', err);
+    return [];
+  }
 }
 
 function saveBetSlip() {
@@ -349,7 +354,7 @@ async function loadNews() {
 
 // ── RENDER PICKS SECTION (visible to all users) ──────────────────────────
 
-function renderPicksSection() {
+async function renderPicksSection() {
   const container = document.getElementById('picks-display');
   if (!container) return;
 
@@ -363,7 +368,8 @@ function renderPicksSection() {
   );
   const endOfWeekExclusiveUtcMs = startOfWeekUtcMs + (7 * MS_PER_DAY);
 
-  const weeklyPicks = getHandicapperPicks().filter(function(p) {
+  const allPicks = await getHandicapperPicks();
+  const weeklyPicks = allPicks.filter(function(p) {
     let pickDayStartUtcMs = null;
     if (p.date) {
       const parts = String(p.date).split('-').map(Number);
@@ -509,7 +515,7 @@ function updateBetSlipUI() {
 
 // ── INIT ───────────────────────────────────────────────────────────────────
 
-document.addEventListener('DOMContentLoaded', function () {
+document.addEventListener('DOMContentLoaded', async function () {
   // Close on Escape key
   document.addEventListener('keydown', e => {
     if (e.key === 'Escape') {
@@ -645,7 +651,7 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   // Render picks section for all users
-  renderPicksSection();
+  await renderPicksSection();
 
   // Load live data
   loadOdds();

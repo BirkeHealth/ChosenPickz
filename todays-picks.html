@@ -55,10 +55,16 @@
     // ── TODAY'S PICKS PAGE LOGIC ──────────────────────────────────────────
 
     (function initTodaysPicks() {
-      const HCP_PICKS_KEY = 'cp_handicapper_picks';
-
-      function safeJson(key) {
-        try { return JSON.parse(localStorage.getItem(key) || '[]'); } catch { return []; }
+      async function getAllPicks() {
+        try {
+          const res = await fetch('/api/picks');
+          if (!res.ok) throw new Error(`HTTP ${res.status}`);
+          const data = await res.json();
+          return Array.isArray(data) ? data : [];
+        } catch (err) {
+          console.error('Unable to load picks:', err);
+          return [];
+        }
       }
 
       function escHtml(str) {
@@ -73,17 +79,17 @@
         dateLabel.textContent = 'Showing all posted picks';
       }
 
-      function buildPicks(sportFilter) {
-        const hcpAll = safeJson(HCP_PICKS_KEY);
+      async function buildPicks(sportFilter) {
+        const hcpAll = await getAllPicks();
         if (sportFilter === 'all') return hcpAll;
         return hcpAll.filter(function(p) { return p.sport === sportFilter; });
       }
 
-      function renderPicks(sportFilter) {
+      async function renderPicks(sportFilter) {
         const container = document.getElementById('tp-picks-container');
         if (!container) return;
 
-        const picks = buildPicks(sportFilter);
+        const picks = await buildPicks(sportFilter);
 
         if (picks.length === 0) {
           container.innerHTML = '<p class="tp-empty">No picks posted yet — check back soon!</p>';
