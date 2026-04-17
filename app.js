@@ -48,6 +48,18 @@ async function getHandicapperPicks() {
   }
 }
 
+async function getHandicapperPosts() {
+  try {
+    const res = await fetch('/api/posts');
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+    return Array.isArray(data) ? data : [];
+  } catch (err) {
+    console.error('Unable to load handicapper posts:', err);
+    return [];
+  }
+}
+
 function saveBetSlip() {
   localStorage.setItem(BETSLIP_KEY, JSON.stringify(betSlipLegs));
 }
@@ -82,6 +94,24 @@ function sportLabel(sportKey) {
     basketball_nba:         'NBA',
   };
   return labels[sportKey] || sportKey.toUpperCase();
+}
+
+function stripHtml(html) {
+  const div = document.createElement('div');
+  div.innerHTML = String(html || '');
+  return div.textContent || div.innerText || '';
+}
+
+function truncateText(text, maxLen) {
+  if (!text || text.length <= maxLen) return text || '';
+  return text.slice(0, maxLen - 1).trimEnd() + '…';
+}
+
+function formatPostDate(ts) {
+  if (!ts) return '';
+  const d = new Date(ts);
+  if (isNaN(d.getTime())) return '';
+  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 }
 
 function getOdds(outcomes, name) {
@@ -419,6 +449,43 @@ async function renderPicksSection() {
   }).join('');
 }
 
+// ── RENDER HANDICAPPER BLOG SECTION (visible to all users) ──────────────────
+
+async function renderBlogSection() {
+  const list = document.getElementById('handicapper-blog-list');
+  if (!list) return;
+
+  const posts = await getHandicapperPosts();
+  const publishedPosts = posts
+    .filter((p) => String(p.status || '').toLowerCase() === 'published')
+    .sort((a, b) => (Number(b.publishedAt || b.createdAt || 0) - Number(a.publishedAt || a.createdAt || 0)))
+    .slice(0, 5);
+
+  if (!publishedPosts.length) {
+    list.innerHTML = '<li class="loading-msg">No handicapper updates yet — check back soon.</li>';
+    return;
+  }
+
+  list.innerHTML = publishedPosts.map((post) => {
+    const preview = truncateText(
+      (post.excerpt && String(post.excerpt).trim()) || stripHtml(post.content || ''),
+      130
+    );
+    const author = post.authorName || 'Handicapper';
+    const postDate = formatPostDate(post.publishedAt || post.createdAt);
+
+    return `
+      <li class="blog-feed-item">
+        <a class="blog-feed-link" href="blog-post.html?id=${encodeURIComponent(post.id)}">
+          <div class="blog-feed-title">${escapeHtml(post.title || 'Untitled Post')}</div>
+          <div class="blog-feed-meta">By ${escapeHtml(author)}${postDate ? ` &mdash; ${escapeHtml(postDate)}` : ''}</div>
+          <p class="blog-feed-snippet">${escapeHtml(preview)}</p>
+        </a>
+      </li>
+    `;
+  }).join('');
+}
+
 // ── BET SLIP CALCULATOR ───────────────────────────────────────────────────
 
 // American-odds → decimal multiplier
@@ -650,8 +717,11 @@ document.addEventListener('DOMContentLoaded', async function () {
     bsParlayWager.addEventListener('input', updateBetSlipUI);
   }
 
-  // Render picks section for all users
-  await renderPicksSection();
+  // Render public homepage sections
+  await Promise.all([
+    renderPicksSection(),
+    renderBlogSection()
+  ]);
 
   // Load live data
   loadOdds();

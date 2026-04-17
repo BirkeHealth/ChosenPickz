@@ -652,7 +652,8 @@ const App = (() => {
       excerpt:       document.getElementById('b-excerpt').value.trim(),
       featuredImage: document.getElementById('b-image').value.trim(),
       content,
-      status
+      status,
+      authorName: session.name || 'Handicapper'
     };
 
     try {

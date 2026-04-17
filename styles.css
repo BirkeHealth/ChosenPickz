@@ -541,6 +541,77 @@ main section { margin-bottom: 3rem; }
   margin-top: 0.25rem;
 }
 
+/* ── HANDICAPPER BLOG FEED ── */
+#handicapper-news { margin-top: 1.5rem; }
+.blog-feed-list {
+  list-style: none;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+.blog-feed-item {
+  border-top: 1px solid var(--surface2);
+}
+.blog-feed-item:last-child {
+  border-bottom: 1px solid var(--surface2);
+}
+.blog-feed-link {
+  display: block;
+  text-decoration: none;
+  color: inherit;
+  padding: 0.8rem 0;
+  transition: background 0.15s;
+}
+.blog-feed-link:hover { background: rgba(255,255,255,0.02); }
+.blog-feed-title {
+  color: var(--text);
+  font-size: 0.9rem;
+  font-weight: 700;
+  line-height: 1.4;
+}
+.blog-feed-link:hover .blog-feed-title { color: var(--orange); }
+.blog-feed-meta {
+  font-size: 0.72rem;
+  color: var(--gold);
+  margin-top: 0.25rem;
+}
+.blog-feed-snippet {
+  font-size: 0.8rem;
+  color: var(--muted);
+  margin-top: 0.35rem;
+  line-height: 1.45;
+}
+
+/* ── BLOG POST PAGE ── */
+.blog-post-wrapper {
+  max-width: 860px;
+  margin: 0 auto;
+}
+.blog-post-card {
+  background: var(--surface);
+  border: 1px solid var(--surface2);
+  border-radius: 12px;
+  padding: 1.5rem;
+}
+.blog-post-title {
+  font-size: clamp(1.5rem, 4vw, 2.4rem);
+  line-height: 1.2;
+  margin-bottom: 0.75rem;
+}
+.blog-post-meta {
+  color: var(--gold);
+  font-size: 0.88rem;
+  margin-bottom: 1rem;
+}
+.blog-post-body {
+  color: var(--text);
+  line-height: 1.75;
+  font-size: 0.96rem;
+}
+.blog-post-body p { margin-bottom: 1rem; }
+.blog-post-body h1, .blog-post-body h2, .blog-post-body h3 { line-height: 1.3; margin: 1rem 0 0.6rem; }
+.blog-post-body ul, .blog-post-body ol { margin: 0.8rem 0 1rem 1.4rem; }
+
 /* ── PRICING ── */
 .pricing-grid {
   display: grid;

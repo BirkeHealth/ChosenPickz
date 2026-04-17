@@ -42,6 +42,7 @@ const initPromise = (async () => {
     CREATE TABLE IF NOT EXISTS posts (
       id TEXT PRIMARY KEY,
       user_id TEXT,
+      author_name TEXT,
       title TEXT,
       category TEXT,
       tags TEXT,
@@ -49,10 +50,14 @@ const initPromise = (async () => {
       featured_image TEXT,
       content TEXT,
       status TEXT,
+      published_at BIGINT,
       created_at BIGINT,
       updated_at BIGINT
     )
   `);
+
+  await pool.query('ALTER TABLE posts ADD COLUMN IF NOT EXISTS author_name TEXT');
+  await pool.query('ALTER TABLE posts ADD COLUMN IF NOT EXISTS published_at BIGINT');
 
   console.log('[startup] PostgreSQL tables ready (picks, posts).');
 })().catch((err) => {

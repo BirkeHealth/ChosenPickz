@@ -29,6 +29,7 @@ const ROOT_STATIC_FILES = new Set([
   'all-odds.html',
   'news.html',
   'analysis.html',
+  'blog-post.html',
   'pick.html',
   'about.html',
   'todays-picks.html',
@@ -46,6 +47,7 @@ const ROOT_STATIC_FILES = new Set([
   'scripts/news.js',
   'scripts/sportsNews.js',
   'scripts/analysis.js',
+  'scripts/blogPost.js',
   'scripts/pick.js',
   // ── Handicapper portal ──
   'login.html',
@@ -188,6 +190,7 @@ function mapPostRow(row) {
   return {
     id: row.id,
     userId: row.user_id,
+    authorName: row.author_name,
     title: row.title,
     category: row.category,
     tags: row.tags,
@@ -195,6 +198,7 @@ function mapPostRow(row) {
     featuredImage: row.featured_image,
     content: row.content,
     status: row.status,
+    publishedAt: row.published_at,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   };
@@ -403,6 +407,7 @@ async function handlePostsApi(req, res, urlObj) {
     const post = {
       id: body.id || makeId('post'),
       userId: body.userId,
+      authorName: body.authorName || 'Handicapper',
       title: body.title || '',
       category: body.category || '',
       tags: body.tags || '',
@@ -410,21 +415,24 @@ async function handlePostsApi(req, res, urlObj) {
       featuredImage: body.featuredImage || '',
       content: body.content || '',
       status: body.status || 'Draft',
+      publishedAt: (body.status || 'Draft') === 'Published'
+        ? (Number.isFinite(Number(body.publishedAt)) ? Number(body.publishedAt) : now)
+        : (Number.isFinite(Number(body.publishedAt)) ? Number(body.publishedAt) : null),
       createdAt: Number.isFinite(Number(body.createdAt)) ? Number(body.createdAt) : now,
       updatedAt: now,
     };
 
     await db.query(
       `INSERT INTO posts (
-        id, user_id, title, category, tags, excerpt,
-        featured_image, content, status, created_at, updated_at
+        id, user_id, author_name, title, category, tags, excerpt,
+        featured_image, content, status, published_at, created_at, updated_at
       ) VALUES (
-        $1, $2, $3, $4, $5, $6,
-        $7, $8, $9, $10, $11
+        $1, $2, $3, $4, $5, $6, $7,
+        $8, $9, $10, $11, $12, $13
       )`,
       [
-        post.id, post.userId, post.title, post.category, post.tags, post.excerpt,
-        post.featuredImage, post.content, post.status, post.createdAt, post.updatedAt,
+        post.id, post.userId, post.authorName, post.title, post.category, post.tags, post.excerpt,
+        post.featuredImage, post.content, post.status, post.publishedAt, post.createdAt, post.updatedAt,
       ]
     );
 
@@ -449,6 +457,7 @@ async function handlePostsApi(req, res, urlObj) {
       const body = await readJsonBody(req);
       const updates = [
         ['user_id', body.userId],
+        ['author_name', body.authorName],
         ['title', body.title],
         ['category', body.category],
         ['tags', body.tags],
@@ -456,9 +465,13 @@ async function handlePostsApi(req, res, urlObj) {
         ['featured_image', body.featuredImage],
         ['content', body.content],
         ['status', body.status],
+        ['published_at', body.publishedAt],
         ['created_at', body.createdAt],
       ].filter(([, value]) => value !== undefined);
 
+      if (body.status === 'Published' && body.publishedAt === undefined) {
+        updates.push(['published_at', Date.now()]);
+      }
       updates.push(['updated_at', Date.now()]);
 
       const setClause = updates.map(([col], i) => `${col} = $${i + 1}`).join(', ');
