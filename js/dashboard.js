@@ -61,6 +61,77 @@ const App = (() => {
     setTimeout(() => el.classList.remove('show'), 3200);
   }
 
+  function getErrorMessage(err) {
+    const msg = err && err.message ? String(err.message) : 'Unable to load this view right now.';
+    if (msg.includes('Database is not configured')) {
+      return 'Database is not configured yet. You can still open the add forms, but saving requires DATABASE_URL on the server.';
+    }
+    return msg;
+  }
+
+  function renderViewFallback(view, err) {
+    const msg = escHtml(getErrorMessage(err));
+
+    if (view === 'overview') {
+      document.getElementById('view-overview').innerHTML = `
+        <div class="empty-card">
+          <div class="empty-icon">⚠️</div>
+          <h3>Overview unavailable</h3>
+          <p>${msg}</p>
+          <div class="form-actions mt-1">
+            <button class="btn btn-primary" onclick="App.newPick()">+ New Pick</button>
+            <button class="btn btn-ghost" onclick="App.newPost()">+ New Post</button>
+          </div>
+        </div>
+      `;
+      return;
+    }
+
+    if (view === 'picks') {
+      document.getElementById('view-picks').innerHTML = `
+        <div class="page-header">
+          <div>
+            <h2 class="page-title-inner">My Picks</h2>
+            <p class="page-sub">Unable to load picks list.</p>
+          </div>
+          <button class="btn btn-primary" onclick="App.newPick()">+ New Pick</button>
+        </div>
+        <div class="empty-card">
+          <div class="empty-icon">⚠️</div>
+          <p>${msg}</p>
+        </div>
+      `;
+      return;
+    }
+
+    if (view === 'blog') {
+      document.getElementById('view-blog').innerHTML = `
+        <div class="page-header">
+          <div>
+            <h2 class="page-title-inner">Blog Posts</h2>
+            <p class="page-sub">Unable to load posts list.</p>
+          </div>
+          <button class="btn btn-primary" onclick="App.newPost()">+ New Post</button>
+        </div>
+        <div class="empty-card">
+          <div class="empty-icon">⚠️</div>
+          <p>${msg}</p>
+        </div>
+      `;
+      return;
+    }
+
+    const fallbackEl = document.getElementById('view-' + view);
+    if (fallbackEl) {
+      fallbackEl.innerHTML = `
+        <div class="empty-card">
+          <div class="empty-icon">⚠️</div>
+          <p>${msg}</p>
+        </div>
+      `;
+    }
+  }
+
   // ─── Confirm Modal ─────────────────────────────────────────────────────────
 
   function confirm(msg, onYes) {
@@ -100,13 +171,18 @@ const App = (() => {
     // Close mobile sidebar
     document.querySelector('.sidebar').classList.remove('open');
 
-    switch (view) {
-      case 'overview':     await renderOverview(); break;
-      case 'picks':        await renderPicks(); break;
-      case 'pick-form':    await renderPickForm(data.id); break;
-      case 'blog':         await renderBlog(); break;
-      case 'blog-form':    await renderBlogForm(data.id); break;
-      case 'blog-preview': await renderBlogPreview(data.id); break;
+    try {
+      switch (view) {
+        case 'overview':     await renderOverview(); break;
+        case 'picks':        await renderPicks(); break;
+        case 'pick-form':    await renderPickForm(data.id); break;
+        case 'blog':         await renderBlog(); break;
+        case 'blog-form':    await renderBlogForm(data.id); break;
+        case 'blog-preview': await renderBlogPreview(data.id); break;
+      }
+    } catch (err) {
+      toast(getErrorMessage(err), 'error');
+      renderViewFallback(view, err);
     }
   }
 
