@@ -1148,6 +1148,52 @@ footer {
   font-style: italic;
 }
 .pick-confidence-stars { color: var(--gold); font-size: 0.85rem; margin-top: 0.15rem; }
+
+/* Homepage Hard Rock style preview card */
+.pick-card-hardrock {
+  background: linear-gradient(145deg, #121212 0%, #1a1a1a 55%, #0f0f0f 100%);
+  border: 1px solid rgba(212,160,23,0.45);
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,0.04), 0 10px 24px rgba(0,0,0,0.35);
+}
+.pick-card-hardrock:hover {
+  border-color: rgba(212,160,23,0.8);
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,0.06), 0 12px 26px rgba(0,0,0,0.45);
+}
+.pick-card-hardrock .pick-value-new {
+  color: #f6d37a;
+}
+.pick-hardrock-stats {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.5rem;
+  margin-top: 0.6rem;
+}
+.pick-hardrock-stat {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(212,160,23,0.25);
+  border-radius: 8px;
+  padding: 0.45rem 0.55rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+.pick-hardrock-label {
+  font-size: 0.68rem;
+  color: var(--muted);
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  font-weight: 700;
+}
+.pick-hardrock-value {
+  font-size: 0.92rem;
+  color: var(--gold);
+  font-weight: 700;
+}
+@media (max-width: 560px) {
+  .pick-hardrock-stats {
+    grid-template-columns: 1fr;
+  }
+}
 .pick-lock-badge {
   display: inline-block;
   font-size: 0.72rem;
