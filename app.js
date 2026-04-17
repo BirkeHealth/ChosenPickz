@@ -452,7 +452,7 @@ async function renderPicksSection() {
               <span class="pick-hardrock-value">${escapeHtml(amountText)}</span>
             </div>
             <div class="pick-hardrock-stat">
-              <span class="pick-hardrock-label">Calculated Winning</span>
+              <span class="pick-hardrock-label">Calculated Winnings</span>
               <span class="pick-hardrock-value">${escapeHtml(winningText)}</span>
             </div>
           </div>
