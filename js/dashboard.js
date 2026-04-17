@@ -63,7 +63,7 @@ const App = (() => {
 
   function getErrorMessage(err) {
     const msg = err && err.message ? String(err.message) : 'Unable to load this view right now.';
-    if (msg.includes('Database is not configured')) {
+    if (/database.*not configured/i.test(msg)) {
       return 'Database is not configured yet. You can still open the add forms, but saving requires DATABASE_URL on the server.';
     }
     return msg;
