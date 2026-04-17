@@ -28,11 +28,12 @@
       Array.from(el.attributes).forEach((attr) => {
         const name = attr.name.toLowerCase();
         const value = String(attr.value || '').trim().toLowerCase();
+        const hasUnsafeScheme = /^(javascript|data|vbscript):/.test(value);
         if (name.startsWith('on')) {
           el.removeAttribute(attr.name);
           return;
         }
-        if ((name === 'href' || name === 'src') && value.startsWith('javascript:')) {
+        if ((name === 'href' || name === 'src') && hasUnsafeScheme) {
           el.removeAttribute(attr.name);
         }
       });
