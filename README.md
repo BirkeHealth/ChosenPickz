@@ -45,7 +45,7 @@ Located at the project root (`index.html`). Served at `/`.
 - Responsive hero section with brand colors (Black, Gold, Orange, Royal Blue)
 - Live Odds — real-time game odds from [The Odds API](https://the-odds-api.com/) with a sportsbook toggle
 - Sports News — latest headlines from [NewsAPI.org](https://newsapi.org/)
-- Pricing section — Starter / Pro / Elite plans
+- Pricing section — Starter / Pro / Elite / Ch0sen1 plans
 - Authentication modal — Login + Sign Up with email confirmation
 - Best Available Odds page (`best-odds.html`)
 - Handicapper dashboard and board portal access for authenticated users
