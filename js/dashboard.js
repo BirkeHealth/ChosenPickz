@@ -76,7 +76,7 @@ const App = (() => {
 
   // ─── Navigation ────────────────────────────────────────────────────────────
 
-  function navigate(view, data = {}) {
+  async function navigate(view, data = {}) {
     document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
     document.querySelectorAll('[data-nav]').forEach(n => n.classList.remove('active'));
 
@@ -101,21 +101,25 @@ const App = (() => {
     document.querySelector('.sidebar').classList.remove('open');
 
     switch (view) {
-      case 'overview':     renderOverview(); break;
-      case 'picks':        renderPicks(); break;
-      case 'pick-form':    renderPickForm(data.id); break;
-      case 'blog':         renderBlog(); break;
-      case 'blog-form':    renderBlogForm(data.id); break;
-      case 'blog-preview': renderBlogPreview(data.id); break;
+      case 'overview':     await renderOverview(); break;
+      case 'picks':        await renderPicks(); break;
+      case 'pick-form':    await renderPickForm(data.id); break;
+      case 'blog':         await renderBlog(); break;
+      case 'blog-form':    await renderBlogForm(data.id); break;
+      case 'blog-preview': await renderBlogPreview(data.id); break;
     }
   }
 
   // ─── Overview ──────────────────────────────────────────────────────────────
 
-  function renderOverview() {
-    const stats = PicksManager.getStats(session.userId);
-    const recentPicks = PicksManager.getByUser(session.userId).slice(0, 5);
-    const recentPosts = BlogManager.getByUser(session.userId).slice(0, 3);
+  async function renderOverview() {
+    const [stats, picks, posts] = await Promise.all([
+      PicksManager.getStats(session.userId),
+      PicksManager.getByUser(session.userId),
+      BlogManager.getByUser(session.userId)
+    ]);
+    const recentPicks = picks.slice(0, 5);
+    const recentPosts = posts.slice(0, 3);
 
     const unitsColor = parseFloat(stats.units) >= 0 ? 'var(--green)' : 'var(--red)';
 
@@ -225,8 +229,8 @@ const App = (() => {
 
   // ─── Picks List ────────────────────────────────────────────────────────────
 
-  function renderPicks() {
-    const allPicks = PicksManager.getByUser(session.userId);
+  async function renderPicks() {
+    const allPicks = await PicksManager.getByUser(session.userId);
     const filters = ['All', 'Pending', 'Win', 'Loss', 'Push'];
     const filtered = currentFilter === 'All' ? allPicks : allPicks.filter(p => p.status === currentFilter);
 
@@ -298,9 +302,9 @@ const App = (() => {
 
   // ─── Pick Form ─────────────────────────────────────────────────────────────
 
-  function renderPickForm(pickId = null) {
+  async function renderPickForm(pickId = null) {
     editingPickId = pickId || null;
-    const pick = pickId ? PicksManager.getById(pickId) : null;
+    const pick = pickId ? await PicksManager.getById(pickId) : null;
     const v = (field, def = '') => pick ? escHtml(pick[field] || def) : def;
 
     const sports = ['NFL','NBA','MLB','NHL','NCAAF','NCAAB','Soccer','Tennis','Golf','Boxing','MMA','Other'];
@@ -373,7 +377,7 @@ const App = (() => {
     `;
   }
 
-  function savePick() {
+  async function savePick() {
     const data = {
       sport:           document.getElementById('f-sport').value,
       pickType:        document.getElementById('f-betType').value,
@@ -392,30 +396,38 @@ const App = (() => {
       toast('Please fill in Game, Pick, and Odds.', 'error'); return;
     }
 
-    if (editingPickId) {
-      PicksManager.update(editingPickId, data);
-      toast('Pick updated successfully!');
-    } else {
-      PicksManager.create(session.userId, data);
-      toast('Pick saved successfully!');
+    try {
+      if (editingPickId) {
+        await PicksManager.update(editingPickId, data);
+        toast('Pick updated successfully!');
+      } else {
+        await PicksManager.create(session.userId, data);
+        toast('Pick saved successfully!');
+      }
+      editingPickId = null;
+      navigate('picks');
+    } catch (err) {
+      toast(err.message || 'Unable to save pick.', 'error');
     }
-    editingPickId = null;
-    navigate('picks');
   }
 
-  function deletePick(id) {
-    const pick = PicksManager.getById(id);
-    confirm(`Delete pick "${pick ? pick.pickDetails : ''}"? This cannot be undone.`, () => {
-      PicksManager.remove(id);
-      toast('Pick deleted.', 'info');
-      renderPicks();
+  async function deletePick(id) {
+    const pick = await PicksManager.getById(id);
+    confirm(`Delete pick "${pick ? pick.pickDetails : ''}"? This cannot be undone.`, async () => {
+      try {
+        await PicksManager.remove(id);
+        toast('Pick deleted.', 'info');
+        renderPicks();
+      } catch (err) {
+        toast(err.message || 'Unable to delete pick.', 'error');
+      }
     });
   }
 
   // ─── Blog List ─────────────────────────────────────────────────────────────
 
-  function renderBlog() {
-    const posts = BlogManager.getByUser(session.userId);
+  async function renderBlog() {
+    const posts = await BlogManager.getByUser(session.userId);
 
     document.getElementById('view-blog').innerHTML = `
       <div class="page-header">
@@ -461,9 +473,9 @@ const App = (() => {
 
   // ─── Blog Editor ───────────────────────────────────────────────────────────
 
-  function renderBlogForm(postId = null) {
+  async function renderBlogForm(postId = null) {
     editingPostId = postId || null;
-    const post = postId ? BlogManager.getById(postId) : null;
+    const post = postId ? await BlogManager.getById(postId) : null;
     const v = (field, def = '') => post ? (post[field] || def) : def;
 
     const categories = ['NFL','NBA','MLB','NHL','NCAAF','NCAAB','Soccer','Tennis','Golf','Boxing','MMA','General'];
@@ -547,7 +559,7 @@ const App = (() => {
     }
   }
 
-  function savePost(status) {
+  async function savePost(status) {
     const title = document.getElementById('b-title').value.trim();
     if (!title) { toast('Please enter a title.', 'error'); return; }
 
@@ -566,30 +578,38 @@ const App = (() => {
       status
     };
 
-    if (editingPostId) {
-      BlogManager.update(editingPostId, data);
-      toast(`Post ${status === 'Published' ? 'published' : 'saved as draft'}!`);
-    } else {
-      BlogManager.create(session.userId, data);
-      toast(`Post ${status === 'Published' ? 'published' : 'saved as draft'}!`);
+    try {
+      if (editingPostId) {
+        await BlogManager.update(editingPostId, data);
+        toast(`Post ${status === 'Published' ? 'published' : 'saved as draft'}!`);
+      } else {
+        await BlogManager.create(session.userId, data);
+        toast(`Post ${status === 'Published' ? 'published' : 'saved as draft'}!`);
+      }
+      editingPostId = null;
+      navigate('blog');
+    } catch (err) {
+      toast(err.message || 'Unable to save post.', 'error');
     }
-    editingPostId = null;
-    navigate('blog');
   }
 
-  function deletePost(id) {
-    const post = BlogManager.getById(id);
-    confirm(`Delete "${post ? post.title : 'this post'}"? This cannot be undone.`, () => {
-      BlogManager.remove(id);
-      toast('Post deleted.', 'info');
-      renderBlog();
+  async function deletePost(id) {
+    const post = await BlogManager.getById(id);
+    confirm(`Delete "${post ? post.title : 'this post'}"? This cannot be undone.`, async () => {
+      try {
+        await BlogManager.remove(id);
+        toast('Post deleted.', 'info');
+        renderBlog();
+      } catch (err) {
+        toast(err.message || 'Unable to delete post.', 'error');
+      }
     });
   }
 
   // ─── Blog Preview ──────────────────────────────────────────────────────────
 
-  function renderBlogPreview(postId) {
-    const post = BlogManager.getById(postId);
+  async function renderBlogPreview(postId) {
+    const post = await BlogManager.getById(postId);
     if (!post) { navigate('blog'); return; }
 
     const tags = post.tags ? post.tags.split(',').map(t => t.trim()).filter(Boolean) : [];
@@ -644,12 +664,12 @@ const App = (() => {
 
   // ─── Init ──────────────────────────────────────────────────────────────────
 
-  function init() {
+  async function init() {
     if (!AuthManager.requireAuth()) return;
     session = AuthManager.getSession();
 
-    PicksManager.init(session.userId);
-    BlogManager.init(session.userId);
+    await PicksManager.init(session.userId);
+    await BlogManager.init(session.userId);
 
     // Populate header
     document.getElementById('user-display-name').textContent = session.name;
@@ -673,7 +693,7 @@ const App = (() => {
       document.querySelector('.sidebar').classList.toggle('open');
     });
 
-    navigate('overview');
+    await navigate('overview');
   }
 
   return {

@@ -90,7 +90,7 @@ For a production deployment, replace this with a secure server-side auth system.
 ## Handicapper Dashboard & Today's Picks
 
 Role-based features for users who sign up as **Handicapper** (`handicapper`).
-All pick data is stored in `localStorage` under the key `cp_handicapper_picks`.
+Pick and blog post data are persisted through server API routes backed by PostgreSQL (`DATABASE_URL`).
 
 ## Admin Role-Switcher (Developer / QA Tool)
 

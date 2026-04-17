@@ -1,72 +1,63 @@
 const PicksManager = (() => {
-  const KEY = 'cp_handicapper_picks';
-
-  function getAll() {
-    return JSON.parse(localStorage.getItem(KEY) || '[]');
-  }
-
-  function getByUser(userId) {
-    return getAll()
-      .filter(p => p.userId === userId)
-      .sort((a, b) => b.createdAt - a.createdAt);
-  }
-
-  function init(userId) {
-    // No-op: picks start empty and are only populated by user-created entries.
-  }
-
-  function create(userId, data) {
-    const all = getAll();
-    const pick = {
-      id: 'pick_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5),
-      userId,
-      ...data,
-      postedAt:  Date.now(),
-      createdAt: Date.now(),
-      updatedAt: Date.now()
-    };
-    all.push(pick);
-    localStorage.setItem(KEY, JSON.stringify(all));
-    return pick;
-  }
-
-  function update(id, data) {
-    const all = getAll();
-    const idx = all.findIndex(p => p.id === id);
-    if (idx === -1) return null;
-    all[idx] = { ...all[idx], ...data, updatedAt: Date.now() };
-    localStorage.setItem(KEY, JSON.stringify(all));
-    return all[idx];
-  }
-
-  function remove(id) {
-    localStorage.setItem(KEY, JSON.stringify(getAll().filter(p => p.id !== id)));
-  }
-
-  function getById(id) {
-    return getAll().find(p => p.id === id) || null;
-  }
-
-  function getStats(userId) {
-    const picks = getByUser(userId);
-    const wins = picks.filter(p => p.status === 'Win').length;
-    const losses = picks.filter(p => p.status === 'Loss').length;
-    const pending = picks.filter(p => p.status === 'Pending').length;
-    const settled = wins + losses;
-    const winRate = settled > 0 ? ((wins / settled) * 100).toFixed(1) : '0.0';
-
-    let units = 0;
-    picks.forEach(p => {
-      const u = parseFloat(p.units) || 1;
-      const odds = parseInt(p.odds) || -110;
-      if (p.status === 'Win') {
-        units += odds < 0 ? u * (100 / Math.abs(odds)) : u * (odds / 100);
-      } else if (p.status === 'Loss') {
-        units -= u;
-      }
+  async function request(url, options = {}) {
+    const res = await fetch(url, {
+      headers: { 'Content-Type': 'application/json' },
+      ...options
     });
 
-    return { total: picks.length, wins, losses, pending, winRate, units: units.toFixed(2) };
+    let payload = null;
+    try { payload = await res.json(); } catch (_) {}
+
+    if (!res.ok) {
+      const msg = payload && payload.error ? payload.error : `Request failed (${res.status})`;
+      const err = new Error(msg);
+      err.status = res.status;
+      throw err;
+    }
+
+    return payload;
+  }
+
+  async function init() {
+    // No-op: data is loaded from server APIs.
+  }
+
+  async function create(userId, data) {
+    return request('/api/picks', {
+      method: 'POST',
+      body: JSON.stringify({ userId, ...data })
+    });
+  }
+
+  async function update(id, data) {
+    return request(`/api/picks/${encodeURIComponent(id)}`, {
+      method: 'PUT',
+      body: JSON.stringify(data)
+    });
+  }
+
+  async function remove(id) {
+    return request(`/api/picks/${encodeURIComponent(id)}`, {
+      method: 'DELETE'
+    });
+  }
+
+  async function getById(id) {
+    try {
+      return await request(`/api/picks/${encodeURIComponent(id)}`);
+    } catch (err) {
+      if (err.status === 404) return null;
+      throw err;
+    }
+  }
+
+  async function getByUser(userId) {
+    const query = userId ? `?userId=${encodeURIComponent(userId)}` : '';
+    return request(`/api/picks${query}`);
+  }
+
+  async function getStats(userId) {
+    return request(`/api/picks/stats?userId=${encodeURIComponent(userId)}`);
   }
 
   return { init, create, update, remove, getById, getByUser, getStats };

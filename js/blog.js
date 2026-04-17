@@ -1,49 +1,59 @@
 const BlogManager = (() => {
-  const KEY = 'cpz_posts';
+  async function request(url, options = {}) {
+    const res = await fetch(url, {
+      headers: { 'Content-Type': 'application/json' },
+      ...options
+    });
 
-  function getAll() {
-    return JSON.parse(localStorage.getItem(KEY) || '[]');
+    let payload = null;
+    try { payload = await res.json(); } catch (_) {}
+
+    if (!res.ok) {
+      const msg = payload && payload.error ? payload.error : `Request failed (${res.status})`;
+      const err = new Error(msg);
+      err.status = res.status;
+      throw err;
+    }
+
+    return payload;
   }
 
-  function getByUser(userId) {
-    return getAll()
-      .filter(p => p.userId === userId)
-      .sort((a, b) => b.createdAt - a.createdAt);
+  async function init() {
+    // No-op: data is loaded from server APIs.
   }
 
-  function init(userId) {
-    // No-op: posts start empty and are only populated by user-created entries.
+  async function create(userId, data) {
+    return request('/api/posts', {
+      method: 'POST',
+      body: JSON.stringify({ userId, ...data })
+    });
   }
 
-  function create(userId, data) {
-    const all = getAll();
-    const post = {
-      id: 'post_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5),
-      userId,
-      ...data,
-      createdAt: Date.now(),
-      updatedAt: Date.now()
-    };
-    all.push(post);
-    localStorage.setItem(KEY, JSON.stringify(all));
-    return post;
+  async function update(id, data) {
+    return request(`/api/posts/${encodeURIComponent(id)}`, {
+      method: 'PUT',
+      body: JSON.stringify(data)
+    });
   }
 
-  function update(id, data) {
-    const all = getAll();
-    const idx = all.findIndex(p => p.id === id);
-    if (idx === -1) return null;
-    all[idx] = { ...all[idx], ...data, updatedAt: Date.now() };
-    localStorage.setItem(KEY, JSON.stringify(all));
-    return all[idx];
+  async function remove(id) {
+    return request(`/api/posts/${encodeURIComponent(id)}`, {
+      method: 'DELETE'
+    });
   }
 
-  function remove(id) {
-    localStorage.setItem(KEY, JSON.stringify(getAll().filter(p => p.id !== id)));
+  async function getById(id) {
+    try {
+      return await request(`/api/posts/${encodeURIComponent(id)}`);
+    } catch (err) {
+      if (err.status === 404) return null;
+      throw err;
+    }
   }
 
-  function getById(id) {
-    return getAll().find(p => p.id === id) || null;
+  async function getByUser(userId) {
+    const query = userId ? `?userId=${encodeURIComponent(userId)}` : '';
+    return request(`/api/posts${query}`);
   }
 
   return { init, create, update, remove, getById, getByUser };
