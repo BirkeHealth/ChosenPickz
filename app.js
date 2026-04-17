@@ -353,19 +353,47 @@ function renderPicksSection() {
   const container = document.getElementById('picks-display');
   if (!container) return;
 
-  // Filter picks to today's date only
-  const todayStr = new Date().toISOString().slice(0, 10);
+  // Filter picks to the current week (Sunday through Saturday, UTC)
+  const MS_PER_DAY = 24 * 60 * 60 * 1000;
+  const now = new Date();
+  const startOfWeekUtcMs = Date.UTC(
+    now.getUTCFullYear(),
+    now.getUTCMonth(),
+    now.getUTCDate() - now.getUTCDay()
+  );
+  const endOfWeekExclusiveUtcMs = startOfWeekUtcMs + (7 * MS_PER_DAY);
 
-  const todayPicks = getHandicapperPicks().filter(function(p) {
-    return p.date === todayStr;
+  const weeklyPicks = getHandicapperPicks().filter(function(p) {
+    let pickDayStartUtcMs = null;
+    if (p.date) {
+      const parts = String(p.date).split('-').map(Number);
+      if (parts.length === 3 && parts.every(n => Number.isFinite(n))) {
+        const [year, month, day] = parts;
+        const candidateUtcMs = Date.UTC(year, month - 1, day);
+        const candidateDate = new Date(candidateUtcMs);
+        const isValidDate =
+          candidateDate.getUTCFullYear() === year &&
+          (candidateDate.getUTCMonth() + 1) === month &&
+          candidateDate.getUTCDate() === day;
+        if (isValidDate) pickDayStartUtcMs = candidateUtcMs;
+      }
+    }
+    if (pickDayStartUtcMs === null && p.postedAt) {
+      const postedAt = new Date(p.postedAt);
+      if (!isNaN(postedAt.getTime())) {
+        pickDayStartUtcMs = Date.UTC(postedAt.getUTCFullYear(), postedAt.getUTCMonth(), postedAt.getUTCDate());
+      }
+    }
+    if (pickDayStartUtcMs === null) return false;
+    return pickDayStartUtcMs >= startOfWeekUtcMs && pickDayStartUtcMs < endOfWeekExclusiveUtcMs;
   });
 
-  if (!todayPicks.length) {
+  if (!weeklyPicks.length) {
     container.innerHTML = '<p class="loading-msg">No picks posted yet — check back soon!</p>';
     return;
   }
 
-  container.innerHTML = todayPicks.map(function(pick) {
+  container.innerHTML = weeklyPicks.map(function(pick) {
     const starsHtml  = '⭐'.repeat(pick.confidence || 3);
     const postedDate = pick.postedAt ? new Date(pick.postedAt).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : '';
     const allowed    = ['win', 'loss', 'pending', 'push', 'void'];
