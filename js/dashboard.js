@@ -38,8 +38,9 @@ const App = (() => {
   }
 
   function stars(n) {
-    const filled = '★'.repeat(n);
-    const empty = '☆'.repeat(5 - n);
+    const clamped = Math.max(0, Math.min(5, parseInt(n) || 0));
+    const filled = '★'.repeat(clamped);
+    const empty = '☆'.repeat(5 - clamped);
     return `<span class="stars">${filled}</span><span class="stars-empty">${empty}</span>`;
   }
 
@@ -353,7 +354,7 @@ const App = (() => {
                     <td class="td-type">${escHtml(p.pickType)}</td>
                     <td class="td-odds">${escHtml(p.odds)}</td>
                     <td class="td-units">${p.units}u</td>
-                    <td class="td-conf">${stars(parseInt(p.confidence) || 1)}</td>
+                    <td class="td-conf">${stars(Math.max(0, Math.min(5, parseInt(p.confidence) || 1)))}</td>
                     <td>${statusBadge(p.status)}</td>
                     <td class="td-actions">
                       <button class="icon-btn" title="Edit" onclick="App.editPick('${p.id}')">✏️</button>
@@ -461,7 +462,7 @@ const App = (() => {
       pickDetails:     document.getElementById('f-pick').value.trim(),
       odds:            document.getElementById('f-odds').value.trim(),
       units:           parseFloat(document.getElementById('f-units').value) || 1,
-      confidence:      parseInt(document.getElementById('f-confidence').value) || 3,
+      confidence:      Math.max(1, Math.min(5, parseInt(document.getElementById('f-confidence').value) || 3)),
       status:          document.getElementById('f-status').value,
       date:            document.getElementById('f-date').value,
       note:            document.getElementById('f-notes').value.trim(),

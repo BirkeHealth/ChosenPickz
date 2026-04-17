@@ -279,7 +279,7 @@ async function handlePicksApi(req, res, urlObj) {
       pickDetails: body.pickDetails || '',
       odds: body.odds || '',
       units: body.units,
-      confidence: body.confidence,
+      confidence: Math.max(1, Math.min(5, parseInt(body.confidence) || 3)),
       status: body.status || 'Pending',
       date: body.date || '',
       note: body.note || '',
@@ -323,6 +323,9 @@ async function handlePicksApi(req, res, urlObj) {
 
     if (req.method === 'PUT') {
       const body = await readJsonBody(req);
+      const clampedConfidence = body.confidence !== undefined
+        ? Math.max(1, Math.min(5, parseInt(body.confidence) || 3))
+        : undefined;
       const updates = [
         ['user_id', body.userId],
         ['sport', body.sport],
@@ -331,7 +334,7 @@ async function handlePicksApi(req, res, urlObj) {
         ['pick_details', body.pickDetails],
         ['odds', body.odds],
         ['units', body.units],
-        ['confidence', body.confidence],
+        ['confidence', clampedConfidence],
         ['status', body.status],
         ['date', body.date],
         ['note', body.note],
