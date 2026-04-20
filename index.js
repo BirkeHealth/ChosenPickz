@@ -36,6 +36,7 @@ const ROOT_STATIC_FILES = new Set([
   'handicapper-portal.html',
   // ── Root scripts & styles ──
   'styles.css',
+  'components/ScoreboardCarousel/ScoreboardCarousel.css',
   'app.js',
   'config.js',
   'picks.js',
