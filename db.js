@@ -59,7 +59,40 @@ const initPromise = (async () => {
   await pool.query('ALTER TABLE posts ADD COLUMN IF NOT EXISTS author_name TEXT');
   await pool.query('ALTER TABLE posts ADD COLUMN IF NOT EXISTS published_at BIGINT');
 
-  console.log('[startup] PostgreSQL tables ready (picks, posts).');
+  // ── Users & Sessions (server-side auth) ──────────────────────────────────
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS users (
+      id TEXT PRIMARY KEY,
+      email TEXT NOT NULL,
+      username TEXT NOT NULL,
+      name TEXT NOT NULL,
+      role TEXT NOT NULL DEFAULT 'member',
+      password_hash TEXT NOT NULL,
+      created_at BIGINT NOT NULL,
+      updated_at BIGINT NOT NULL,
+      CONSTRAINT users_email_unique UNIQUE (email),
+      CONSTRAINT users_username_unique UNIQUE (username)
+    )
+  `);
+
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS sessions (
+      id TEXT PRIMARY KEY,
+      user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      token_hash TEXT NOT NULL,
+      created_at BIGINT NOT NULL,
+      expires_at BIGINT NOT NULL
+    )
+  `);
+
+  await pool.query(
+    'CREATE INDEX IF NOT EXISTS sessions_token_hash_idx ON sessions (token_hash)'
+  );
+  await pool.query(
+    'CREATE INDEX IF NOT EXISTS sessions_user_id_idx ON sessions (user_id)'
+  );
+
+  console.log('[startup] PostgreSQL tables ready (picks, posts, users, sessions).');
 })().catch((err) => {
   initError = err;
   console.error('[startup] PostgreSQL initialization failed:', err.message);

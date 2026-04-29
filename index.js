@@ -4,11 +4,16 @@ const path = require('path');
 const oddsHandler   = require('./routes/odds');
 const sportsHandler = require('./routes/sports');
 const newsHandler   = require('./routes/news');
+const { handleAuthApi } = require('./routes/auth');
 const db = require('./db');
 
 const PORT = process.env.PORT || 3000;
 
 // ── Startup environment checks ────────────────────────────────────────────────
+if (!process.env.SESSION_SECRET || process.env.SESSION_SECRET === 'CHANGE_ME_TO_A_RANDOM_STRING') {
+  console.warn('[startup] WARNING: SESSION_SECRET is not set or is still the default value.');
+  console.warn('[startup]   Generate a strong random secret and set SESSION_SECRET in your .env file.');
+}
 if (!process.env.NEWS_API_KEY || process.env.NEWS_API_KEY === 'YOUR_NEWS_API_KEY_HERE') {
   console.warn('[startup] WARNING: NEWS_API_KEY is not set. Sports news will be unavailable.');
   console.warn('[startup]   Set NEWS_API_KEY in your .env file or as a server environment variable.');
@@ -554,6 +559,18 @@ const server = http.createServer(async (req, res) => {
       const code = err.statusCode || 500;
       sendJson(res, code, { error: code === 500 ? 'Internal server error' : err.message });
       if (code === 500) console.error('[api/posts] error:', err);
+    }
+    return;
+  }
+
+  // ── Auth API ────────────────────────────────────────────────────────────────
+  if (urlPath.startsWith('/api/auth')) {
+    try {
+      await handleAuthApi(req, res);
+    } catch (err) {
+      const code = err.statusCode || 500;
+      sendJson(res, code, { error: code === 500 ? 'Internal server error' : err.message });
+      if (code === 500) console.error('[api/auth] error:', err);
     }
     return;
   }

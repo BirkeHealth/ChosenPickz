@@ -65,11 +65,8 @@
         </button>
       </form>
 
-      <div class="login-demo">
-        <p>Demo credentials:</p>
-        <code>admin / Picks2024!</code>
-        &nbsp;·&nbsp;
-        <code>admin@chosenpickz.com / Picks2024!</code>
+      <div class="login-footer-note">
+        <p>Contact your administrator to receive login credentials.</p>
       </div>
     </div>
 
@@ -81,10 +78,10 @@
 
   <script src="js/auth.js"></script>
   <script>
-    // Redirect if already logged in
-    if (AuthManager.isLoggedIn()) {
-      window.location.replace('dashboard.html');
-    }
+    // Redirect if already logged in (async check against server)
+    AuthManager.initSession().then(session => {
+      if (session) window.location.replace('dashboard.html');
+    });
 
     document.getElementById('toggle-pw').addEventListener('click', function () {
       const pw = document.getElementById('password');
@@ -92,7 +89,7 @@
       this.textContent = pw.type === 'password' ? '👁' : '🙈';
     });
 
-    document.getElementById('login-form').addEventListener('submit', function (e) {
+    document.getElementById('login-form').addEventListener('submit', async function (e) {
       e.preventDefault();
 
       const identifier = document.getElementById('username').value.trim();
@@ -109,20 +106,18 @@
 
       btn.textContent = 'Signing in…';
       btn.disabled = true;
+      errEl.classList.add('hidden');
 
-      // Short delay for UX feel
-      setTimeout(() => {
-        const result = AuthManager.login(identifier, password, remember);
-        if (result.success) {
-          window.location.href = 'dashboard.html';
-        } else {
-          errEl.textContent = result.message;
-          errEl.classList.remove('hidden');
-          btn.textContent = 'Sign In';
-          btn.disabled = false;
-          setTimeout(() => errEl.classList.add('hidden'), 5000);
-        }
-      }, 400);
+      const result = await AuthManager.login(identifier, password, remember);
+      if (result.success) {
+        window.location.href = 'dashboard.html';
+      } else {
+        errEl.textContent = result.message;
+        errEl.classList.remove('hidden');
+        btn.textContent = 'Sign In';
+        btn.disabled = false;
+        setTimeout(() => errEl.classList.add('hidden'), 5000);
+      }
     });
   </script>
 
