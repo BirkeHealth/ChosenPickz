@@ -249,6 +249,11 @@ input, select, textarea, button {
   border: 1px solid rgba(248,81,73,0.3);
   color: var(--red);
 }
+.alert-success {
+  background: var(--green-bg);
+  border: 1px solid rgba(63,185,80,0.3);
+  color: var(--green);
+}
 .hidden { display: none !important; }
 
 /* Demo credentials */

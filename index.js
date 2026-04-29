@@ -57,6 +57,7 @@ const ROOT_STATIC_FILES = new Set([
   'scripts/pick.js',
   // ── Handicapper portal ──
   'login.html',
+  'register.html',
   'dashboard.html',
   'all-odds.html',
   'css/style.css',
