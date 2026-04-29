@@ -114,10 +114,10 @@
   <script src="js/dashboard.js"></script>
 
   <script>
-    // Sync header user info once DOM + scripts are ready
-    document.addEventListener('DOMContentLoaded', () => {
-      const session = AuthManager.getSession();
-      if (!session) return;
+    // Require server-side auth; populate header once session is confirmed
+    document.addEventListener('DOMContentLoaded', async () => {
+      const session = await AuthManager.requireAuth();
+      if (!session) return; // requireAuth redirects to login.html if not authenticated
       const hAvatar = document.getElementById('user-avatar-initial-header');
       const hName   = document.getElementById('user-display-name-header');
       if (hAvatar) hAvatar.textContent = session.name.charAt(0).toUpperCase();

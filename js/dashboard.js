@@ -743,8 +743,10 @@ const App = (() => {
   // ─── Init ──────────────────────────────────────────────────────────────────
 
   async function init() {
-    if (!AuthManager.requireAuth()) return;
-    session = AuthManager.getSession();
+    session = await AuthManager.requireAuth();
+    if (!session) return;
+    // Normalise: server returns `id`; dashboard code uses `userId`
+    if (!session.userId) session.userId = session.id;
 
     await PicksManager.init(session.userId);
     await BlogManager.init(session.userId);
