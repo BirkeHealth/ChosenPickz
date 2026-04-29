@@ -80,8 +80,8 @@ const AdminPanel = (() => {
   // ── Navigation ─────────────────────────────────────────────────────────────
 
   function showView(name) {
-    document.getElementById('view-users').style.display = name === 'users' ? '' : 'none';
-    document.getElementById('view-posts').style.display = name === 'posts' ? '' : 'none';
+    document.getElementById('view-users').style.display = name === 'users' ? 'block' : 'none';
+    document.getElementById('view-posts').style.display = name === 'posts' ? 'block' : 'none';
     document.getElementById('page-title').textContent = name === 'users' ? 'Users' : 'Posts';
     document.querySelectorAll('.sidebar-nav a[data-nav]').forEach(a => {
       a.classList.toggle('active', a.dataset.nav === name);
