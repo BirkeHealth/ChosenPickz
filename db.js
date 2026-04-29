@@ -78,7 +78,8 @@ const initPromise = (async () => {
     )
   `);
 
-  // Migration: add disabled column to existing tables
+  // Migration: add disabled column for databases created before this column was introduced.
+  // If the table was just created above (new install), this is a safe no-op.
   await pool.query('ALTER TABLE users ADD COLUMN IF NOT EXISTS disabled BOOLEAN NOT NULL DEFAULT FALSE');
 
   await pool.query(`

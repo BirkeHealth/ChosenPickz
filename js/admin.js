@@ -134,7 +134,6 @@ const AdminPanel = (() => {
   }
 
   async function changeUserRole(userId, newRole, selectEl) {
-    const originalRole = selectEl.dataset.original || selectEl.options[Array.from(selectEl.options).findIndex(o => o.value !== newRole) >= 0 ? selectEl.selectedIndex : 0].value;
     try {
       const res = await fetch(`/api/admin/users/${encodeURIComponent(userId)}`, {
         method: 'PATCH',
@@ -152,7 +151,7 @@ const AdminPanel = (() => {
       renderUsers(filterUsers());
     } catch (err) {
       showToast(err.message, 'error');
-      // Re-render to revert select
+      // Re-render to revert select to current state
       renderUsers(filterUsers());
     }
   }
@@ -230,7 +229,7 @@ const AdminPanel = (() => {
             <option value="Archived"  ${p.status === 'Archived'  ? 'selected' : ''}>Archived</option>
           </select>
           <button class="action-btn btn-danger-sm"
-            onclick="AdminPanel.deletePost('${p.id}', ${JSON.stringify(p.title || 'Untitled')})">
+            onclick="AdminPanel.deletePost('${p.id}')">
             Delete
           </button>
         </td>
@@ -258,7 +257,9 @@ const AdminPanel = (() => {
     }
   }
 
-  async function deletePost(postId, title) {
+  async function deletePost(postId) {
+    const post = _allPosts.find(p => p.id === postId);
+    const title = post ? (post.title || 'Untitled') : 'this post';
     const ok = await confirm('Delete Post', `Permanently delete "${title}"? This cannot be undone.`);
     if (!ok) return;
     try {

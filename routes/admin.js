@@ -133,7 +133,9 @@ async function handleAdminApi(req, res) {
 
     // If user was disabled, delete all their sessions so they are logged out immediately
     if (body.disabled === true) {
-      await db.query('DELETE FROM sessions WHERE user_id = $1', [resourceId]).catch(() => {});
+      await db.query('DELETE FROM sessions WHERE user_id = $1', [resourceId]).catch((err) => {
+        console.error('[admin] Failed to delete sessions for disabled user:', err.message);
+      });
     }
 
     return sendJson(res, 200, mapUserRow(result.rows[0]));
