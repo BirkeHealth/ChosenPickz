@@ -5,6 +5,7 @@ const oddsHandler   = require('./routes/odds');
 const sportsHandler = require('./routes/sports');
 const newsHandler   = require('./routes/news');
 const { handleAuthApi } = require('./routes/auth');
+const { handleAdminApi } = require('./routes/admin');
 const db = require('./db');
 
 const PORT = process.env.PORT || 3000;
@@ -66,6 +67,9 @@ const ROOT_STATIC_FILES = new Set([
   'js/picks.js',
   'js/blog.js',
   'js/dashboard.js',
+  // ── Admin ──
+  'admin.html',
+  'js/admin.js',
 ]);
 
 const HTML_404 = `<!DOCTYPE html>
@@ -572,6 +576,18 @@ const server = http.createServer(async (req, res) => {
       const code = err.statusCode || 500;
       sendJson(res, code, { error: code === 500 ? 'Internal server error' : err.message });
       if (code === 500) console.error('[api/auth] error:', err);
+    }
+    return;
+  }
+
+  // ── Admin API ───────────────────────────────────────────────────────────────
+  if (urlPath.startsWith('/api/admin')) {
+    try {
+      await handleAdminApi(req, res);
+    } catch (err) {
+      const code = err.statusCode || 500;
+      sendJson(res, code, { error: code === 500 ? 'Internal server error' : err.message });
+      if (code === 500) console.error('[api/admin] error:', err);
     }
     return;
   }

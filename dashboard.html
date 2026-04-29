@@ -36,6 +36,13 @@
         <a href="#" data-nav="blog">
           <span class="nav-icon">✍️</span> Blog Posts
         </a>
+
+        <div id="admin-nav-section" style="display:none;">
+          <div class="nav-section-label">Admin</div>
+          <a href="admin.html" id="admin-nav-link">
+            <span class="nav-icon">🛡️</span> Admin Panel
+          </a>
+        </div>
       </nav>
 
       <div class="sidebar-footer">
@@ -122,6 +129,12 @@
       const hName   = document.getElementById('user-display-name-header');
       if (hAvatar) hAvatar.textContent = session.name.charAt(0).toUpperCase();
       if (hName)   hName.textContent   = session.name;
+
+      // Show admin nav link only for admin users
+      if (session.role === 'admin') {
+        const adminSection = document.getElementById('admin-nav-section');
+        if (adminSection) adminSection.style.display = 'block';
+      }
     });
   </script>
 

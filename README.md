@@ -17,11 +17,17 @@ This repository contains a single Node.js-served site centered on the CH0SEN1 PI
 ```bash
 npm install
 cp .env.example .env
-# Edit .env and set NEWS_API_KEY, ODDS_API_KEY, and SMTP_* variables
+# Edit .env and fill in:
+#   DATABASE_URL  — PostgreSQL connection string
+#   SESSION_SECRET — random string (see .env.example for generation command)
+#   ADMIN_EMAIL / ADMIN_PASSWORD — create the first admin on startup
+#   NEWS_API_KEY, ODDS_API_KEY, and SMTP_* — optional API integrations
 npm start
 ```
 
 Then open [http://localhost:3000](http://localhost:3000).
+
+To access the admin panel, navigate to [http://localhost:3000/admin.html](http://localhost:3000/admin.html) and log in with the admin credentials you set via `ADMIN_EMAIL` / `ADMIN_PASSWORD`.
 
 ---
 
@@ -101,35 +107,27 @@ node -e "console.log(require('crypto').randomBytes(48).toString('hex'))"
 
 #### Database migration
 
-The `users` and `sessions` tables are created automatically on first start via
-`db.js` (`CREATE TABLE IF NOT EXISTS …`).  No separate migration step is needed.
+The `users`, `sessions`, `picks`, and `posts` tables are created automatically on
+first start via `db.js` (`CREATE TABLE IF NOT EXISTS …`).  A `disabled` column is
+added to `users` automatically on upgrade.  No separate migration step is needed.
 
-#### Creating the first admin user
+#### Creating the first admin — environment variables (recommended)
 
-After the tables exist, insert an admin user with a bcrypt-hashed password:
+Set the following environment variables before starting the server:
 
 ```bash
-# 1. Generate a bcrypt hash for your chosen password (12 rounds)
-node -e "const b=require('bcryptjs'); b.hash('YourPassword123!', 12).then(h => console.log(h))"
-
-# 2. Insert into the database (replace values as needed)
-psql "$DATABASE_URL" <<'SQL'
-INSERT INTO users (id, email, username, name, role, password_hash, created_at, updated_at)
-VALUES (
-  'usr_admin_001',
-  'admin@chosenpickz.com',
-  'admin',
-  'Pro Handicapper',
-  'admin',
-  '<paste bcrypt hash here>',
-  extract(epoch from now())::bigint * 1000,
-  extract(epoch from now())::bigint * 1000
-);
-SQL
+ADMIN_EMAIL=owner@example.com
+ADMIN_PASSWORD=a-very-strong-password-here
+ADMIN_USERNAME=siteadmin   # optional, defaults to "admin"
+ADMIN_NAME="Site Owner"    # optional, defaults to "Admin"
 ```
 
-Alternatively, call `POST /api/auth/register` with `{ email, username, password, name }`
-and then update the `role` column directly in the database.
+On startup, the server will:
+- Create the admin user if the email does not exist yet.
+- Promote the user to `admin` role if the email already exists with a different role.
+- Skip silently if an admin with that email already exists.
+
+After the admin is created you can **remove or unset** `ADMIN_PASSWORD` from the environment — the hash is already stored in the database.
 
 #### Auth API endpoints
 
@@ -139,6 +137,31 @@ and then update the `role` column directly in the database.
 | `POST` | `/api/auth/login` | Login (`identifier`, `password`, `remember`) → sets `cpz_session` cookie |
 | `POST` | `/api/auth/logout` | Clear cookie and delete server-side session |
 | `GET` | `/api/auth/me` | Return current user or 401 |
+
+#### Admin API endpoints (require admin session)
+
+| Method | Path | Description |
+|---|---|---|
+| `GET` | `/api/admin/users` | List all users |
+| `PATCH` | `/api/admin/users/:id` | Update user `role` and/or `disabled` flag |
+| `GET` | `/api/admin/posts` | List all posts (optional `?status=` and `?userId=` filters) |
+| `PATCH` | `/api/admin/posts/:id` | Update post `status` (Draft / Published / Archived) |
+| `DELETE` | `/api/admin/posts/:id` | Permanently delete a post |
+
+---
+
+## Admin Panel
+
+Accessible at `/admin.html`.  Requires an active session with `role = 'admin'`.
+Non-admin users are automatically redirected to the dashboard.
+
+### Features
+
+- **Users** — view all registered users; change role (member / handicapper / admin);
+  enable or disable accounts.  Disabled users are immediately logged out and cannot
+  log in until re-enabled.
+- **Posts** — list all posts with status/author filters; change post status
+  (Draft / Published / Archived); permanently delete posts.
 
 ---
 

@@ -1,3 +1,5 @@
+const crypto = require('crypto');
+const bcrypt = require('bcryptjs');
 const { Pool } = require('pg');
 
 const DATABASE_URL = process.env.DATABASE_URL;
@@ -68,12 +70,16 @@ const initPromise = (async () => {
       name TEXT NOT NULL,
       role TEXT NOT NULL DEFAULT 'member',
       password_hash TEXT NOT NULL,
+      disabled BOOLEAN NOT NULL DEFAULT FALSE,
       created_at BIGINT NOT NULL,
       updated_at BIGINT NOT NULL,
       CONSTRAINT users_email_unique UNIQUE (email),
       CONSTRAINT users_username_unique UNIQUE (username)
     )
   `);
+
+  // Migration: add disabled column to existing tables
+  await pool.query('ALTER TABLE users ADD COLUMN IF NOT EXISTS disabled BOOLEAN NOT NULL DEFAULT FALSE');
 
   await pool.query(`
     CREATE TABLE IF NOT EXISTS sessions (
@@ -93,6 +99,38 @@ const initPromise = (async () => {
   );
 
   console.log('[startup] PostgreSQL tables ready (picks, posts, users, sessions).');
+
+  // ── Admin seeding ─────────────────────────────────────────────────────────
+  const adminEmail    = process.env.ADMIN_EMAIL;
+  const adminPassword = process.env.ADMIN_PASSWORD;
+  const adminUsername = process.env.ADMIN_USERNAME || 'admin';
+  const adminName     = process.env.ADMIN_NAME     || 'Admin';
+
+  if (adminEmail && adminPassword) {
+    const existing = await pool.query(
+      'SELECT id, role FROM users WHERE lower(email) = lower($1) LIMIT 1',
+      [adminEmail]
+    );
+    if (existing.rows.length === 0) {
+      const passwordHash = await bcrypt.hash(adminPassword, 12);
+      const now = Date.now();
+      const id = `usr_${now}_${crypto.randomBytes(4).toString('hex')}`;
+      await pool.query(
+        `INSERT INTO users (id, email, username, name, role, password_hash, disabled, created_at, updated_at)
+         VALUES ($1, $2, $3, $4, 'admin', $5, FALSE, $6, $7)`,
+        [id, adminEmail.toLowerCase(), adminUsername.toLowerCase(), adminName, passwordHash, now, now]
+      );
+      console.log(`[startup] Admin user created: ${adminEmail}`);
+    } else if (existing.rows[0].role !== 'admin') {
+      await pool.query(
+        'UPDATE users SET role = $1, updated_at = $2 WHERE lower(email) = lower($3)',
+        ['admin', Date.now(), adminEmail]
+      );
+      console.log(`[startup] Existing user promoted to admin: ${adminEmail}`);
+    } else {
+      console.log(`[startup] Admin user already exists: ${adminEmail}`);
+    }
+  }
 })().catch((err) => {
   initError = err;
   console.error('[startup] PostgreSQL initialization failed:', err.message);
