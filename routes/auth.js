@@ -100,6 +100,7 @@ async function readJsonBody(req) {
 /**
  * Load the authenticated user from the request's session cookie.
  * Returns the user row (without password_hash) or null.
+ * Returns null (treating as unauthenticated) if the user account is disabled.
  */
 async function loadUserFromRequest(req) {
   if (!db.isConfigured()) return null;
@@ -111,7 +112,7 @@ async function loadUserFromRequest(req) {
   const now = Date.now();
 
   const result = await db.query(
-    `SELECT u.id, u.email, u.username, u.name, u.role, u.created_at
+    `SELECT u.id, u.email, u.username, u.name, u.role, u.disabled, u.created_at
      FROM sessions s
      JOIN users u ON u.id = s.user_id
      WHERE s.token_hash = $1
@@ -120,7 +121,10 @@ async function loadUserFromRequest(req) {
     [tokenHash, now]
   );
 
-  return result.rows[0] || null;
+  const user = result.rows[0] || null;
+  // Treat disabled accounts as unauthenticated
+  if (user && user.disabled) return null;
+  return user;
 }
 
 // ── Route handler ────────────────────────────────────────────────────────────
@@ -215,6 +219,10 @@ async function handleAuthApi(req, res) {
       return sendJson(res, 401, { error: 'Invalid username or password.' });
     }
 
+    if (user.disabled) {
+      return sendJson(res, 403, { error: 'This account has been disabled. Please contact support.' });
+    }
+
     // Create session
     const token = generateToken();
     const tokenHash = hashToken(token);
@@ -280,4 +288,4 @@ async function handleAuthApi(req, res) {
   sendJson(res, 404, { error: 'Not found' });
 }
 
-module.exports = { handleAuthApi, loadUserFromRequest };
+module.exports = { handleAuthApi, loadUserFromRequest, sendJson, readJsonBody };
