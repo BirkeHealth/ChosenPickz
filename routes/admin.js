@@ -1,10 +1,16 @@
 'use strict';
 
+const crypto = require('crypto');
 const db = require('../db');
 const { loadUserFromRequest, sendJson, readJsonBody } = require('./auth');
 
 const VALID_ROLES = ['admin', 'handicapper', 'member'];
 const VALID_POST_STATUSES = ['Draft', 'Published', 'Archived'];
+const VALID_PICK_STATUSES = ['Pending', 'Win', 'Loss', 'Push', 'Void'];
+
+function clampConfidence(value) {
+  return Math.max(1, Math.min(5, parseInt(value) || 3));
+}
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -42,6 +48,27 @@ function mapUserRow(row) {
   };
 }
 
+function mapPickRow(row) {
+  return {
+    id: row.id,
+    userId: row.user_id,
+    sport: row.sport,
+    pickType: row.pick_type,
+    matchup: row.matchup,
+    pickDetails: row.pick_details,
+    odds: row.odds,
+    units: row.units,
+    confidence: row.confidence,
+    status: row.status,
+    date: row.date,
+    note: row.note,
+    handicapperName: row.handicapper_name,
+    postedAt: row.posted_at,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+  };
+}
+
 function mapPostRow(row) {
   return {
     id: row.id,
@@ -71,7 +98,7 @@ async function handleAdminApi(req, res) {
   const pathParts = pathname.split('/').filter(Boolean);
   // pathParts: ['api', 'admin', <resource>, <id>?]
 
-  const resource = pathParts[2]; // 'users' | 'posts'
+  const resource = pathParts[2]; // 'users' | 'posts' | 'picks'
   const resourceId = pathParts[3] ? decodeURIComponent(pathParts[3]) : null;
 
   // ── Users ─────────────────────────────────────────────────────────────────
@@ -220,6 +247,151 @@ async function handleAdminApi(req, res) {
     const result = await db.query('DELETE FROM posts WHERE id = $1 RETURNING id', [resourceId]);
     if (!result.rows.length) {
       return sendJson(res, 404, { error: 'Post not found.' });
+    }
+    return sendJson(res, 200, { ok: true });
+  }
+
+  // ── Picks ──────────────────────────────────────────────────────────────────
+
+  // GET /api/admin/picks
+  if (req.method === 'GET' && resource === 'picks' && !resourceId) {
+    const admin = await requireAdmin(req, res);
+    if (!admin) return;
+
+    const status = urlObj.searchParams.get('status');
+    const userId = urlObj.searchParams.get('userId');
+
+    const conditions = [];
+    const values = [];
+
+    if (status) {
+      conditions.push(`status = $${conditions.length + 1}`);
+      values.push(status);
+    }
+    if (userId) {
+      conditions.push(`user_id = $${conditions.length + 1}`);
+      values.push(userId);
+    }
+
+    const where = conditions.length ? `WHERE ${conditions.join(' AND ')}` : '';
+    const result = await db.query(
+      `SELECT * FROM picks ${where} ORDER BY created_at DESC`,
+      values
+    );
+    return sendJson(res, 200, result.rows.map(mapPickRow));
+  }
+
+  // POST /api/admin/picks
+  if (req.method === 'POST' && resource === 'picks' && !resourceId) {
+    const admin = await requireAdmin(req, res);
+    if (!admin) return;
+
+    const body = await readJsonBody(req);
+    const now = Date.now();
+    const id = `pick_${now}_${crypto.randomBytes(4).toString('hex')}`;
+
+    const pick = {
+      id,
+      userId: body.userId || admin.id,
+      sport: body.sport || '',
+      pickType: body.pickType || '',
+      matchup: body.matchup || '',
+      pickDetails: body.pickDetails || '',
+      odds: body.odds || '',
+      units: body.units != null ? body.units : 1,
+      confidence: clampConfidence(body.confidence),
+      status: VALID_PICK_STATUSES.includes(body.status) ? body.status : 'Pending',
+      date: body.date || new Date().toISOString().slice(0, 10),
+      note: body.note || '',
+      handicapperName: body.handicapperName || admin.name,
+      postedAt: now,
+      createdAt: now,
+      updatedAt: now,
+    };
+
+    await db.query(
+      `INSERT INTO picks (
+        id, user_id, sport, pick_type, matchup, pick_details, odds, units,
+        confidence, status, date, note, handicapper_name, posted_at, created_at, updated_at
+      ) VALUES (
+        $1, $2, $3, $4, $5, $6, $7, $8,
+        $9, $10, $11, $12, $13, $14, $15, $16
+      )`,
+      [
+        pick.id, pick.userId, pick.sport, pick.pickType, pick.matchup, pick.pickDetails,
+        pick.odds, pick.units, pick.confidence, pick.status, pick.date, pick.note,
+        pick.handicapperName, pick.postedAt, pick.createdAt, pick.updatedAt,
+      ]
+    );
+
+    return sendJson(res, 201, pick);
+  }
+
+  // PATCH /api/admin/picks/:id
+  if (req.method === 'PATCH' && resource === 'picks' && resourceId) {
+    const admin = await requireAdmin(req, res);
+    if (!admin) return;
+
+    const body = await readJsonBody(req);
+    const updates = [];
+    const values = [];
+
+    const patchableFields = [
+      ['sport', body.sport],
+      ['pick_type', body.pickType],
+      ['matchup', body.matchup],
+      ['pick_details', body.pickDetails],
+      ['odds', body.odds],
+      ['units', body.units],
+      ['confidence', body.confidence !== undefined ? clampConfidence(body.confidence) : undefined],
+      ['note', body.note],
+      ['handicapper_name', body.handicapperName],
+      ['date', body.date],
+    ];
+
+    for (const [col, val] of patchableFields) {
+      if (val !== undefined) {
+        updates.push(`${col} = $${updates.length + 1}`);
+        values.push(val);
+      }
+    }
+
+    if (body.status !== undefined) {
+      if (!VALID_PICK_STATUSES.includes(body.status)) {
+        return sendJson(res, 400, { error: `Invalid status. Must be one of: ${VALID_PICK_STATUSES.join(', ')}` });
+      }
+      updates.push(`status = $${updates.length + 1}`);
+      values.push(body.status);
+    }
+
+    if (updates.length === 0) {
+      return sendJson(res, 400, { error: 'No updatable fields provided.' });
+    }
+
+    updates.push(`updated_at = $${updates.length + 1}`);
+    values.push(Date.now());
+    values.push(resourceId);
+
+    const result = await db.query(
+      `UPDATE picks SET ${updates.join(', ')} WHERE id = $${values.length} RETURNING *`,
+      values
+    );
+
+    if (!result.rows.length) {
+      return sendJson(res, 404, { error: 'Pick not found.' });
+    }
+
+    return sendJson(res, 200, mapPickRow(result.rows[0]));
+  }
+
+  // DELETE /api/admin/picks/:id
+  if (req.method === 'DELETE' && resource === 'picks' && resourceId) {
+    const admin = await requireAdmin(req, res);
+    if (!admin) return;
+
+    const result = await db.query('DELETE FROM picks WHERE id = $1 RETURNING id', [resourceId]);
+    if (!result.rows.length) {
+      return sendJson(res, 404, { error: 'Pick not found.' });
     }
     return sendJson(res, 200, { ok: true });
   }
