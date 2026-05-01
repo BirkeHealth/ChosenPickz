@@ -28,6 +28,7 @@ if (!process.env.ODDS_API_KEY || process.env.ODDS_API_KEY === 'YOUR_ODDS_API_KEY
 const ROOT_DIR = __dirname;
 // Root-level static files served directly from the project root (the landing page app)
 const ROOT_STATIC_FILES = new Set([
+  'checkout.html',
   // ── HTML pages ──
   'index.html',
   'chosepickz.html',
