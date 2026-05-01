@@ -105,6 +105,10 @@
       <h2>Payment Details</h2>
       <p class="login-subtitle">Your subscription starts today</p>
 
+      <div class="alert alert-error" style="margin-bottom:1rem;">
+        <strong>Coming soon:</strong> Online payments are not yet active. To subscribe, please contact us directly to complete your setup.
+      </div>
+
       <div id="checkout-error" class="alert alert-error hidden"></div>
       <div id="checkout-success" class="alert alert-success hidden"></div>
 
@@ -262,12 +266,11 @@
       btn.disabled = true;
 
       // TODO: Integrate a real payment processor (e.g. Stripe) here.
-      setTimeout(function () {
-        okEl.textContent = 'Payment successful! Welcome to ChosenPickz 🎉 Check your email for details.';
-        okEl.classList.remove('hidden');
-        btn.textContent = 'Subscribe Now';
-        btn.disabled = false;
-      }, 1500);
+      // For now, show a message directing the user to contact support.
+      okEl.textContent = 'Thanks for your interest! Our team will be in touch shortly to complete your subscription.';
+      okEl.classList.remove('hidden');
+      btn.textContent = 'Subscribe Now';
+      btn.disabled = false;
     });
   </script>
 
