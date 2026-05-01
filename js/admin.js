@@ -6,6 +6,8 @@ const AdminPanel = (() => {
   let _session = null;
   let _allUsers = [];
   let _allPosts = [];
+  let _allPicks = [];
+  let _editingPickId = null;
 
   // ── Helpers ────────────────────────────────────────────────────────────────
 
@@ -82,7 +84,9 @@ const AdminPanel = (() => {
   function showView(name) {
     document.getElementById('view-users').style.display = name === 'users' ? 'block' : 'none';
     document.getElementById('view-posts').style.display = name === 'posts' ? 'block' : 'none';
-    document.getElementById('page-title').textContent = name === 'users' ? 'Users' : 'Posts';
+    document.getElementById('view-picks').style.display = name === 'picks' ? 'block' : 'none';
+    const titles = { users: 'Users', posts: 'Posts', picks: 'Picks' };
+    document.getElementById('page-title').textContent = titles[name] || name;
     document.querySelectorAll('.sidebar-nav a[data-nav]').forEach(a => {
       a.classList.toggle('active', a.dataset.nav === name);
     });
@@ -287,6 +291,217 @@ const AdminPanel = (() => {
     );
   }
 
+  // ── Picks ──────────────────────────────────────────────────────────────────
+
+  async function loadPicks() {
+    const status = document.getElementById('pick-filter-status')?.value || '';
+    const url = '/api/admin/picks' + (status ? `?status=${encodeURIComponent(status)}` : '');
+    try {
+      const res = await fetch(url, { credentials: 'same-origin' });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to load picks.');
+      _allPicks = data;
+      renderPicks(_allPicks);
+    } catch (err) {
+      showError('picks-error', err.message);
+    }
+  }
+
+  function pickStatusBadge(status) {
+    const cls = {
+      Win: 'badge-win', Loss: 'badge-loss',
+      Pending: 'badge-pending', Push: 'badge-push', Void: 'badge-void'
+    }[status] || 'badge-pending';
+    return `<span class="badge ${cls}">${status || 'Pending'}</span>`;
+  }
+
+  function renderPicks(picks) {
+    const tbody = document.getElementById('picks-tbody');
+    if (!picks.length) {
+      tbody.innerHTML = '<tr><td colspan="10" style="text-align:center;color:var(--text-muted);padding:2rem;">No picks found.</td></tr>';
+      return;
+    }
+    tbody.innerHTML = picks.map(p => `
+      <tr data-pick-id="${p.id}">
+        <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"
+            title="${escHtml(p.matchup || '')}">${escHtml(p.matchup || '—')}</td>
+        <td style="color:var(--text-muted);font-size:0.825rem;">${escHtml(p.sport || '—')}</td>
+        <td style="color:var(--text-muted);font-size:0.825rem;">${escHtml(p.pickType || '—')}</td>
+        <td style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"
+            title="${escHtml(p.pickDetails || '')}">${escHtml(p.pickDetails || '—')}</td>
+        <td style="font-size:0.825rem;white-space:nowrap;">${escHtml(p.odds || '—')}</td>
+        <td style="font-size:0.825rem;">${p.units != null ? escHtml(String(p.units)) : '—'}</td>
+        <td>${pickStatusBadge(p.status)}</td>
+        <td style="color:var(--text-muted);font-size:0.8rem;white-space:nowrap;">${escHtml(p.date || '—')}</td>
+        <td style="color:var(--text-muted);font-size:0.825rem;">${escHtml(p.handicapperName || '—')}</td>
+        <td style="white-space:nowrap;">
+          <select class="action-btn" style="cursor:pointer;" onchange="AdminPanel.changePickStatus('${p.id}', this.value, this)">
+            <option value="Pending" ${p.status === 'Pending' ? 'selected' : ''}>Pending</option>
+            <option value="Win"     ${p.status === 'Win'     ? 'selected' : ''}>Win</option>
+            <option value="Loss"    ${p.status === 'Loss'    ? 'selected' : ''}>Loss</option>
+            <option value="Push"    ${p.status === 'Push'    ? 'selected' : ''}>Push</option>
+            <option value="Void"    ${p.status === 'Void'    ? 'selected' : ''}>Void</option>
+          </select>
+          <button class="action-btn" onclick="AdminPanel.openPickForm('${p.id}')">Edit</button>
+          <button class="action-btn btn-danger-sm" onclick="AdminPanel.deletePick('${p.id}')">Delete</button>
+        </td>
+      </tr>
+    `).join('');
+  }
+
+  async function changePickStatus(pickId, newStatus) {
+    try {
+      const res = await fetch(`/api/admin/picks/${encodeURIComponent(pickId)}`, {
+        method: 'PATCH',
+        credentials: 'same-origin',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: newStatus }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to update pick status.');
+      const pick = _allPicks.find(p => p.id === pickId);
+      if (pick) pick.status = newStatus;
+      showToast(`Pick status set to ${newStatus}.`);
+      renderPicks(filterPicks());
+    } catch (err) {
+      showToast(err.message, 'error');
+      renderPicks(filterPicks());
+    }
+  }
+
+  async function deletePick(pickId) {
+    const pick = _allPicks.find(p => p.id === pickId);
+    const label = pick ? (pick.matchup || pick.pickDetails || 'this pick') : 'this pick';
+    const ok = await confirm('Delete Pick', `Permanently delete "${label}"? This cannot be undone.`);
+    if (!ok) return;
+    try {
+      const res = await fetch(`/api/admin/picks/${encodeURIComponent(pickId)}`, {
+        method: 'DELETE',
+        credentials: 'same-origin',
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to delete pick.');
+      _allPicks = _allPicks.filter(p => p.id !== pickId);
+      showToast('Pick deleted.');
+      renderPicks(filterPicks());
+    } catch (err) {
+      showToast(err.message, 'error');
+    }
+  }
+
+  function filterPicks() {
+    const q = (document.getElementById('pick-search')?.value || '').toLowerCase();
+    if (!q) return _allPicks;
+    return _allPicks.filter(p =>
+      (p.matchup || '').toLowerCase().includes(q) ||
+      (p.pickDetails || '').toLowerCase().includes(q) ||
+      (p.sport || '').toLowerCase().includes(q) ||
+      (p.handicapperName || '').toLowerCase().includes(q)
+    );
+  }
+
+  function openPickForm(pickId) {
+    _editingPickId = pickId || null;
+    const modal = document.getElementById('pick-modal');
+    const title = document.getElementById('pick-modal-title');
+    const form  = document.getElementById('pick-form');
+    const err   = document.getElementById('pick-form-error');
+
+    form.reset();
+    err.classList.add('hidden');
+
+    if (pickId) {
+      title.textContent = 'Edit Pick';
+      const pick = _allPicks.find(p => p.id === pickId);
+      if (pick) {
+        document.getElementById('pf-sport').value         = pick.sport || '';
+        document.getElementById('pf-pick-type').value     = pick.pickType || '';
+        document.getElementById('pf-matchup').value       = pick.matchup || '';
+        document.getElementById('pf-pick-details').value  = pick.pickDetails || '';
+        document.getElementById('pf-odds').value          = pick.odds || '';
+        document.getElementById('pf-units').value         = pick.units != null ? pick.units : '';
+        document.getElementById('pf-confidence').value    = pick.confidence || '';
+        document.getElementById('pf-status').value        = pick.status || 'Pending';
+        document.getElementById('pf-date').value          = pick.date || '';
+        document.getElementById('pf-handicapper').value   = pick.handicapperName || '';
+        document.getElementById('pf-note').value          = pick.note || '';
+      }
+    } else {
+      title.textContent = 'Add Pick';
+      document.getElementById('pf-date').value = new Date().toISOString().slice(0, 10);
+    }
+
+    modal.classList.add('show');
+  }
+
+  async function savePickForm(e) {
+    e.preventDefault();
+    const err = document.getElementById('pick-form-error');
+    err.classList.add('hidden');
+
+    const matchup = document.getElementById('pf-matchup').value.trim();
+    const pickDetails = document.getElementById('pf-pick-details').value.trim();
+    if (!matchup || !pickDetails) {
+      err.textContent = 'Matchup and Pick Details are required.';
+      err.classList.remove('hidden');
+      return;
+    }
+
+    const payload = {
+      sport:          document.getElementById('pf-sport').value,
+      pickType:       document.getElementById('pf-pick-type').value,
+      matchup,
+      pickDetails,
+      odds:           document.getElementById('pf-odds').value.trim(),
+      units:          parseFloat(document.getElementById('pf-units').value) || 1,
+      confidence:     parseInt(document.getElementById('pf-confidence').value) || 3,
+      status:         document.getElementById('pf-status').value,
+      date:           document.getElementById('pf-date').value,
+      handicapperName: document.getElementById('pf-handicapper').value.trim(),
+      note:           document.getElementById('pf-note').value.trim(),
+    };
+
+    const submitBtn = document.getElementById('pick-modal-submit');
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Saving…';
+
+    try {
+      let res, data;
+      if (_editingPickId) {
+        res  = await fetch(`/api/admin/picks/${encodeURIComponent(_editingPickId)}`, {
+          method: 'PATCH',
+          credentials: 'same-origin',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        });
+        data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Failed to update pick.');
+        const idx = _allPicks.findIndex(p => p.id === _editingPickId);
+        if (idx !== -1) _allPicks[idx] = data;
+        showToast('Pick updated.');
+      } else {
+        res  = await fetch('/api/admin/picks', {
+          method: 'POST',
+          credentials: 'same-origin',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        });
+        data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Failed to create pick.');
+        _allPicks.unshift(data);
+        showToast('Pick created.');
+      }
+      document.getElementById('pick-modal').classList.remove('show');
+      renderPicks(filterPicks());
+    } catch (e) {
+      err.textContent = e.message;
+      err.classList.remove('hidden');
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Save Pick';
+    }
+  }
+
   // ── XSS safety ────────────────────────────────────────────────────────────
 
   function escHtml(str) {
@@ -311,6 +526,7 @@ const AdminPanel = (() => {
         showView(view);
         if (view === 'users') loadUsers();
         else if (view === 'posts') loadPosts();
+        else if (view === 'picks') loadPicks();
       });
     });
 
@@ -331,10 +547,20 @@ const AdminPanel = (() => {
     // Post status filter
     document.getElementById('post-filter-status')?.addEventListener('change', loadPosts);
 
+    // Pick search and filter
+    document.getElementById('pick-search')?.addEventListener('input', () => renderPicks(filterPicks()));
+    document.getElementById('pick-filter-status')?.addEventListener('change', loadPicks);
+
+    // Pick form modal
+    document.getElementById('pick-form')?.addEventListener('submit', savePickForm);
+    document.getElementById('pick-modal-cancel')?.addEventListener('click', () => {
+      document.getElementById('pick-modal').classList.remove('show');
+    });
+
     // Load initial view
     showView('users');
     loadUsers();
   }
 
-  return { init, changeUserRole, toggleUserDisabled, changePostStatus, deletePost };
+  return { init, changeUserRole, toggleUserDisabled, changePostStatus, deletePost, openPickForm, changePickStatus, deletePick };
 })();
