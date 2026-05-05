@@ -16,26 +16,68 @@
     <a class="nav-logo" href="index.html">
       <img src="https://github.com/user-attachments/assets/74aad200-7f08-4b4b-a0bf-f21923a42f71" alt="CH0SEN1 PICKZ" class="nav-logo-img" />
     </a>
-    <div class="nav-links">
+    <button class="nav-hamburger" id="nav-hamburger" aria-label="Open menu" aria-expanded="false">
+      <span></span><span></span><span></span>
+    </button>
+    <div class="nav-links" id="nav-links">
       <a href="all-odds.html">All Odds</a>
-      <a href="todays-picks.html">ChosenPickz</a>
+      <a href="todays-picks.html">Picks</a>
       <a href="#pricing">Pricing</a>
       <a href="https://discord.gg/chosen1pickz" target="_blank" rel="noopener noreferrer" class="nav-discord">🎮 Discord</a>
       <a href="https://t.me/chosen1pickz" target="_blank" rel="noopener noreferrer" class="nav-telegram">✈️ Telegram</a>
-      <a href="login.html" class="btn-login">Handicapper Login</a>
+      <a href="login.html" class="btn-login">Log In</a>
     </div>
   </nav>
 
   <!-- ── HERO ── -->
   <section class="hero">
-    <img src="https://github.com/user-attachments/assets/76ddc128-7ae6-4de4-80b8-7771b30bfe6d" alt="CH0SEN1 PICKZ" class="hero-logo-img" />
-    <p>Expert MoneyLine, Spread &amp; O/U picks — powered by real-time odds.</p>
-    <div class="hero-cta">
-      <a href="#pricing" class="btn-primary">Join Now</a>
-      <a href="https://discord.gg/chosen1pickz" target="_blank" rel="noopener noreferrer" class="btn-discord">🎮 Join Discord</a>
-      <a href="https://t.me/chosen1pickz" target="_blank" rel="noopener noreferrer" class="btn-telegram">✈️ Free Telegram</a>
+    <div class="hero-inner">
+      <img src="https://github.com/user-attachments/assets/76ddc128-7ae6-4de4-80b8-7771b30bfe6d" alt="CH0SEN1 PICKZ" class="hero-logo-img" />
+      <p class="hero-tagline">Expert MoneyLine, Spread &amp; O/U picks — powered by real-time odds.</p>
+
+      <!-- Stats bar -->
+      <div class="hero-stats">
+        <div class="hero-stat">
+          <span class="hero-stat-num">68%</span>
+          <span class="hero-stat-label">Win Rate</span>
+        </div>
+        <div class="hero-stat-divider"></div>
+        <div class="hero-stat">
+          <span class="hero-stat-num">500+</span>
+          <span class="hero-stat-label">Picks Tracked</span>
+        </div>
+        <div class="hero-stat-divider"></div>
+        <div class="hero-stat">
+          <span class="hero-stat-num">Live</span>
+          <span class="hero-stat-label">Real-Time Odds</span>
+        </div>
+        <div class="hero-stat-divider"></div>
+        <div class="hero-stat">
+          <span class="hero-stat-num">5+</span>
+          <span class="hero-stat-label">Sports Covered</span>
+        </div>
+      </div>
+
+      <!-- CTA buttons -->
+      <div class="hero-cta">
+        <a href="#pricing" class="btn-primary btn-cta-main">🏆 Join Now</a>
+        <a href="https://discord.gg/chosen1pickz" target="_blank" rel="noopener noreferrer" class="btn-discord">🎮 Join Discord</a>
+        <a href="https://t.me/chosen1pickz" target="_blank" rel="noopener noreferrer" class="btn-telegram">✈️ Free Telegram</a>
+      </div>
     </div>
   </section>
+
+  <!-- ── SPORT FILTER TABS ── -->
+  <div class="sport-filter-bar">
+    <div class="sport-filter-inner">
+      <button class="sport-tab active" data-sport="all">⭐ Featured</button>
+      <button class="sport-tab" data-sport="nba">🏀 NBA</button>
+      <button class="sport-tab" data-sport="nfl">🏈 NFL</button>
+      <button class="sport-tab" data-sport="mlb">⚾ MLB</button>
+      <button class="sport-tab" data-sport="nhl">🏒 NHL</button>
+      <button class="sport-tab" data-sport="soccer">⚽ Soccer</button>
+    </div>
+  </div>
 
   <main>
 
@@ -230,5 +272,33 @@
   <script src="config.js"></script>
   <script src="scripts/sportsNews.js"></script>
   <script src="app.js"></script>
+  <script>
+    // Mobile hamburger toggle
+    (function () {
+      const btn = document.getElementById('nav-hamburger');
+      const links = document.getElementById('nav-links');
+      if (btn && links) {
+        btn.addEventListener('click', function () {
+          const open = links.classList.toggle('open');
+          btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+        });
+        // Close on outside click
+        document.addEventListener('click', function (e) {
+          if (!btn.contains(e.target) && !links.contains(e.target)) {
+            links.classList.remove('open');
+            btn.setAttribute('aria-expanded', 'false');
+          }
+        });
+      }
+
+      // Sport filter tabs (visual only — wire to picks/odds filter as needed)
+      document.querySelectorAll('.sport-tab').forEach(function (tab) {
+        tab.addEventListener('click', function () {
+          document.querySelectorAll('.sport-tab').forEach(function (t) { t.classList.remove('active'); });
+          tab.classList.add('active');
+        });
+      });
+    })();
+  </script>
 </body>
 </html>
