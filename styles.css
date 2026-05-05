@@ -112,15 +112,12 @@ main {
   padding: 3.5rem 1rem 2.5rem;
 }
 
-.hero h1 {
-  font-family: 'Bebas Neue', cursive;
-  font-size: clamp(3rem, 8vw, 6rem);
-  letter-spacing: 5px;
-  line-height: 1;
+.hero-logo-img {
+  width: clamp(260px, 50vw, 480px);
+  height: auto;
+  display: block;
+  margin: 0 auto 0.5rem;
 }
-
-.hero h1 .ch-orange { color: var(--orange); }
-.hero h1 .ch-blue   { color: var(--blue); }
 
 .hero p {
   color: var(--muted);
@@ -416,6 +413,12 @@ section.hero h1 {
 }
 section.hero h1 .ch-orange { color: var(--orange); }
 section.hero h1 .ch-blue   { color: var(--blue); }
+section.hero .hero-logo-img {
+  width: clamp(260px, 50vw, 520px);
+  height: auto;
+  display: block;
+  margin: 0 auto 0.5rem;
+}
 section.hero p {
   color: var(--muted);
   font-size: 1.15rem;
