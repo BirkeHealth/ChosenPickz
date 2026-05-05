@@ -84,8 +84,7 @@
 
     <div class="login-brand">
       <div class="brand-logo">
-        <span class="brand-icon">⚡</span>
-        <h1>ChosenPickz</h1>
+        <img src="https://github.com/user-attachments/assets/74aad200-7f08-4b4b-a0bf-f21923a42f71" alt="CH0SEN1 PICKZ" style="height:64px;width:auto;display:block;margin:0 auto 0.5rem;" />
       </div>
       <p class="brand-tagline">Secure Checkout</p>
     </div>
@@ -114,16 +113,29 @@
 
       <form id="checkout-form" autocomplete="on" novalidate>
 
-        <div class="form-group">
-          <label for="full-name">Full Name</label>
-          <input
-            type="text"
-            id="full-name"
-            name="full-name"
-            placeholder="Name on card"
-            autocomplete="cc-name"
-            required
-          >
+        <div class="form-row-2">
+          <div class="form-group">
+            <label for="first-name">First Name</label>
+            <input
+              type="text"
+              id="first-name"
+              name="first-name"
+              placeholder="First name"
+              autocomplete="given-name"
+              required
+            >
+          </div>
+          <div class="form-group">
+            <label for="last-name">Last Name</label>
+            <input
+              type="text"
+              id="last-name"
+              name="last-name"
+              placeholder="Last name"
+              autocomplete="family-name"
+              required
+            >
+          </div>
         </div>
 
         <div class="form-group">
@@ -136,6 +148,73 @@
             autocomplete="email"
             required
           >
+        </div>
+
+        <hr class="divider">
+
+        <h3 style="font-size:0.95rem;font-weight:700;color:var(--text);margin-bottom:0.75rem;">Billing Address</h3>
+
+        <div class="form-group">
+          <label for="billing-address">Street Address</label>
+          <input
+            type="text"
+            id="billing-address"
+            name="billing-address"
+            placeholder="123 Main St"
+            autocomplete="billing street-address"
+            required
+          >
+        </div>
+
+        <div class="form-row-2">
+          <div class="form-group">
+            <label for="billing-city">City</label>
+            <input
+              type="text"
+              id="billing-city"
+              name="billing-city"
+              placeholder="City"
+              autocomplete="billing address-level2"
+              required
+            >
+          </div>
+          <div class="form-group">
+            <label for="billing-state">State / Province</label>
+            <input
+              type="text"
+              id="billing-state"
+              name="billing-state"
+              placeholder="State"
+              autocomplete="billing address-level1"
+              required
+            >
+          </div>
+        </div>
+
+        <div class="form-row-2">
+          <div class="form-group">
+            <label for="billing-zip">ZIP / Postal Code</label>
+            <input
+              type="text"
+              id="billing-zip"
+              name="billing-zip"
+              placeholder="12345"
+              autocomplete="billing postal-code"
+              required
+            >
+          </div>
+          <div class="form-group">
+            <label for="billing-country">Country</label>
+            <input
+              type="text"
+              id="billing-country"
+              name="billing-country"
+              placeholder="United States"
+              autocomplete="billing country-name"
+              value="United States"
+              required
+            >
+          </div>
         </div>
 
         <hr class="divider">
@@ -249,14 +328,18 @@
       errEl.classList.add('hidden');
       okEl.classList.add('hidden');
 
-      const name   = document.getElementById('full-name').value.trim();
+      const firstName = document.getElementById('first-name').value.trim();
+      const lastName  = document.getElementById('last-name').value.trim();
       const email  = document.getElementById('email').value.trim();
+      const address = document.getElementById('billing-address').value.trim();
+      const city    = document.getElementById('billing-city').value.trim();
+      const zip     = document.getElementById('billing-zip').value.trim();
       const card   = document.getElementById('card-number').value.replace(/\s/g, '');
       const expiry = document.getElementById('expiry').value.trim();
       const cvv    = document.getElementById('cvv').value.trim();
 
-      if (!name || !email || card.length < 13 || !expiry || cvv.length < 3) {
-        errEl.textContent = 'Please fill in all payment details correctly.';
+      if (!firstName || !lastName || !email || !address || !city || !zip || card.length < 13 || !expiry || cvv.length < 3) {
+        errEl.textContent = 'Please fill in all fields correctly.';
         errEl.classList.remove('hidden');
         return;
       }

@@ -495,6 +495,7 @@ async function renderBlogSection() {
           <div class="blog-feed-title">${escapeHtml(post.title || 'Untitled Post')}</div>
           <div class="blog-feed-meta">By ${escapeHtml(author)}${postDate ? ` &mdash; ${escapeHtml(postDate)}` : ''}</div>
           <p class="blog-feed-snippet">${escapeHtml(preview)}</p>
+          <span class="blog-feed-read-more">Read more &#8594;</span>
         </a>
       </li>
     `;
