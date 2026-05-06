@@ -1867,13 +1867,18 @@ footer {
   font-size: 0.78rem;
   color: var(--muted);
   font-style: italic;
-  width: 100%;
-  margin-top: 0.25rem;
+  margin-top: 0.5rem;
   line-height: 1.4;
 }
 @media (max-width: 480px) {
-  .pick-covers-recommendation { flex-direction: column; align-items: flex-start; gap: 0.35rem; }
-  .pick-covers-matchup { font-size: 0.95rem; }
+  .pick-covers-recommendation {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.35rem;
+  }
+  .pick-covers-matchup {
+    font-size: 0.95rem;
+  }
 }
 
 

@@ -119,8 +119,8 @@
               <div class="pick-covers-footer">
                 <span class="pick-covers-expert">🏆 ${escHtml(pick.handicapperName || 'Handicapper')}</span>
                 <span class="pick-covers-confidence">${starsHtml}</span>
-                ${pick.note ? `<div class="pick-covers-note">"${escHtml(pick.note)}"</div>` : ''}
               </div>
+              ${pick.note ? `<div class="pick-covers-note">"${escHtml(pick.note)}"</div>` : ''}
             </div>`;
         }).join('');
       }

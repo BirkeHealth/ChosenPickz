@@ -452,8 +452,8 @@ async function renderPicksSection() {
         <div class="pick-covers-footer">
           <span class="pick-covers-expert">🏆 ${escapeHtml(pick.handicapperName || 'Handicapper')}</span>
           <span class="pick-covers-confidence">${starsHtml}</span>
-          ${pick.note ? `<div class="pick-covers-note">"${escapeHtml(pick.note)}"</div>` : ''}
         </div>
+        ${pick.note ? `<div class="pick-covers-note">"${escapeHtml(pick.note)}"</div>` : ''}
       </div>`;
   }).join('');
 }
