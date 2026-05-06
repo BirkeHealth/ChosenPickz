@@ -434,32 +434,26 @@ async function renderPicksSection() {
     const postedDate = pick.postedAt ? new Date(pick.postedAt).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : '';
     const allowed    = ['win', 'loss', 'pending', 'push', 'void'];
     const resultCls  = allowed.includes((pick.status || '').toLowerCase()) ? pick.status.toLowerCase() : 'pending';
-    const amountBet  = Number(pick.units);
-    const hasAmount  = Number.isFinite(amountBet) && amountBet > 0;
-    const winningAmt = hasAmount ? calcSingleWin(pick.odds, amountBet) : 0;
-    const amountText = hasAmount ? `$${amountBet.toFixed(2)}` : 'N/A';
-    const winningText = winningAmt > 0 ? `$${winningAmt.toFixed(2)}` : 'N/A';
     return `
-      <div class="pick-card-new pick-card-hardrock">
-        <div class="pick-left">
-          <span class="pick-sport-badge">${escapeHtml(pick.sport)}</span>
-          <div class="pick-matchup-new">${escapeHtml(pick.matchup)}</div>
-          <div class="pick-meta-new">${escapeHtml(pick.pickType)} · ${starsHtml} · ${postedDate}</div>
-          <div class="pick-value-new">🏆 Handicapper Pick: ${escapeHtml(pick.pickDetails)}</div>
-          <div class="pick-hardrock-stats">
-            <div class="pick-hardrock-stat">
-              <span class="pick-hardrock-label">Amount Bet</span>
-              <span class="pick-hardrock-value">${escapeHtml(amountText)}</span>
-            </div>
-            <div class="pick-hardrock-stat">
-              <span class="pick-hardrock-label">Calculated Winnings</span>
-              <span class="pick-hardrock-value">${escapeHtml(winningText)}</span>
-            </div>
+      <div class="pick-card-covers">
+        <div class="pick-covers-header">
+          <div class="pick-covers-meta">
+            <span class="pick-sport-badge">${escapeHtml(pick.sport)}</span>
+            ${postedDate ? `<span class="pick-covers-date">${escapeHtml(postedDate)}</span>` : ''}
           </div>
-          ${pick.note ? `<div class="pick-note-new">${escapeHtml(pick.note)}</div>` : ''}
-          <div class="pick-handicapper">🏆 ${escapeHtml(pick.handicapperName || 'Handicapper')}</div>
+          <span class="result-badge ${resultCls}">${escapeHtml(pick.status || 'Pending')}</span>
         </div>
-        <span class="result-badge ${resultCls}">${escapeHtml(pick.status || 'Pending')}</span>
+        <div class="pick-covers-matchup">${escapeHtml(pick.matchup)}</div>
+        <div class="pick-covers-recommendation">
+          <span class="pick-covers-label">Pick</span>
+          <span class="pick-covers-value">🏆 ${escapeHtml(pick.pickDetails)}</span>
+          <span class="pick-covers-type">${escapeHtml(pick.pickType)}</span>
+        </div>
+        <div class="pick-covers-footer">
+          <span class="pick-covers-expert">🏆 ${escapeHtml(pick.handicapperName || 'Handicapper')}</span>
+          <span class="pick-covers-confidence">${starsHtml}</span>
+        </div>
+        ${pick.note ? `<div class="pick-covers-note">"${escapeHtml(pick.note)}"</div>` : ''}
       </div>`;
   }).join('');
 }
