@@ -102,16 +102,25 @@
           const allowed   = ['win', 'loss', 'pending', 'push', 'void'];
           const resultCls = allowed.includes((pick.status || '').toLowerCase()) ? pick.status.toLowerCase() : 'pending';
           return `
-            <div class="pick-card-new">
-              <div class="pick-left">
-                <span class="pick-sport-badge">${escHtml(pick.sport)}</span>
-                <div class="pick-matchup-new">${escHtml(pick.matchup)}</div>
-                <div class="pick-meta-new">${escHtml(pick.pickType)} · ${starsHtml} · ${postedDate}</div>
-                <div class="pick-value-new">🏆 ${escHtml(pick.pickDetails)}</div>
-                ${pick.note ? `<div class="pick-note-new">${escHtml(pick.note)}</div>` : ''}
-                <div class="pick-handicapper">🏆 ${escHtml(pick.handicapperName || 'Handicapper')}</div>
+            <div class="pick-card-covers">
+              <div class="pick-covers-header">
+                <div class="pick-covers-meta">
+                  <span class="pick-sport-badge">${escHtml(pick.sport)}</span>
+                  ${postedDate ? `<span class="pick-covers-date">${escHtml(postedDate)}</span>` : ''}
+                </div>
+                <span class="result-badge ${resultCls}">${escHtml(pick.status || 'Pending')}</span>
               </div>
-              <span class="result-badge ${resultCls}">${escHtml(pick.status || 'Pending')}</span>
+              <div class="pick-covers-matchup">${escHtml(pick.matchup)}</div>
+              <div class="pick-covers-recommendation">
+                <span class="pick-covers-label">Pick</span>
+                <span class="pick-covers-value">🏆 ${escHtml(pick.pickDetails)}</span>
+                <span class="pick-covers-type">${escHtml(pick.pickType)}</span>
+              </div>
+              <div class="pick-covers-footer">
+                <span class="pick-covers-expert">🏆 ${escHtml(pick.handicapperName || 'Handicapper')}</span>
+                <span class="pick-covers-confidence">${starsHtml}</span>
+                ${pick.note ? `<div class="pick-covers-note">"${escHtml(pick.note)}"</div>` : ''}
+              </div>
             </div>`;
         }).join('');
       }
