@@ -6,15 +6,15 @@
   <title>CH0SEN1 PICKZ — Expert Sports Picks</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,800;1,9..144,600&family=JetBrains+Mono:wght@400;600;700&family=Inter+Tight:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
 
   <!-- ── NAV ── -->
   <nav>
-    <a class="nav-logo" href="index.html">
-      <span class="nav-logo-text">Chosen<span class="ch-blue">1</span>Pickz</span>
+    <a class="logo" href="index.html">
+      <span class="dot"></span> CH0SEN1 <em>PICKZ</em>
     </a>
     <button class="nav-hamburger" id="nav-hamburger" aria-label="Open menu" aria-expanded="false">
       <span></span><span></span><span></span>
@@ -32,6 +32,10 @@
   <!-- ── HERO ── -->
   <section class="hero">
     <div class="hero-inner">
+      <div class="hero-eyebrow"><span class="dot"></span>LIVE — Real-time picks engine</div>
+
+      <h1 class="hero-headline">Bet smarter.<br>Win <em>louder.</em></h1>
+
       <p class="hero-tagline">Expert MoneyLine, Spread &amp; O/U picks — powered by real-time odds.</p>
 
       <!-- Stats bar -->
@@ -40,17 +44,14 @@
           <span class="hero-stat-num">68%</span>
           <span class="hero-stat-label">Win Rate</span>
         </div>
-        <div class="hero-stat-divider"></div>
         <div class="hero-stat">
           <span class="hero-stat-num">500+</span>
           <span class="hero-stat-label">Picks Tracked</span>
         </div>
-        <div class="hero-stat-divider"></div>
         <div class="hero-stat">
           <span class="hero-stat-num">Live</span>
           <span class="hero-stat-label">Real-Time Odds</span>
         </div>
-        <div class="hero-stat-divider"></div>
         <div class="hero-stat">
           <span class="hero-stat-num">5+</span>
           <span class="hero-stat-label">Sports Covered</span>
@@ -88,8 +89,8 @@
         <!-- ── PICKS SECTION (visible to all) ── -->
         <section id="picks-section">
           <div class="section-heading-row">
-            <h2 class="section-heading">&#127942; This Week's Picks</h2>
-            <a href="todays-picks.html" class="view-all-link">View All Chosen Picks &#8594;</a>
+            <h2 class="section-heading">This Week's <em>Picks</em></h2>
+            <a href="todays-picks.html" class="view-all-link">View All Picks →</a>
           </div>
           <div id="picks-display" class="picks-list">
             <p class="loading-msg">No picks posted yet — check back soon!</p>
@@ -98,7 +99,7 @@
 
         <!-- ── LIVE BETS ── -->
         <section id="live-bets">
-          <h2 class="section-heading">&#9679; Live Odds</h2>
+          <h2 class="section-heading">Live <em>Odds</em></h2>
           <!-- Sportsbook toggle: switch which bookmaker's odds are displayed -->
           <div class="bookmaker-toggle" aria-label="Select sportsbook">
             <button class="bookmaker-toggle-btn active" data-bookmaker="all">All Books</button>
@@ -118,14 +119,14 @@
       <!-- ── RIGHT SIDEBAR: News ── -->
       <aside class="home-sidebar">
         <section id="handicapper-news">
-          <h2 class="section-heading">&#9997; Handicapper Updates</h2>
+          <h2 class="section-heading">Handicapper <em>Updates</em></h2>
           <ul id="handicapper-blog-list" class="blog-feed-list">
             <li class="loading-msg">Loading handicapper updates…</li>
           </ul>
         </section>
 
         <section id="sports-news">
-          <h2 class="section-heading">&#9660; Sports News</h2>
+          <h2 class="section-heading">Sports <em>News</em></h2>
           <ul id="news-list" class="news-list">
             <li class="loading-msg">Loading headlines…</li>
           </ul>
@@ -136,32 +137,32 @@
 
     <!-- ── PRICING ── -->
     <section id="pricing">
-      <h2 class="section-heading">&#9733; Pricing Plans</h2>
+      <h2 class="section-heading">Pricing <em>Plans</em></h2>
       <div class="pricing-grid">
 
         <div class="pricing-card">
           <div class="pricing-badge">Starter</div>
           <div class="pricing-price">$25<span>/week</span></div>
           <ul class="pricing-features">
-            <li>&#10003; 1 Pick a day</li>
-            <li>&#10003; Email Alerts</li>
-            <li>&#10003; Spread &amp; Totals</li>
-            <li>&#10003; Live Bet Alerts</li>
-            <li>&#10003; Free Discord</li>
+            <li>1 Pick a day</li>
+            <li>Email Alerts</li>
+            <li>Spread &amp; Totals</li>
+            <li>Live Bet Alerts</li>
+            <li>Free Discord</li>
           </ul>
           <a href="checkout.html?plan=starter" class="btn-plan">Get Started</a>
         </div>
 
         <div class="pricing-card featured">
-          <div class="pricing-badge">Pro</div>
           <div class="pricing-label">Most Popular</div>
+          <div class="pricing-badge">Pro</div>
           <div class="pricing-price">$45<span>/bi-weekly</span></div>
           <ul class="pricing-features">
-            <li>&#10003; Unlimited Picks</li>
-            <li>&#10003; Live Bet Alerts &amp; Real Time Alerts</li>
-            <li>&#10003; ML, Spreads, and O/U</li>
-            <li>&#10003; Premium Discords</li>
-            <li>&#10003; Access to Chosen1Picks (Personal Bets)</li>
+            <li>Unlimited Picks</li>
+            <li>Live Bet Alerts &amp; Real Time Alerts</li>
+            <li>ML, Spreads, and O/U</li>
+            <li>Premium Discords</li>
+            <li>Access to Chosen1Picks (Personal Bets)</li>
           </ul>
           <a href="checkout.html?plan=pro" class="btn-plan btn-plan-featured">Get Started</a>
         </div>
@@ -170,10 +171,10 @@
           <div class="pricing-badge">Elite</div>
           <div class="pricing-price">$150<span>/month</span></div>
           <ul class="pricing-features">
-            <li>&#10003; Everything in Pro</li>
-            <li>&#10003; VIP Discord</li>
-            <li>&#10003; 1-on-1 Coaching Sessions (2 sessions per month)</li>
-            <li>&#10003; Premium Support (Live Chatting w/ Ch0sen1)</li>
+            <li>Everything in Pro</li>
+            <li>VIP Discord</li>
+            <li>1-on-1 Coaching Sessions (2 sessions per month)</li>
+            <li>Premium Support (Live Chatting w/ Ch0sen1)</li>
           </ul>
           <a href="checkout.html?plan=elite" class="btn-plan">Get Started</a>
         </div>
@@ -182,9 +183,9 @@
           <div class="pricing-badge">Ch0sen1 Plan</div>
           <div class="pricing-price">$250</div>
           <ul class="pricing-features">
-            <li>&#10003; Custom Picks</li>
-            <li>&#10003; Live Chat 24/7 with Ch0sen1</li>
-            <li>&#10003; Everything in Elite</li>
+            <li>Custom Picks</li>
+            <li>Live Chat 24/7 with Ch0sen1</li>
+            <li>Everything in Elite</li>
           </ul>
           <a href="checkout.html?plan=chosen1" class="btn-plan">Get Started</a>
         </div>
@@ -208,7 +209,8 @@
 
   <!-- ── FOOTER ── -->
   <footer>
-    <p>&copy; 2026 CH0SEN1 PICKZ &mdash; For entertainment purposes only.</p>
+    <p>&copy; 2026 CH0SEN1 PICKZ</p>
+    <p class="disclaimer">For entertainment purposes only. Please bet responsibly.</p>
   </footer>
 
   <!-- ── BET SLIP CALCULATOR MODAL ── -->

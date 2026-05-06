@@ -35,8 +35,9 @@
   --sport-mma:  #e01c1c;
 
   /* ── Typography scale ── */
-  --font-display:  'Bebas Neue', cursive;
-  --font-body:     'DM Sans', system-ui, sans-serif;
+  --font-display:  'Fraunces', serif;
+  --font-body:     'Inter Tight', 'DM Sans', system-ui, sans-serif;
+  --font-mono:     'JetBrains Mono', monospace;
 
   --text-xs:   0.72rem;
   --text-sm:   0.85rem;
