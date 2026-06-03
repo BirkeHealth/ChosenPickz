@@ -8,6 +8,7 @@ const db = require('../db');
 const BCRYPT_ROUNDS = 12;
 const SESSION_TOKEN_BYTES = 32;
 const SESSION_REMEMBER_MS = 30 * 24 * 60 * 60 * 1000; // 30 days
+const DUMMY_BCRYPT_HASH = '$2b$12$C6UzMDM.H6dfI/f/IKcEeOe9X8x1YgnPZXoqBYwygJyI072QtdgQW';
 const VALID_ROLES = ['admin', 'handicapper', 'member'];
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
@@ -196,62 +197,66 @@ async function handleAuthApi(req, res) {
       return sendJson(res, 503, { error: 'Database is not configured.' });
     }
 
-    const body = await readJsonBody(req);
-    const { identifier, password, remember } = body;
+    try {
+      const body = await readJsonBody(req);
+      const { identifier, password, remember } = body;
 
-    if (!identifier || !password) {
-      return sendJson(res, 400, { error: 'identifier and password are required.' });
+      if (!identifier || !password) {
+        return sendJson(res, 400, { error: 'identifier and password are required.' });
+      }
+
+      // Look up user by username or email (case-insensitive)
+      const result = await db.query(
+        `SELECT * FROM users WHERE lower(email) = lower($1) OR lower(username) = lower($1) LIMIT 1`,
+        [identifier]
+      );
+      const user = result.rows[0];
+
+      // Constant-time comparison: always run bcrypt even if user not found
+      const hashToCheck = user ? user.password_hash : DUMMY_BCRYPT_HASH;
+      const passwordOk = await bcrypt.compare(password, hashToCheck);
+
+      if (!user || !passwordOk) {
+        return sendJson(res, 401, { error: 'Invalid username or password.' });
+      }
+
+      if (user.disabled) {
+        return sendJson(res, 403, { error: 'This account has been disabled. Please contact support.' });
+      }
+
+      // Create session
+      const token = generateToken();
+      const tokenHash = hashToken(token);
+      const now = Date.now();
+      const sessionId = `ses_${now}_${crypto.randomBytes(4).toString('hex')}`;
+      const expiresAt = now + (remember ? SESSION_REMEMBER_MS : 24 * 60 * 60 * 1000); // 30d or 1d
+
+      await db.query(
+        `INSERT INTO sessions (id, user_id, token_hash, created_at, expires_at)
+         VALUES ($1, $2, $3, $4, $5)`,
+        [sessionId, user.id, tokenHash, now, expiresAt]
+      );
+
+      res.writeHead(200, {
+        'Content-Type': 'application/json',
+        'Set-Cookie': buildSessionCookie(token, remember),
+      });
+      res.end(
+        JSON.stringify({
+          user: {
+            id: user.id,
+            email: user.email,
+            username: user.username,
+            name: user.name,
+            role: user.role,
+          },
+        })
+      );
+      return;
+    } catch (err) {
+      console.error('[auth/login] error:', err);
+      return sendJson(res, 500, { error: 'Internal server error' });
     }
-
-    // Look up user by username or email (case-insensitive)
-    const result = await db.query(
-      `SELECT * FROM users WHERE lower(email) = lower($1) OR lower(username) = lower($1) LIMIT 1`,
-      [identifier]
-    );
-    const user = result.rows[0];
-
-    // Constant-time comparison: always run bcrypt even if user not found
-    const dummyHash = '$2a$12$invalidhashfortimingnormalization0000000000000000000';
-    const hashToCheck = user ? user.password_hash : dummyHash;
-    const passwordOk = await bcrypt.compare(password, hashToCheck);
-
-    if (!user || !passwordOk) {
-      return sendJson(res, 401, { error: 'Invalid username or password.' });
-    }
-
-    if (user.disabled) {
-      return sendJson(res, 403, { error: 'This account has been disabled. Please contact support.' });
-    }
-
-    // Create session
-    const token = generateToken();
-    const tokenHash = hashToken(token);
-    const now = Date.now();
-    const sessionId = `ses_${now}_${crypto.randomBytes(4).toString('hex')}`;
-    const expiresAt = now + (remember ? SESSION_REMEMBER_MS : 24 * 60 * 60 * 1000); // 30d or 1d
-
-    await db.query(
-      `INSERT INTO sessions (id, user_id, token_hash, created_at, expires_at)
-       VALUES ($1, $2, $3, $4, $5)`,
-      [sessionId, user.id, tokenHash, now, expiresAt]
-    );
-
-    res.writeHead(200, {
-      'Content-Type': 'application/json',
-      'Set-Cookie': buildSessionCookie(token, remember),
-    });
-    res.end(
-      JSON.stringify({
-        user: {
-          id: user.id,
-          email: user.email,
-          username: user.username,
-          name: user.name,
-          role: user.role,
-        },
-      })
-    );
-    return;
   }
 
   // POST /api/auth/logout
