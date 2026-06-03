@@ -111,15 +111,6 @@ nav {
   gap: 1rem;
 }
 
-/* ── NAV TELEGRAM LINK ── */
-.nav-telegram {
-  color: #38bdf8 !important;
-}
-.nav-telegram:hover {
-  color: #7dd3fc !important;
-  background: rgba(14,165,233,0.1) !important;
-}
-
 /* ── NAV DISCORD LINK ── */
 .nav-discord {
   color: #a78bfa !important;
@@ -422,24 +413,6 @@ main {
   color: var(--brand-primary);
   background: transparent;
   transform: none;
-}
-
-/* ── TELEGRAM BUTTON ── */
-.btn-telegram {
-  background: rgba(14,165,233,0.15);
-  color: #38bdf8;
-  border: 1px solid rgba(14,165,233,0.35);
-  padding: 0.7rem 1.5rem;
-  border-radius: 8px;
-  text-decoration: none;
-  font-weight: 700;
-  font-size: 0.95rem;
-  transition: background 0.2s, color 0.2s;
-  display: inline-block;
-}
-.btn-telegram:hover {
-  background: rgba(14,165,233,0.28);
-  color: #7dd3fc;
 }
 
 /* ── DISCORD BUTTON ── */
@@ -1471,22 +1444,6 @@ footer .disclaimer {
   .modal-box { margin: 1rem; padding: 2rem 1.25rem; }
   .hero-cta a, .hero-cta button { width: 100%; justify-content: center; text-align: center; }
 }
-
-/* ── TELEGRAM BUTTON ── */
-.btn-telegram {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  background: #2ca5e0;
-  color: #fff;
-  padding: 0.6rem 1.5rem;
-  border-radius: 8px;
-  text-decoration: none;
-  font-weight: 700;
-  font-size: 0.9rem;
-  transition: background 0.2s, transform 0.15s;
-}
-.btn-telegram:hover { background: #1a94cf; transform: translateY(-1px); }
 
 /* ── ADMIN PANEL ── */
 .admin-form {
