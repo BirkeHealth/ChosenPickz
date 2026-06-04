@@ -37,6 +37,7 @@ const ROOT_STATIC_FILES = new Set([
   'news.html',
   'analysis.html',
   'blog-post.html',
+  'blog.html',
   'pick.html',
   'about.html',
   'todays-picks.html',
@@ -56,6 +57,7 @@ const ROOT_STATIC_FILES = new Set([
   'scripts/sportsNews.js',
   'scripts/analysis.js',
   'scripts/blogPost.js',
+  'scripts/blogList.js',
   'scripts/pick.js',
   // ── Handicapper portal ──
   'login.html',
@@ -402,7 +404,7 @@ async function handlePostsApi(req, res, urlObj) {
     const userId = urlObj.searchParams.get('userId');
     const result = userId
       ? await db.query('SELECT * FROM posts WHERE user_id = $1 ORDER BY created_at DESC', [userId])
-      : await db.query('SELECT * FROM posts ORDER BY created_at DESC');
+      : await db.query("SELECT * FROM posts WHERE status = 'Published' ORDER BY published_at DESC");
 
     sendJson(res, 200, result.rows.map(mapPostRow));
     return;
@@ -456,7 +458,7 @@ async function handlePostsApi(req, res, urlObj) {
     const id = decodeURIComponent(pathParts[2]);
 
     if (req.method === 'GET') {
-      const result = await db.query('SELECT * FROM posts WHERE id = $1 LIMIT 1', [id]);
+      const result = await db.query("SELECT * FROM posts WHERE id = $1 AND status = 'Published' LIMIT 1", [id]);
       if (!result.rows.length) {
         sendJson(res, 404, { error: 'Post not found' });
         return;
