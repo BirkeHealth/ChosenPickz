@@ -4,6 +4,9 @@ const App = (() => {
   let editingPickId = null;
   let editingPostId = null;
   let currentFilter = 'All';
+  let openCommentsPickId = null;
+
+  function isMember() { return session && session.role === 'member'; }
 
   // ─── Helpers ───────────────────────────────────────────────────────────────
 
@@ -149,6 +152,11 @@ const App = (() => {
   // ─── Navigation ────────────────────────────────────────────────────────────
 
   async function navigate(view, data = {}) {
+    // Members don't get pick/blog creation tools — redirect any stray access.
+    if (isMember() && ['pick-form', 'blog', 'blog-form', 'blog-preview'].includes(view)) {
+      view = 'picks';
+    }
+
     document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
     document.querySelectorAll('[data-nav]').forEach(n => n.classList.remove('active'));
 
@@ -160,7 +168,7 @@ const App = (() => {
 
     // Update page title
     const titles = {
-      overview: 'Overview', picks: 'My Picks',
+      overview: 'Overview', picks: isMember() ? 'Picks' : 'My Picks',
       'pick-form': editingPickId ? 'Edit Pick' : 'New Pick',
       blog: 'Blog Posts',
       'blog-form': editingPostId ? 'Edit Post' : 'New Post',
@@ -190,6 +198,8 @@ const App = (() => {
   // ─── Overview ──────────────────────────────────────────────────────────────
 
   async function renderOverview() {
+    if (isMember()) return renderMemberOverview();
+
     const [stats, picks, posts] = await Promise.all([
       PicksManager.getStats(session.userId),
       PicksManager.getByUser(session.userId),
@@ -307,9 +317,58 @@ const App = (() => {
     `;
   }
 
+  // ─── Member Overview ───────────────────────────────────────────────────────
+
+  async function renderMemberOverview() {
+    const picks = await PicksManager.getByUser();
+    const recentPicks = picks.slice(0, 6);
+
+    document.getElementById('view-overview').innerHTML = `
+      <div class="page-header">
+        <div>
+          <h2 class="page-title-inner">Welcome back, ${escHtml(session.name)} 👋</h2>
+          <p class="page-sub">Here are the latest picks from our handicappers.</p>
+          ${session.plan && session.subscription_status === 'ACTIVE'
+            ? `<span class="plan-badge">${escHtml(session.plan.charAt(0).toUpperCase() + session.plan.slice(1))} Plan</span>`
+            : ''}
+        </div>
+        <button class="btn btn-primary" onclick="App.goPicks()">🎯 View All Picks</button>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <h3>Recent Picks</h3>
+          <a href="#" class="link-small" onclick="App.goPicks()">View all</a>
+        </div>
+        <div class="card-body">
+          ${recentPicks.length ? `
+            <div class="mini-picks">
+              ${recentPicks.map(p => `
+                <div class="mini-pick-row">
+                  <div class="mini-pick-left">
+                    ${sportBadge(p.sport)}
+                    <div>
+                      <div class="mini-pick-name">${escHtml(p.pickDetails)}</div>
+                      <div class="mini-pick-game">${escHtml(p.matchup)} · ${escHtml(p.handicapperName || 'ChosenPickz')}</div>
+                    </div>
+                  </div>
+                  <div class="mini-pick-right">
+                    ${statusBadge(p.status)}
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+          ` : '<p class="empty-state">No picks posted yet. Check back soon.</p>'}
+        </div>
+      </div>
+    `;
+  }
+
   // ─── Picks List ────────────────────────────────────────────────────────────
 
   async function renderPicks() {
+    if (isMember()) return renderPicksFeed();
+
     const allPicks = await PicksManager.getByUser(session.userId);
     const filters = ['All', 'Pending', 'Win', 'Loss', 'Push'];
     const filtered = currentFilter === 'All' ? allPicks : allPicks.filter(p => p.status === currentFilter);
@@ -378,6 +437,132 @@ const App = (() => {
         </div>
       `}
     `;
+  }
+
+  // ─── Picks Feed (members: view + discuss) ─────────────────────────────────
+
+  async function renderPicksFeed() {
+    const allPicks = await PicksManager.getByUser();
+    const filters = ['All', 'Pending', 'Win', 'Loss', 'Push'];
+    const filtered = currentFilter === 'All' ? allPicks : allPicks.filter(p => p.status === currentFilter);
+
+    document.getElementById('view-picks').innerHTML = `
+      <div class="page-header">
+        <div>
+          <h2 class="page-title-inner">Picks</h2>
+          <p class="page-sub">${allPicks.length} total picks · view and discuss below</p>
+        </div>
+      </div>
+
+      <div class="filter-bar">
+        ${filters.map(f => `
+          <button class="filter-btn ${currentFilter === f ? 'active' : ''}" onclick="App.setFilter('${f}')">${f}</button>
+        `).join('')}
+      </div>
+
+      ${filtered.length ? `
+        <div class="feed-list">
+          ${filtered.map(p => `
+            <div class="card feed-card">
+              <div class="feed-card-top">
+                <div class="feed-card-left">
+                  ${sportBadge(p.sport)}
+                  <div>
+                    <div class="mini-pick-name">${escHtml(p.pickDetails)}</div>
+                    <div class="mini-pick-game">${escHtml(p.matchup)}</div>
+                  </div>
+                </div>
+                <div class="feed-card-right">${statusBadge(p.status)}</div>
+              </div>
+              <div class="feed-card-meta">
+                <span>${escHtml(p.pickType)} · ${escHtml(p.odds)} · ${p.units}u</span>
+                <span class="date-dim">${escHtml(p.handicapperName || 'ChosenPickz')} · ${p.date || formatDate(p.createdAt)}</span>
+              </div>
+              ${p.note ? `<p class="feed-card-note">${escHtml(p.note)}</p>` : ''}
+              <button class="btn btn-sm btn-ghost" onclick="App.toggleComments('${p.id}')">💬 Discuss</button>
+              <div class="comments-thread hidden" id="comments-${p.id}"></div>
+            </div>
+          `).join('')}
+        </div>
+      ` : `
+        <div class="empty-card">
+          <div class="empty-icon">🎯</div>
+          <h3>${currentFilter === 'All' ? 'No picks yet' : `No ${currentFilter} picks`}</h3>
+          <p>Check back soon for new picks from our handicappers.</p>
+        </div>
+      `}
+    `;
+  }
+
+  async function toggleComments(pickId) {
+    const el = document.getElementById(`comments-${pickId}`);
+    if (!el) return;
+
+    if (!el.classList.contains('hidden')) {
+      el.classList.add('hidden');
+      openCommentsPickId = null;
+      return;
+    }
+
+    document.querySelectorAll('.comments-thread').forEach(c => c.classList.add('hidden'));
+    el.classList.remove('hidden');
+    openCommentsPickId = pickId;
+    await loadComments(pickId);
+  }
+
+  async function loadComments(pickId) {
+    const el = document.getElementById(`comments-${pickId}`);
+    if (!el) return;
+    el.innerHTML = `<p class="empty-state">Loading comments…</p>`;
+
+    try {
+      const comments = await CommentsManager.getByPick(pickId);
+      el.innerHTML = `
+        <div class="comments-list">
+          ${comments.length ? comments.map(c => `
+            <div class="comment-row">
+              <div class="comment-avatar">${escHtml(c.authorName.charAt(0).toUpperCase())}</div>
+              <div class="comment-body">
+                <div class="comment-meta">
+                  <span class="comment-author">${escHtml(c.authorName)}</span>
+                  <span class="date-dim">${formatDate(c.createdAt)}</span>
+                  ${(c.userId === session.userId || session.role === 'admin') ? `<a href="#" class="link-small" onclick="App.deleteComment('${c.id}', '${pickId}'); return false;">Delete</a>` : ''}
+                </div>
+                <div class="comment-text">${escHtml(c.content)}</div>
+              </div>
+            </div>
+          `).join('') : '<p class="empty-state">No comments yet. Start the discussion.</p>'}
+        </div>
+        <div class="comment-form">
+          <textarea id="comment-input-${pickId}" rows="2" placeholder="Share your take…" maxlength="2000"></textarea>
+          <button class="btn btn-sm btn-primary" onclick="App.postComment('${pickId}')">Post</button>
+        </div>
+      `;
+    } catch (err) {
+      el.innerHTML = `<p class="empty-state">${escHtml(getErrorMessage(err))}</p>`;
+    }
+  }
+
+  async function postComment(pickId) {
+    const input = document.getElementById(`comment-input-${pickId}`);
+    const content = input ? input.value.trim() : '';
+    if (!content) { toast('Write something first.', 'error'); return; }
+
+    try {
+      await CommentsManager.create(pickId, content);
+      await loadComments(pickId);
+    } catch (err) {
+      toast(err.message || 'Unable to post comment.', 'error');
+    }
+  }
+
+  async function deleteComment(id, pickId) {
+    try {
+      await CommentsManager.remove(id);
+      await loadComments(pickId);
+    } catch (err) {
+      toast(err.message || 'Unable to delete comment.', 'error');
+    }
   }
 
   // ─── Pick Form ─────────────────────────────────────────────────────────────
@@ -757,6 +942,15 @@ const App = (() => {
     // Populate header
     document.getElementById('user-display-name').textContent = session.name;
     document.getElementById('user-avatar-initial').textContent = session.name.charAt(0).toUpperCase();
+    const roleLabels = { admin: 'Administrator', handicapper: 'Handicapper', member: 'Sports Bettor' };
+    document.getElementById('user-display-role').textContent = roleLabels[session.role] || 'Sports Bettor';
+
+    // Members view + discuss picks; they don't get creation tools.
+    if (isMember()) {
+      document.getElementById('nav-picks-label').textContent = 'Picks';
+      const blogLink = document.getElementById('nav-blog-link');
+      if (blogLink) blogLink.style.display = 'none';
+    }
 
     // Nav links
     document.querySelectorAll('[data-nav]').forEach(el => {
@@ -783,7 +977,8 @@ const App = (() => {
     init,
     navigate,
     newPick, editPick, deletePick, savePick, goPicks, setFilter,
-    newPost, editPost, deletePost, savePost, previewPost, goBlog
+    newPost, editPost, deletePost, savePost, previewPost, goBlog,
+    toggleComments, postComment, deleteComment
   };
 })();
 

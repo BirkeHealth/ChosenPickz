@@ -20,7 +20,7 @@
         <span class="brand-icon-sm">⚡</span>
         <div>
           <div class="brand-text">ChosenPickz</div>
-          <div class="brand-sub">Handicapper Portal</div>
+          <div class="brand-sub">Sports Bettor Portal</div>
         </div>
       </div>
 
@@ -30,10 +30,10 @@
         <a href="#" data-nav="overview">
           <span class="nav-icon">📊</span> Overview
         </a>
-        <a href="#" data-nav="picks">
-          <span class="nav-icon">🎯</span> My Picks
+        <a href="#" data-nav="picks" id="nav-picks-link">
+          <span class="nav-icon">🎯</span> <span id="nav-picks-label">My Picks</span>
         </a>
-        <a href="#" data-nav="blog">
+        <a href="#" data-nav="blog" id="nav-blog-link">
           <span class="nav-icon">✍️</span> Blog Posts
         </a>
 
@@ -50,7 +50,7 @@
           <div class="sidebar-avatar" id="user-avatar-initial"></div>
           <div class="sidebar-user-info">
             <div class="sidebar-user-name" id="user-display-name"></div>
-            <div class="sidebar-user-role">Handicapper</div>
+            <div class="sidebar-user-role" id="user-display-role">Sports Bettor</div>
           </div>
         </div>
         <button id="logout-btn">
@@ -118,6 +118,7 @@
   <script src="js/auth.js"></script>
   <script src="js/picks.js"></script>
   <script src="js/blog.js"></script>
+  <script src="js/comments.js"></script>
   <script src="js/dashboard.js"></script>
 
   <script>

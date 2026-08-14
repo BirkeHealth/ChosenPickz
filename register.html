@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ChosenPickz — Create Handicapper Account</title>
+  <title>ChosenPickz — Create Sports Bettor Account</title>
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body class="login-body">
@@ -14,12 +14,12 @@
       <div class="brand-logo">
         <img src="https://github.com/user-attachments/assets/74aad200-7f08-4b4b-a0bf-f21923a42f71" alt="CH0SEN1 PICKZ" style="height:64px;width:auto;display:block;margin:0 auto 0.5rem;" />
       </div>
-      <p class="brand-tagline">Handicapper Portal</p>
+      <p class="brand-tagline">Sports Bettor Portal</p>
     </div>
 
     <div class="login-card">
       <h2>Create Account</h2>
-      <p class="login-subtitle">Register as a handicapper</p>
+      <p class="login-subtitle">Register as a sports bettor</p>
 
       <div id="register-error" class="alert alert-error hidden"></div>
       <div id="register-success" class="alert alert-success hidden"></div>
@@ -165,7 +165,7 @@
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           credentials: 'same-origin',
-          body: JSON.stringify({ name, email, username, password, role: 'handicapper' }),
+          body: JSON.stringify({ name, email, username, password, role: 'member' }),
         });
 
         const data = await res.json();

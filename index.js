@@ -4,9 +4,10 @@ const path = require('path');
 const oddsHandler   = require('./routes/odds');
 const sportsHandler = require('./routes/sports');
 const newsHandler   = require('./routes/news');
-const { handleAuthApi } = require('./routes/auth');
+const { handleAuthApi, loadUserFromRequest } = require('./routes/auth');
 const { handleAdminApi } = require('./routes/admin');
 const { handlePaypalApi } = require('./routes/paypal');
+const { handleCommentsApi } = require('./routes/comments');
 const db = require('./db');
 
 const PORT = process.env.PORT || 3000;
@@ -72,6 +73,7 @@ const ROOT_STATIC_FILES = new Set([
   'js/auth.js',
   'js/picks.js',
   'js/blog.js',
+  'js/comments.js',
   'js/dashboard.js',
   // ── Admin ──
   'admin.html',
@@ -231,6 +233,16 @@ async function handlePicksApi(req, res, urlObj) {
   if (!ensureDbConfigured(res)) return;
 
   const pathParts = urlObj.pathname.split('/').filter(Boolean);
+
+  // Only handicappers/admins may create, edit, or delete picks.
+  // GET stays open — the public todays-picks.html page reads picks without auth.
+  if (req.method !== 'GET') {
+    const user = await loadUserFromRequest(req);
+    if (!user || !['admin', 'handicapper'].includes(user.role)) {
+      sendJson(res, 403, { error: 'Only handicappers and admins can post picks.' });
+      return;
+    }
+  }
 
   if (req.method === 'GET' && pathParts[2] === 'stats') {
     const userId = urlObj.searchParams.get('userId');
@@ -582,6 +594,18 @@ const server = http.createServer(async (req, res) => {
       const code = err.statusCode || 500;
       sendJson(res, code, { error: code === 500 ? 'Internal server error' : err.message });
       if (code === 500) console.error('[api/auth] error:', err);
+    }
+    return;
+  }
+
+  // ── Comments API ────────────────────────────────────────────────────────────
+  if (urlPath === '/api/comments' || urlPath.startsWith('/api/comments/')) {
+    try {
+      await handleCommentsApi(req, res);
+    } catch (err) {
+      const code = err.statusCode || 500;
+      sendJson(res, code, { error: code === 500 ? 'Internal server error' : err.message });
+      if (code === 500) console.error('[api/comments] error:', err);
     }
     return;
   }

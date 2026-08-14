@@ -105,7 +105,22 @@ const initPromise = (async () => {
     'CREATE INDEX IF NOT EXISTS sessions_user_id_idx ON sessions (user_id)'
   );
 
-  console.log('[startup] PostgreSQL tables ready (picks, posts, users, sessions).');
+  // ── Comments (member discussion on picks) ────────────────────────────────
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS comments (
+      id TEXT PRIMARY KEY,
+      pick_id TEXT NOT NULL REFERENCES picks(id) ON DELETE CASCADE,
+      user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      author_name TEXT NOT NULL,
+      content TEXT NOT NULL,
+      created_at BIGINT NOT NULL
+    )
+  `);
+  await pool.query(
+    'CREATE INDEX IF NOT EXISTS comments_pick_id_idx ON comments (pick_id)'
+  );
+
+  console.log('[startup] PostgreSQL tables ready (picks, posts, users, sessions, comments).');
 
   // ── Admin seeding ─────────────────────────────────────────────────────────
   const adminEmail    = process.env.ADMIN_EMAIL;

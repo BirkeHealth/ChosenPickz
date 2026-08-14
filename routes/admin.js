@@ -1,8 +1,11 @@
 'use strict';
 
 const crypto = require('crypto');
+const bcrypt = require('bcryptjs');
 const db = require('../db');
 const { loadUserFromRequest, sendJson, readJsonBody } = require('./auth');
+
+const BCRYPT_ROUNDS = 12;
 
 const VALID_ROLES = ['admin', 'handicapper', 'member'];
 const VALID_POST_STATUSES = ['Draft', 'Published', 'Archived'];
@@ -112,6 +115,56 @@ async function handleAdminApi(req, res) {
       'SELECT id, email, username, name, role, disabled, created_at, updated_at FROM users ORDER BY created_at DESC'
     );
     return sendJson(res, 200, result.rows.map(mapUserRow));
+  }
+
+  // POST /api/admin/users — create a new account (e.g. a handicapper who posts picks)
+  if (req.method === 'POST' && resource === 'users' && !resourceId) {
+    const admin = await requireAdmin(req, res);
+    if (!admin) return;
+
+    const body = await readJsonBody(req);
+    const { email, username, password, name } = body;
+
+    if (!email || !username || !password || !name) {
+      return sendJson(res, 400, { error: 'Missing required fields: email, username, password, name' });
+    }
+    if (typeof email !== 'string' || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      return sendJson(res, 400, { error: 'Invalid email address.' });
+    }
+    if (typeof username !== 'string' || username.length < 3 || username.length > 50) {
+      return sendJson(res, 400, { error: 'Username must be 3–50 characters.' });
+    }
+    if (typeof password !== 'string' || password.length < 8) {
+      return sendJson(res, 400, { error: 'Password must be at least 8 characters.' });
+    }
+    if (typeof name !== 'string' || name.trim().length === 0) {
+      return sendJson(res, 400, { error: 'Name is required.' });
+    }
+
+    const role = VALID_ROLES.includes(body.role) ? body.role : 'handicapper';
+
+    const existing = await db.query(
+      'SELECT id FROM users WHERE lower(email) = lower($1) OR lower(username) = lower($2) LIMIT 1',
+      [email, username]
+    );
+    if (existing.rows.length) {
+      return sendJson(res, 409, { error: 'Email or username already taken.' });
+    }
+
+    const passwordHash = await bcrypt.hash(password, BCRYPT_ROUNDS);
+    const now = Date.now();
+    const id = `usr_${now}_${crypto.randomBytes(4).toString('hex')}`;
+
+    await db.query(
+      `INSERT INTO users (id, email, username, name, role, password_hash, created_at, updated_at)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
+      [id, email.toLowerCase(), username.toLowerCase(), name.trim(), role, passwordHash, now, now]
+    );
+
+    return sendJson(res, 201, mapUserRow({
+      id, email: email.toLowerCase(), username: username.toLowerCase(), name: name.trim(),
+      role, disabled: false, created_at: now, updated_at: now,
+    }));
   }
 
   // PATCH /api/admin/users/:id

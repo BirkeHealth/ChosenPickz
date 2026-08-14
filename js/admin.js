@@ -38,7 +38,8 @@ const AdminPanel = (() => {
 
   function roleBadge(role) {
     const cls = { admin: 'badge-admin', handicapper: 'badge-handicapper', member: 'badge-member' }[role] || 'badge-member';
-    return `<span class="badge ${cls}">${role}</span>`;
+    const label = { admin: 'Admin', handicapper: 'Handicapper', member: 'Sports Bettor' }[role] || role;
+    return `<span class="badge ${cls}">${label}</span>`;
   }
 
   function statusBadge(status, type) {
@@ -123,7 +124,7 @@ const AdminPanel = (() => {
         <td style="white-space:nowrap;">
           ${u.role !== 'admin' ? `
             <select class="action-btn" style="cursor:pointer;" onchange="AdminPanel.changeUserRole('${u.id}', this.value, this)">
-              <option value="member"      ${u.role === 'member'      ? 'selected' : ''}>Member</option>
+              <option value="member"      ${u.role === 'member'      ? 'selected' : ''}>Sports Bettor</option>
               <option value="handicapper" ${u.role === 'handicapper' ? 'selected' : ''}>Handicapper</option>
               <option value="admin"       ${u.role === 'admin'       ? 'selected' : ''}>Admin</option>
             </select>
@@ -183,6 +184,61 @@ const AdminPanel = (() => {
       renderUsers(filterUsers());
     } catch (err) {
       showToast(err.message, 'error');
+    }
+  }
+
+  function openUserForm() {
+    const modal = document.getElementById('user-modal');
+    const form  = document.getElementById('user-form');
+    const err   = document.getElementById('user-form-error');
+    form.reset();
+    err.classList.add('hidden');
+    document.getElementById('uf-role').value = 'handicapper';
+    modal.classList.add('show');
+    document.getElementById('uf-name').focus();
+  }
+
+  async function saveUserForm(e) {
+    e.preventDefault();
+    const err = document.getElementById('user-form-error');
+    err.classList.add('hidden');
+
+    const name     = document.getElementById('uf-name').value.trim();
+    const email    = document.getElementById('uf-email').value.trim();
+    const username = document.getElementById('uf-username').value.trim();
+    const password = document.getElementById('uf-password').value;
+    const role     = document.getElementById('uf-role').value;
+
+    if (!name || !email || !username || !password) {
+      err.textContent = 'Please fill in all fields.';
+      err.classList.remove('hidden');
+      return;
+    }
+
+    const submitBtn = document.getElementById('user-modal-submit');
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Creating…';
+
+    try {
+      const res = await fetch('/api/admin/users', {
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, email, username, password, role }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to create account.');
+
+      _allUsers.unshift(data);
+      showToast(`${name} added as a ${role === 'handicapper' ? 'Handicapper' : role === 'admin' ? 'Admin' : 'Sports Bettor'}.`);
+      document.getElementById('user-modal').classList.remove('show');
+      renderUsers(filterUsers());
+    } catch (e2) {
+      err.textContent = e2.message;
+      err.classList.remove('hidden');
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Create Account';
     }
   }
 
@@ -557,10 +613,16 @@ const AdminPanel = (() => {
       document.getElementById('pick-modal').classList.remove('show');
     });
 
+    // User form modal
+    document.getElementById('user-form')?.addEventListener('submit', saveUserForm);
+    document.getElementById('user-modal-cancel')?.addEventListener('click', () => {
+      document.getElementById('user-modal').classList.remove('show');
+    });
+
     // Load initial view
     showView('users');
     loadUsers();
   }
 
-  return { init, changeUserRole, toggleUserDisabled, changePostStatus, deletePost, openPickForm, changePickStatus, deletePick };
+  return { init, changeUserRole, toggleUserDisabled, openUserForm, changePostStatus, deletePost, openPickForm, changePickStatus, deletePick };
 })();
