@@ -47,6 +47,8 @@ const ROOT_STATIC_FILES = new Set([
   'about.html',
   'todays-picks.html',
   'handicapper-portal.html',
+  'terms.html',
+  'privacy.html',
   // ── Root scripts & styles ──
   'styles.css',
   'components/ScoreboardCarousel/ScoreboardCarousel.css',

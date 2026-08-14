@@ -1111,6 +1111,16 @@ footer .disclaimer {
   margin-top: 8px;
   font-size: 10px;
 }
+footer .footer-links {
+  margin-top: 10px;
+  font-size: 12px;
+}
+footer .footer-links a {
+  color: var(--brand-muted);
+  text-decoration: underline;
+  margin: 0 6px;
+}
+footer .footer-links a:hover { color: var(--orange); }
 
 /* ── LOGIN MODAL ── */
 .modal-overlay {
