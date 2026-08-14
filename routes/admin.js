@@ -46,6 +46,10 @@ function mapUserRow(row) {
     name: row.name,
     role: row.role,
     disabled: row.disabled,
+    plan: row.plan,
+    paypalSubscriptionId: row.paypal_subscription_id,
+    subscriptionStatus: row.subscription_status,
+    subscriptionUpdatedAt: row.subscription_updated_at,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   };
@@ -112,7 +116,9 @@ async function handleAdminApi(req, res) {
     if (!admin) return;
 
     const result = await db.query(
-      'SELECT id, email, username, name, role, disabled, created_at, updated_at FROM users ORDER BY created_at DESC'
+      `SELECT id, email, username, name, role, disabled, plan, paypal_subscription_id,
+              subscription_status, subscription_updated_at, created_at, updated_at
+       FROM users ORDER BY created_at DESC`
     );
     return sendJson(res, 200, result.rows.map(mapUserRow));
   }

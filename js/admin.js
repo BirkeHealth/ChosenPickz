@@ -107,10 +107,18 @@ const AdminPanel = (() => {
     }
   }
 
+  function subscriptionBadge(u) {
+    if (!u.plan) return '<span style="color:var(--text-dim);font-size:0.8rem;">—</span>';
+    const isActive = u.subscriptionStatus === 'ACTIVE';
+    const cls = isActive ? 'badge-active' : 'badge-pending';
+    const planLabel = u.plan.charAt(0).toUpperCase() + u.plan.slice(1);
+    return `<span class="badge ${cls}" title="PayPal subscription: ${escHtml(u.paypalSubscriptionId || '—')}">${escHtml(planLabel)} · ${escHtml(u.subscriptionStatus || 'unknown')}</span>`;
+  }
+
   function renderUsers(users) {
     const tbody = document.getElementById('users-tbody');
     if (!users.length) {
-      tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--text-muted);padding:2rem;">No users found.</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:var(--text-muted);padding:2rem;">No users found.</td></tr>';
       return;
     }
     tbody.innerHTML = users.map(u => `
@@ -119,6 +127,7 @@ const AdminPanel = (() => {
         <td style="color:var(--text-muted);font-size:0.825rem;">${escHtml(u.email)}</td>
         <td style="color:var(--text-muted);font-size:0.825rem;">@${escHtml(u.username)}</td>
         <td>${roleBadge(u.role)}</td>
+        <td>${subscriptionBadge(u)}</td>
         <td>${statusBadge(u.disabled, 'user')}</td>
         <td style="color:var(--text-muted);font-size:0.8rem;white-space:nowrap;">${formatDate(u.createdAt)}</td>
         <td style="white-space:nowrap;">
