@@ -231,6 +231,17 @@
 }
 
 .page-sub { font-size: 0.85rem; color: var(--text-muted); }
+.plan-badge {
+  display: inline-block;
+  margin-top: 0.5rem;
+  padding: 0.2rem 0.65rem;
+  background: var(--accent-bg);
+  color: var(--accent);
+  border: 1px solid rgba(245,158,11,0.3);
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
 
 /* ─── Stats Grid ─────────────────────────────────────────────────────────── */
 .stats-grid {

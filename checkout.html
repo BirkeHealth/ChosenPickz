@@ -104,171 +104,27 @@
       <h2>Payment Details</h2>
       <p class="login-subtitle">Your subscription starts today</p>
 
-      <div class="alert alert-error" style="margin-bottom:1rem;">
-        <strong>Coming soon:</strong> Online payments are not yet active. To subscribe, please contact us directly to complete your setup.
-      </div>
-
       <div id="checkout-error" class="alert alert-error hidden"></div>
       <div id="checkout-success" class="alert alert-success hidden"></div>
 
-      <form id="checkout-form" autocomplete="on" novalidate>
+      <!-- Shown while we check login state / PayPal config -->
+      <div id="checkout-loading" style="text-align:center; color:var(--text-muted); padding:1rem 0;">
+        Loading checkout…
+      </div>
 
-        <div class="form-row-2">
-          <div class="form-group">
-            <label for="first-name">First Name</label>
-            <input
-              type="text"
-              id="first-name"
-              name="first-name"
-              placeholder="First name"
-              autocomplete="given-name"
-              required
-            >
-          </div>
-          <div class="form-group">
-            <label for="last-name">Last Name</label>
-            <input
-              type="text"
-              id="last-name"
-              name="last-name"
-              placeholder="Last name"
-              autocomplete="family-name"
-              required
-            >
-          </div>
-        </div>
+      <!-- Shown when the visitor isn't signed in yet -->
+      <div id="checkout-signin-required" class="hidden" style="text-align:center;">
+        <p style="color:var(--text-muted); margin-bottom:1rem;">
+          Sign in or create a free account to subscribe.
+        </p>
+        <a id="checkout-login-link" href="login.html" class="btn btn-primary btn-full" style="margin-bottom:0.6rem;">Sign In</a>
+        <a id="checkout-register-link" href="register.html" class="btn btn-ghost btn-full">Create an Account</a>
+      </div>
 
-        <div class="form-group">
-          <label for="email">Email Address</label>
-          <input
-            type="email"
-            id="email"
-            name="email"
-            placeholder="you@example.com"
-            autocomplete="email"
-            required
-          >
-        </div>
+      <!-- PayPal renders its Subscribe button into this container -->
+      <div id="paypal-button-container" class="hidden"></div>
 
-        <hr class="divider">
-
-        <h3 style="font-size:0.95rem;font-weight:700;color:var(--text);margin-bottom:0.75rem;">Billing Address</h3>
-
-        <div class="form-group">
-          <label for="billing-address">Street Address</label>
-          <input
-            type="text"
-            id="billing-address"
-            name="billing-address"
-            placeholder="123 Main St"
-            autocomplete="billing street-address"
-            required
-          >
-        </div>
-
-        <div class="form-row-2">
-          <div class="form-group">
-            <label for="billing-city">City</label>
-            <input
-              type="text"
-              id="billing-city"
-              name="billing-city"
-              placeholder="City"
-              autocomplete="billing address-level2"
-              required
-            >
-          </div>
-          <div class="form-group">
-            <label for="billing-state">State / Province</label>
-            <input
-              type="text"
-              id="billing-state"
-              name="billing-state"
-              placeholder="State"
-              autocomplete="billing address-level1"
-              required
-            >
-          </div>
-        </div>
-
-        <div class="form-row-2">
-          <div class="form-group">
-            <label for="billing-zip">ZIP / Postal Code</label>
-            <input
-              type="text"
-              id="billing-zip"
-              name="billing-zip"
-              placeholder="12345"
-              autocomplete="billing postal-code"
-              required
-            >
-          </div>
-          <div class="form-group">
-            <label for="billing-country">Country</label>
-            <input
-              type="text"
-              id="billing-country"
-              name="billing-country"
-              placeholder="United States"
-              autocomplete="billing country-name"
-              value="United States"
-              required
-            >
-          </div>
-        </div>
-
-        <hr class="divider">
-
-        <div class="form-group">
-          <label for="card-number">Card Number</label>
-          <input
-            type="text"
-            id="card-number"
-            name="card-number"
-            placeholder="1234 5678 9012 3456"
-            autocomplete="cc-number"
-            inputmode="numeric"
-            maxlength="19"
-            required
-          >
-        </div>
-
-        <div class="form-row-2">
-          <div class="form-group">
-            <label for="expiry">Expiry Date</label>
-            <input
-              type="text"
-              id="expiry"
-              name="expiry"
-              placeholder="MM / YY"
-              autocomplete="cc-exp"
-              inputmode="numeric"
-              maxlength="7"
-              required
-            >
-          </div>
-          <div class="form-group">
-            <label for="cvv">CVV</label>
-            <input
-              type="text"
-              id="cvv"
-              name="cvv"
-              placeholder="123"
-              autocomplete="cc-csc"
-              inputmode="numeric"
-              maxlength="4"
-              required
-            >
-          </div>
-        </div>
-
-        <button type="submit" class="btn btn-primary btn-full" id="checkout-btn">
-          Subscribe Now
-        </button>
-
-      </form>
-
-      <p class="secure-note"><span>🔒</span>Payments are encrypted and secure. Cancel anytime.</p>
+      <p class="secure-note"><span>🔒</span>Payments are securely processed by PayPal. Cancel anytime.</p>
 
       <div class="login-footer-note" style="margin-top:1rem; text-align:center; font-size:0.875rem; color:var(--text-muted);">
         Already a member? <a href="login.html">Sign in</a>
@@ -281,6 +137,7 @@
 
   </div>
 
+  <script src="js/auth.js"></script>
   <script>
     const PLANS = {
       starter: { name: 'Starter',       price: '$25',  period: '/week',      desc: '1 Pick a day · Email Alerts · Free Discord' },
@@ -302,59 +159,106 @@
       document.getElementById('plan-summary').style.display = 'none';
     }
 
-    // Card number formatting
-    document.getElementById('card-number').addEventListener('input', function () {
-      let v = this.value.replace(/\D/g, '').slice(0, 16);
-      this.value = v.replace(/(.{4})/g, '$1 ').trim();
-    });
+    const errEl      = document.getElementById('checkout-error');
+    const okEl       = document.getElementById('checkout-success');
+    const loadingEl  = document.getElementById('checkout-loading');
+    const signinEl   = document.getElementById('checkout-signin-required');
+    const buttonWrap = document.getElementById('paypal-button-container');
 
-    // Expiry formatting
-    document.getElementById('expiry').addEventListener('input', function () {
-      let v = this.value.replace(/\D/g, '').slice(0, 4);
-      if (v.length > 2) v = v.slice(0, 2) + ' / ' + v.slice(2);
-      this.value = v;
-    });
+    function showError(message) {
+      errEl.textContent = message;
+      errEl.classList.remove('hidden');
+    }
 
-    // CVV: digits only
-    document.getElementById('cvv').addEventListener('input', function () {
-      this.value = this.value.replace(/\D/g, '').slice(0, 4);
-    });
-
-    document.getElementById('checkout-form').addEventListener('submit', function (e) {
-      e.preventDefault();
-
-      const errEl = document.getElementById('checkout-error');
-      const okEl  = document.getElementById('checkout-success');
-      errEl.classList.add('hidden');
-      okEl.classList.add('hidden');
-
-      const firstName = document.getElementById('first-name').value.trim();
-      const lastName  = document.getElementById('last-name').value.trim();
-      const email  = document.getElementById('email').value.trim();
-      const address = document.getElementById('billing-address').value.trim();
-      const city    = document.getElementById('billing-city').value.trim();
-      const zip     = document.getElementById('billing-zip').value.trim();
-      const card   = document.getElementById('card-number').value.replace(/\s/g, '');
-      const expiry = document.getElementById('expiry').value.trim();
-      const cvv    = document.getElementById('cvv').value.trim();
-
-      if (!firstName || !lastName || !email || !address || !city || !zip || card.length < 13 || !expiry || cvv.length < 3) {
-        errEl.textContent = 'Please fill in all fields correctly.';
-        errEl.classList.remove('hidden');
+    async function init() {
+      if (!key || !plan) {
+        loadingEl.classList.add('hidden');
+        showError('No plan selected. Please choose a plan from the pricing page.');
         return;
       }
 
-      const btn = document.getElementById('checkout-btn');
-      btn.textContent = 'Processing…';
-      btn.disabled = true;
+      // Preserve the chosen plan through sign-in/register redirects.
+      const returnUrl = encodeURIComponent(window.location.pathname + window.location.search);
+      document.getElementById('checkout-login-link').href    = `login.html?next=${returnUrl}`;
+      document.getElementById('checkout-register-link').href = `register.html?next=${returnUrl}`;
 
-      // TODO: Integrate a real payment processor (e.g. Stripe) here.
-      // For now, show a message directing the user to contact support.
-      okEl.textContent = 'Thanks for your interest! Our team will be in touch shortly to complete your subscription.';
-      okEl.classList.remove('hidden');
-      btn.textContent = 'Subscribe Now';
-      btn.disabled = false;
-    });
+      const [session, configRes] = await Promise.all([
+        AuthManager.initSession(),
+        fetch('/api/paypal/config'),
+      ]);
+
+      if (!session) {
+        loadingEl.classList.add('hidden');
+        signinEl.classList.remove('hidden');
+        return;
+      }
+
+      if (!configRes.ok) {
+        loadingEl.classList.add('hidden');
+        showError('Checkout is temporarily unavailable. Please try again later.');
+        return;
+      }
+
+      const config = await configRes.json();
+      const planId = config.plans[key];
+      if (!planId) {
+        loadingEl.classList.add('hidden');
+        showError('This plan is not currently available for checkout.');
+        return;
+      }
+
+      const sdkScript = document.createElement('script');
+      sdkScript.src = `https://www.paypal.com/sdk/js?client-id=${encodeURIComponent(config.clientId)}&vault=true&intent=subscription`;
+      sdkScript.onload = () => {
+        loadingEl.classList.add('hidden');
+        buttonWrap.classList.remove('hidden');
+
+        paypal.Buttons({
+          style: { shape: 'pill', color: 'gold', layout: 'vertical', label: 'subscribe' },
+          createSubscription: (data, actions) => actions.subscription.create({ plan_id: planId }),
+          onApprove: async (data) => {
+            buttonWrap.classList.add('hidden');
+            loadingEl.textContent = 'Confirming your subscription…';
+            loadingEl.classList.remove('hidden');
+
+            try {
+              const res = await fetch('/api/paypal/subscription', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'same-origin',
+                body: JSON.stringify({ subscriptionID: data.subscriptionID, plan: key }),
+              });
+              const result = await res.json();
+              loadingEl.classList.add('hidden');
+
+              if (!res.ok) {
+                showError(result.error || 'We could not confirm your subscription. Please contact support.');
+                buttonWrap.classList.remove('hidden');
+                return;
+              }
+
+              okEl.textContent = `You're subscribed to the ${plan.name}! Redirecting to your dashboard…`;
+              okEl.classList.remove('hidden');
+              setTimeout(() => { window.location.href = 'dashboard.html'; }, 1800);
+            } catch (err) {
+              loadingEl.classList.add('hidden');
+              showError('Network error while confirming your subscription. Please contact support.');
+              buttonWrap.classList.remove('hidden');
+            }
+          },
+          onError: () => {
+            showError('PayPal encountered an error. Please try again.');
+          },
+        }).render('#paypal-button-container');
+      };
+      sdkScript.onerror = () => {
+        loadingEl.classList.add('hidden');
+        showError('Could not load PayPal. Please check your connection and try again.');
+      };
+      document.head.appendChild(sdkScript);
+    }
+
+    init();
   </script>
 
 </body>

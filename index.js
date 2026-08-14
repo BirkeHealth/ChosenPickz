@@ -6,6 +6,7 @@ const sportsHandler = require('./routes/sports');
 const newsHandler   = require('./routes/news');
 const { handleAuthApi } = require('./routes/auth');
 const { handleAdminApi } = require('./routes/admin');
+const { handlePaypalApi } = require('./routes/paypal');
 const db = require('./db');
 
 const PORT = process.env.PORT || 3000;
@@ -24,6 +25,10 @@ if (!process.env.ODDS_API_KEY || process.env.ODDS_API_KEY === 'YOUR_ODDS_API_KEY
   console.warn('[startup] WARNING: ODDS_API_KEY is not set. Live odds will be unavailable.');
   console.warn('[startup]   Set ODDS_API_KEY in your .env file or as a server environment variable.');
 }
+if (!process.env.PAYPAL_CLIENT_ID || !process.env.PAYPAL_SECRET) {
+  console.warn('[startup] WARNING: PAYPAL_CLIENT_ID / PAYPAL_SECRET are not set. Checkout will be unavailable.');
+  console.warn('[startup]   Set them, plus PAYPAL_PLAN_STARTER/PRO/ELITE/CHOSEN1, in your environment.');
+}
 
 const ROOT_DIR = __dirname;
 // Root-level static files served directly from the project root (the landing page app)
@@ -33,7 +38,6 @@ const ROOT_STATIC_FILES = new Set([
   'index.html',
   'chosepickz.html',
   'live-bets.html',
-  'all-odds.html',
   'news.html',
   'analysis.html',
   'blog-post.html',
@@ -63,7 +67,6 @@ const ROOT_STATIC_FILES = new Set([
   'login.html',
   'register.html',
   'dashboard.html',
-  'all-odds.html',
   'css/style.css',
   'css/dashboard.css',
   'js/auth.js',
@@ -579,6 +582,18 @@ const server = http.createServer(async (req, res) => {
       const code = err.statusCode || 500;
       sendJson(res, code, { error: code === 500 ? 'Internal server error' : err.message });
       if (code === 500) console.error('[api/auth] error:', err);
+    }
+    return;
+  }
+
+  // ── PayPal API ──────────────────────────────────────────────────────────────
+  if (urlPath.startsWith('/api/paypal')) {
+    try {
+      await handlePaypalApi(req, res);
+    } catch (err) {
+      const code = err.statusCode || 500;
+      sendJson(res, code, { error: code === 500 ? 'Internal server error' : err.message });
+      if (code === 500) console.error('[api/paypal] error:', err);
     }
     return;
   }

@@ -113,7 +113,8 @@ async function loadUserFromRequest(req) {
   const now = Date.now();
 
   const result = await db.query(
-    `SELECT u.id, u.email, u.username, u.name, u.role, u.disabled, u.created_at
+    `SELECT u.id, u.email, u.username, u.name, u.role, u.disabled, u.created_at,
+            u.plan, u.subscription_status
      FROM sessions s
      JOIN users u ON u.id = s.user_id
      WHERE s.token_hash = $1

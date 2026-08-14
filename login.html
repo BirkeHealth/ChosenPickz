@@ -65,7 +65,7 @@
       </form>
 
       <div class="login-footer-note" style="text-align:center; font-size:0.875rem; color:var(--text-muted);">
-        <p>Don't have an account? <a href="register.html">Create a handicapper account</a></p>
+        <p>Don't have an account? <a href="register.html" id="register-link">Create a handicapper account</a></p>
       </div>
     </div>
 
@@ -78,9 +78,14 @@
 
   <script src="js/auth.js"></script>
   <script>
+    const nextUrl = new URLSearchParams(window.location.search).get('next') || 'dashboard.html';
+    if (nextUrl !== 'dashboard.html') {
+      document.getElementById('register-link').href = `register.html?next=${encodeURIComponent(nextUrl)}`;
+    }
+
     // Redirect if already logged in (async check against server)
     AuthManager.initSession().then(session => {
-      if (session) window.location.replace('dashboard.html');
+      if (session) window.location.replace(nextUrl);
     });
 
     document.getElementById('toggle-pw').addEventListener('click', function () {
@@ -110,7 +115,7 @@
 
       const result = await AuthManager.login(identifier, password, remember);
       if (result.success) {
-        window.location.href = 'dashboard.html';
+        window.location.href = nextUrl;
       } else {
         errEl.textContent = result.message;
         errEl.classList.remove('hidden');

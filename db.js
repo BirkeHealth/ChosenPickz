@@ -82,6 +82,12 @@ const initPromise = (async () => {
   // If the table was just created above (new install), this is a safe no-op.
   await pool.query('ALTER TABLE users ADD COLUMN IF NOT EXISTS disabled BOOLEAN NOT NULL DEFAULT FALSE');
 
+  // Migration: subscription/plan columns, populated via PayPal checkout (routes/paypal.js).
+  await pool.query('ALTER TABLE users ADD COLUMN IF NOT EXISTS plan TEXT');
+  await pool.query('ALTER TABLE users ADD COLUMN IF NOT EXISTS paypal_subscription_id TEXT');
+  await pool.query('ALTER TABLE users ADD COLUMN IF NOT EXISTS subscription_status TEXT');
+  await pool.query('ALTER TABLE users ADD COLUMN IF NOT EXISTS subscription_updated_at BIGINT');
+
   await pool.query(`
     CREATE TABLE IF NOT EXISTS sessions (
       id TEXT PRIMARY KEY,

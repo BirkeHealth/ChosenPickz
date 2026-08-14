@@ -205,6 +205,9 @@ const App = (() => {
         <div>
           <h2 class="page-title-inner">Welcome back, ${escHtml(session.name)} 👋</h2>
           <p class="page-sub">Here's a snapshot of your handicapping activity.</p>
+          ${session.plan && session.subscription_status === 'ACTIVE'
+            ? `<span class="plan-badge">${escHtml(session.plan.charAt(0).toUpperCase() + session.plan.slice(1))} Plan</span>`
+            : ''}
         </div>
         <button class="btn btn-primary" onclick="App.newPick()">+ New Pick</button>
       </div>

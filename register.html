@@ -97,7 +97,7 @@
       </form>
 
       <div class="login-footer-note" style="margin-top:1.25rem; text-align:center; font-size:0.875rem; color:var(--text-muted);">
-        Already have an account? <a href="login.html">Sign in</a>
+        Already have an account? <a href="login.html" id="signin-link">Sign in</a>
       </div>
     </div>
 
@@ -109,9 +109,13 @@
 
   <script src="js/auth.js"></script>
   <script>
+    const nextUrl = new URLSearchParams(window.location.search).get('next') || 'dashboard.html';
+    const loginRedirect = 'login.html' + (nextUrl !== 'dashboard.html' ? `?next=${encodeURIComponent(nextUrl)}` : '');
+    document.getElementById('signin-link').href = loginRedirect;
+
     // Redirect if already logged in
     AuthManager.initSession().then(session => {
-      if (session) window.location.replace('dashboard.html');
+      if (session) window.location.replace(nextUrl);
     });
 
     document.getElementById('toggle-pw').addEventListener('click', function () {
@@ -172,7 +176,7 @@
         } else {
           okEl.textContent = 'Account created! Redirecting to login…';
           okEl.classList.remove('hidden');
-          setTimeout(() => { window.location.href = 'login.html'; }, 2000);
+          setTimeout(() => { window.location.href = loginRedirect; }, 2000);
         }
       } catch {
         errEl.textContent = 'Network error. Please try again.';
