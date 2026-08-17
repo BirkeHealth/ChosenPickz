@@ -8,6 +8,7 @@ const { loadUserFromRequest, sendJson, readJsonBody } = require('./auth');
 const BCRYPT_ROUNDS = 12;
 
 const VALID_ROLES = ['admin', 'handicapper', 'member'];
+const VALID_PLANS = ['starter', 'pro', 'elite', 'chosen1'];
 const VALID_POST_STATUSES = ['Draft', 'Published', 'Archived'];
 const VALID_PICK_STATUSES = ['Pending', 'Win', 'Loss', 'Push', 'Void'];
 
@@ -200,8 +201,22 @@ async function handleAdminApi(req, res) {
       values.push(Boolean(body.disabled));
     }
 
+    // Manual plan override — for reconciling a payment PayPal confirmed but our
+    // webhook/verification failed to record (e.g. env misconfiguration at the time).
+    if (body.plan !== undefined) {
+      if (body.plan !== null && !VALID_PLANS.includes(body.plan)) {
+        return sendJson(res, 400, { error: `Invalid plan. Must be one of: ${VALID_PLANS.join(', ')} or null.` });
+      }
+      updates.push(`plan = $${updates.length + 1}`);
+      values.push(body.plan);
+      updates.push(`subscription_status = $${updates.length + 1}`);
+      values.push(body.plan ? (body.subscriptionStatus || 'ACTIVE') : null);
+      updates.push(`subscription_updated_at = $${updates.length + 1}`);
+      values.push(Date.now());
+    }
+
     if (updates.length === 0) {
-      return sendJson(res, 400, { error: 'No updatable fields provided (role, disabled).' });
+      return sendJson(res, 400, { error: 'No updatable fields provided (role, disabled, plan).' });
     }
 
     updates.push(`updated_at = $${updates.length + 1}`);
@@ -209,7 +224,9 @@ async function handleAdminApi(req, res) {
     values.push(resourceId);
 
     const result = await db.query(
-      `UPDATE users SET ${updates.join(', ')} WHERE id = $${values.length} RETURNING id, email, username, name, role, disabled, created_at, updated_at`,
+      `UPDATE users SET ${updates.join(', ')} WHERE id = $${values.length}
+       RETURNING id, email, username, name, role, disabled, plan, paypal_subscription_id,
+                 subscription_status, subscription_updated_at, created_at, updated_at`,
       values
     );
 

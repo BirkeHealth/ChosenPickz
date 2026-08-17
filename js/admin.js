@@ -137,6 +137,14 @@ const AdminPanel = (() => {
               <option value="handicapper" ${u.role === 'handicapper' ? 'selected' : ''}>Handicapper</option>
               <option value="admin"       ${u.role === 'admin'       ? 'selected' : ''}>Admin</option>
             </select>
+            <select class="action-btn" style="cursor:pointer;" title="Manually set plan (use if PayPal payment succeeded but wasn't recorded)"
+              onchange="AdminPanel.changeUserPlan('${u.id}', this.value, this)">
+              <option value=""        ${!u.plan                    ? 'selected' : ''}>No Plan</option>
+              <option value="starter" ${u.plan === 'starter'        ? 'selected' : ''}>Starter</option>
+              <option value="pro"     ${u.plan === 'pro'            ? 'selected' : ''}>Pro</option>
+              <option value="elite"   ${u.plan === 'elite'          ? 'selected' : ''}>Elite</option>
+              <option value="chosen1" ${u.plan === 'chosen1'        ? 'selected' : ''}>Ch0sen1</option>
+            </select>
             <button class="action-btn ${u.disabled ? 'btn-success-sm' : 'btn-danger-sm'}"
               onclick="AdminPanel.toggleUserDisabled('${u.id}', ${!u.disabled})">
               ${u.disabled ? 'Enable' : 'Disable'}
@@ -166,6 +174,38 @@ const AdminPanel = (() => {
     } catch (err) {
       showToast(err.message, 'error');
       // Re-render to revert select to current state
+      renderUsers(filterUsers());
+    }
+  }
+
+  async function changeUserPlan(userId, newPlan, selectEl) {
+    const user = _allUsers.find(u => u.id === userId);
+    const label = newPlan ? newPlan.charAt(0).toUpperCase() + newPlan.slice(1) : 'No Plan';
+    const ok = await confirm(
+      'Manually Set Plan',
+      newPlan
+        ? `Set ${user ? user.name : 'this user'}'s plan to "${label}"? Only do this if you've confirmed the payment in PayPal.`
+        : `Remove ${user ? user.name : 'this user'}'s plan?`
+    );
+    if (!ok) { renderUsers(filterUsers()); return; }
+
+    try {
+      const res = await fetch(`/api/admin/users/${encodeURIComponent(userId)}`, {
+        method: 'PATCH',
+        credentials: 'same-origin',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ plan: newPlan || null }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to update plan.');
+      if (user) {
+        user.plan = data.plan;
+        user.subscriptionStatus = data.subscriptionStatus;
+      }
+      showToast(newPlan ? `Plan set to ${label}.` : 'Plan cleared.');
+      renderUsers(filterUsers());
+    } catch (err) {
+      showToast(err.message, 'error');
       renderUsers(filterUsers());
     }
   }
@@ -633,5 +673,5 @@ const AdminPanel = (() => {
     loadUsers();
   }
 
-  return { init, changeUserRole, toggleUserDisabled, openUserForm, changePostStatus, deletePost, openPickForm, changePickStatus, deletePick };
+  return { init, changeUserRole, changeUserPlan, toggleUserDisabled, openUserForm, changePostStatus, deletePost, openPickForm, changePickStatus, deletePick };
 })();
